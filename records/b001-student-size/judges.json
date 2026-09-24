@@ -1,0 +1,157 @@
+{
+ "batch": "b001-student-size",
+ "cases": 6,
+ "models": {
+  "decide": {
+   "rule_settled": 6,
+   "agreement": 1.0,
+   "by_rule": {
+    "keep": {
+     "n": 0,
+     "agree": 0
+    },
+    "kill": {
+     "n": 6,
+     "agree": 6
+    }
+   },
+   "confident_and_wrong": 0,
+   "mean_confidence": 0.9301,
+   "errors": 0
+  },
+  "jev": {
+   "rule_settled": 6,
+   "agreement": 1.0,
+   "by_rule": {
+    "keep": {
+     "n": 0,
+     "agree": 0
+    },
+    "kill": {
+     "n": 6,
+     "agree": 6
+    }
+   },
+   "confident_and_wrong": 0,
+   "mean_confidence": 0.735,
+   "errors": 0
+  }
+ },
+ "uncertain": [],
+ "cases_detail": [
+  {
+   "rung": 0,
+   "arm_id": "a01",
+   "rule": "kill",
+   "shadow": {
+    "decide": {
+     "choice": "kill",
+     "confidence": 0.9235,
+     "gap": 2,
+     "still_learning": 0.5908
+    },
+    "jev": {
+     "choice": "kill",
+     "confidence": 0.56,
+     "gap": 2.72,
+     "still_learning": 0.23
+    }
+   }
+  },
+  {
+   "rung": 0,
+   "arm_id": "a02",
+   "rule": "kill",
+   "shadow": {
+    "decide": {
+     "choice": "kill",
+     "confidence": 0.9366,
+     "gap": 2,
+     "still_learning": 0.5865
+    },
+    "jev": {
+     "choice": "kill",
+     "confidence": 0.6,
+     "gap": 2.55,
+     "still_learning": 0.18
+    }
+   }
+  },
+  {
+   "rung": 0,
+   "arm_id": "a03",
+   "rule": "kill",
+   "shadow": {
+    "decide": {
+     "choice": "kill",
+     "confidence": 0.9276,
+     "gap": 2,
+     "still_learning": 0.5919
+    },
+    "jev": {
+     "choice": "kill",
+     "confidence": 0.73,
+     "gap": 2.66,
+     "still_learning": 0.18
+    }
+   }
+  },
+  {
+   "rung": 0,
+   "arm_id": "a04",
+   "rule": "kill",
+   "shadow": {
+    "decide": {
+     "choice": "kill",
+     "confidence": 0.9313,
+     "gap": 2,
+     "still_learning": 0.5923
+    },
+    "jev": {
+     "choice": "kill",
+     "confidence": 0.83,
+     "gap": 2.91,
+     "still_learning": 0.22
+    }
+   }
+  },
+  {
+   "rung": 0,
+   "arm_id": "a05",
+   "rule": "kill",
+   "shadow": {
+    "decide": {
+     "choice": "kill",
+     "confidence": 0.9295,
+     "gap": 2,
+     "still_learning": 0.604
+    },
+    "jev": {
+     "choice": "kill",
+     "confidence": 0.79,
+     "gap": 2.78,
+     "still_learning": 0.2
+    }
+   }
+  },
+  {
+   "rung": 0,
+   "arm_id": "a06",
+   "rule": "kill",
+   "shadow": {
+    "decide": {
+     "choice": "kill",
+     "confidence": 0.9321,
+     "gap": 2,
+     "still_learning": 0.5998
+    },
+    "jev": {
+     "choice": "kill",
+     "confidence": 0.9,
+     "gap": 2.95,
+     "still_learning": 0.16
+    }
+   }
+  }
+ ]
+}
