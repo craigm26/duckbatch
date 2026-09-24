@@ -1,0 +1,646 @@
+{
+ "batch_id": "b002-student-size-longer",
+ "created": "2026-09-24T20:59:28Z",
+ "task": "Mjlab-VelStand-Flat-MicroDuck",
+ "executed": {
+  "host": "CRAIGM-A00641",
+  "platform": "Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+  "gpu": "NVIDIA GeForce RTX 3050 Laptop GPU",
+  "num_envs": 512,
+  "wall_seconds": 3988.7,
+  "duckbatch_commit": "2da6dfc93a6013cce46e2b37371657de7b5ed3a7",
+  "judge": "rule->person",
+  "shadow_models": [
+   "decide"
+  ],
+  "rank": "efficiency"
+ },
+ "final_eval": {
+  "seconds": 30.0,
+  "seeds": [
+   2001,
+   2002,
+   2003
+  ]
+ },
+ "teacher": {
+  "params": 197774,
+  "flops": 393728,
+  "source": "pollen-robotics/microduck-policies@1b56c396825c052a4e26e95cf2b8d8298af9e9b4/velstand.onnx",
+  "final": {
+   "falls_per_min": {
+    "mean": 0.1364522417153996,
+    "sd": 0.024032803130483338,
+    "min": 0.10526315789473684,
+    "max": 0.16374269005847952
+   },
+   "down_frac": {
+    "mean": 0.0042521117608836905,
+    "sd": 0.0010169005224964361,
+    "min": 0.002834307992202729,
+    "max": 0.0051695906432748535
+   },
+   "lin_err": {
+    "mean": 0.17356881000895527,
+    "sd": 0.003660040406248524,
+    "min": 0.16853806080781697,
+    "max": 0.17713894312193026
+   },
+   "ang_err": {
+    "mean": 0.3677911151684018,
+    "sd": 0.0028896842303997336,
+    "min": 0.3638288814683993,
+    "max": 0.37063880025406304
+   },
+   "teacher_mse": {
+    "mean": 0.0,
+    "sd": 0.0,
+    "min": 0.0,
+    "max": 0.0
+   },
+   "recovered_frac": {
+    "mean": 0.9688109358151754,
+    "sd": 0.015348940184473317,
+    "min": 0.9473684430122375,
+    "max": 0.9824561476707458
+   },
+   "t_up_s": {
+    "mean": 0.5620565017064413,
+    "sd": 0.009900221368097211,
+    "min": 0.548271656036377,
+    "max": 0.571071445941925
+   }
+  },
+  "bench": {
+   "p50_us": 29.033,
+   "p99_us": 84.67210000000007,
+   "bytes": 793705,
+   "int8_p50_us": 18.1175,
+   "int8_drift": 0.16946673393249512
+  }
+ },
+ "arms": [
+  {
+   "id": "a01",
+   "hidden": [
+    256,
+    128,
+    64
+   ],
+   "params": 57934,
+   "flops": 114944,
+   "status": "finalist",
+   "closed_at_rung": null,
+   "verdict": null,
+   "tier": null,
+   "reasons": [],
+   "final": {
+    "falls_per_min": {
+     "mean": 0.3803921568627451,
+     "sd": 0.06949037312419354,
+     "min": 0.2823529411764706,
+     "max": 0.43529411764705883
+    },
+    "down_frac": {
+     "mean": 0.00848235294117647,
+     "sd": 0.0007398577333448356,
+     "min": 0.00752156862745098,
+     "max": 0.00932156862745098
+    },
+    "lin_err": {
+     "mean": 0.17792689423645638,
+     "sd": 0.0035519324510663282,
+     "min": 0.17430539218419153,
+     "max": 0.18275225607818146
+    },
+    "ang_err": {
+     "mean": 0.3884050480543621,
+     "sd": 0.006515392814641262,
+     "min": 0.3797110262582021,
+     "max": 0.3953951639540528
+    },
+    "teacher_mse": {
+     "mean": 0.001257465950803819,
+     "sd": 2.1518951020931354e-05,
+     "min": 0.0012325697812379576,
+     "max": 0.0012850709955481922
+    },
+    "recovered_frac": {
+     "mean": 0.9823529521624247,
+     "sd": 0.0048029207780248846,
+     "min": 0.9764705896377563,
+     "max": 0.9882352948188782
+    },
+    "t_up_s": {
+     "mean": 0.5623944401741028,
+     "sd": 0.01026605531124397,
+     "min": 0.5479517579078674,
+     "max": 0.570898175239563
+    }
+   },
+   "repo": "craigm26/microduck-duckbatch-b002-256x128x64",
+   "bench": {
+    "p50_us": 14.532,
+    "p99_us": 38.82403000000005,
+    "bytes": 234137,
+    "int8_p50_us": 20.937,
+    "int8_drift": 0.12646672129631042
+   }
+  },
+  {
+   "id": "a02",
+   "hidden": [
+    128,
+    128
+   ],
+   "params": 26254,
+   "flops": 51968,
+   "status": "finalist",
+   "closed_at_rung": null,
+   "verdict": null,
+   "tier": null,
+   "reasons": [],
+   "final": {
+    "falls_per_min": {
+     "mean": 0.45614035087719296,
+     "sd": 0.05963765512974017,
+     "min": 0.3742690058479532,
+     "max": 0.5146198830409356
+    },
+    "down_frac": {
+     "mean": 0.01122287199480182,
+     "sd": 0.0033773156056612318,
+     "min": 0.008070175438596491,
+     "max": 0.01590643274853801
+    },
+    "lin_err": {
+     "mean": 0.18185316933929246,
+     "sd": 0.0009219683683780286,
+     "min": 0.18106796038902892,
+     "max": 0.18314723023974605
+    },
+    "ang_err": {
+     "mean": 0.40715205724168413,
+     "sd": 0.004478601356428809,
+     "min": 0.4020587349005457,
+     "max": 0.41295914105535564
+    },
+    "teacher_mse": {
+     "mean": 0.0024314030753551483,
+     "sd": 6.922821188791396e-05,
+     "min": 0.0023449884710023744,
+     "max": 0.002514462668528566
+    },
+    "recovered_frac": {
+     "mean": 0.9707602461179098,
+     "sd": 0.004774839925564425,
+     "min": 0.9649122953414917,
+     "max": 0.9766082167625427
+    },
+    "t_up_s": {
+     "mean": 0.5619098742802938,
+     "sd": 0.017762207178002056,
+     "min": 0.5431325435638428,
+     "max": 0.585748553276062
+    }
+   },
+   "repo": "craigm26/microduck-duckbatch-b002-128x128",
+   "bench": {
+    "p50_us": 10.794,
+    "p99_us": 31.178350000000048,
+    "bytes": 107125,
+    "int8_p50_us": 12.296,
+    "int8_drift": 0.16549333930015564
+   }
+  },
+  {
+   "id": "a03",
+   "hidden": [
+    128,
+    64
+   ],
+   "params": 17102,
+   "flops": 33792,
+   "status": "closed",
+   "closed_at_rung": 1,
+   "verdict": "pending",
+   "tier": "person",
+   "reasons": [
+    "falls +0.87/min over teacher",
+    "ang_err 1.19x teacher",
+    "down 2.3%",
+    "no acting decision model: to a person",
+    "outranked (quota 2)"
+   ],
+   "final": null
+  },
+  {
+   "id": "a04",
+   "hidden": [
+    64,
+    64
+   ],
+   "params": 9038,
+   "flops": 17792,
+   "status": "closed",
+   "closed_at_rung": 0,
+   "verdict": "pending",
+   "tier": "person",
+   "reasons": [
+    "falls +1.93/min over teacher",
+    "lin_err 1.20x teacher",
+    "ang_err 1.55x teacher",
+    "down 7.8%",
+    "no acting decision model: to a person",
+    "outranked (quota 3)"
+   ],
+   "final": null
+  },
+  {
+   "id": "a05",
+   "hidden": [
+    64,
+    32
+   ],
+   "params": 6510,
+   "flops": 12800,
+   "status": "closed",
+   "closed_at_rung": 0,
+   "verdict": "pending",
+   "tier": "person",
+   "reasons": [
+    "falls +1.89/min over teacher",
+    "ang_err 1.67x teacher",
+    "down 6.0%",
+    "no acting decision model: to a person",
+    "outranked (quota 3)"
+   ],
+   "final": null
+  },
+  {
+   "id": "a06",
+   "hidden": [
+    32,
+    32
+   ],
+   "params": 3502,
+   "flops": 6848,
+   "status": "closed",
+   "closed_at_rung": 0,
+   "verdict": "pending",
+   "tier": "person",
+   "reasons": [
+    "falls +4.81/min over teacher",
+    "lin_err 1.27x teacher",
+    "ang_err 2.01x teacher",
+    "down 18.9%",
+    "no acting decision model: to a person",
+    "outranked (quota 3)"
+   ],
+   "final": null
+  }
+ ],
+ "rungs": [
+  {
+   "rung": 0,
+   "iters": 150,
+   "train_seconds": 451.6,
+   "advance": [
+    "a01",
+    "a02",
+    "a03"
+   ],
+   "decisions": [
+    {
+     "arm_id": "a01",
+     "verdict": "pending",
+     "tier": "person",
+     "reasons": [
+      "falls +0.53/min over teacher",
+      "ang_err 1.17x teacher",
+      "down 2.3%",
+      "no acting decision model: to a person"
+     ],
+     "shadow": {
+      "decide": {
+       "choice": "kill",
+       "confidence": 0.9216,
+       "gap": 2,
+       "still_learning": 0.5881
+      }
+     }
+    },
+    {
+     "arm_id": "a02",
+     "verdict": "pending",
+     "tier": "person",
+     "reasons": [
+      "falls +0.66/min over teacher",
+      "ang_err 1.29x teacher",
+      "down 2.1%",
+      "no acting decision model: to a person"
+     ],
+     "shadow": {
+      "decide": {
+       "choice": "kill",
+       "confidence": 0.9214,
+       "gap": 2,
+       "still_learning": 0.5814
+      }
+     }
+    },
+    {
+     "arm_id": "a03",
+     "verdict": "pending",
+     "tier": "person",
+     "reasons": [
+      "falls +1.30/min over teacher",
+      "ang_err 1.42x teacher",
+      "down 5.4%",
+      "no acting decision model: to a person"
+     ],
+     "shadow": {
+      "decide": {
+       "choice": "kill",
+       "confidence": 0.924,
+       "gap": 2,
+       "still_learning": 0.5914
+      }
+     }
+    },
+    {
+     "arm_id": "a04",
+     "verdict": "pending",
+     "tier": "person",
+     "reasons": [
+      "falls +1.93/min over teacher",
+      "lin_err 1.20x teacher",
+      "ang_err 1.55x teacher",
+      "down 7.8%",
+      "no acting decision model: to a person",
+      "outranked (quota 3)"
+     ],
+     "shadow": {
+      "decide": {
+       "choice": "kill",
+       "confidence": 0.9197,
+       "gap": 2,
+       "still_learning": 0.5852
+      }
+     }
+    },
+    {
+     "arm_id": "a05",
+     "verdict": "pending",
+     "tier": "person",
+     "reasons": [
+      "falls +1.89/min over teacher",
+      "ang_err 1.67x teacher",
+      "down 6.0%",
+      "no acting decision model: to a person",
+      "outranked (quota 3)"
+     ],
+     "shadow": {
+      "decide": {
+       "choice": "kill",
+       "confidence": 0.9261,
+       "gap": 2,
+       "still_learning": 0.5958
+      }
+     }
+    },
+    {
+     "arm_id": "a06",
+     "verdict": "pending",
+     "tier": "person",
+     "reasons": [
+      "falls +4.81/min over teacher",
+      "lin_err 1.27x teacher",
+      "ang_err 2.01x teacher",
+      "down 18.9%",
+      "no acting decision model: to a person",
+      "outranked (quota 3)"
+     ],
+     "shadow": {
+      "decide": {
+       "choice": "kill",
+       "confidence": 0.9251,
+       "gap": 2,
+       "still_learning": 0.5904
+      }
+     }
+    }
+   ]
+  },
+  {
+   "rung": 1,
+   "iters": 300,
+   "train_seconds": 869.5,
+   "advance": [
+    "a01",
+    "a02"
+   ],
+   "decisions": [
+    {
+     "arm_id": "a01",
+     "verdict": "pending",
+     "tier": "person",
+     "reasons": [
+      "falls +0.28/min over teacher",
+      "no acting decision model: to a person"
+     ],
+     "shadow": {
+      "decide": {
+       "choice": "kill",
+       "confidence": 0.9158,
+       "gap": 2,
+       "still_learning": 0.5676
+      }
+     }
+    },
+    {
+     "arm_id": "a02",
+     "verdict": "pending",
+     "tier": "person",
+     "reasons": [
+      "falls +0.42/min over teacher",
+      "no acting decision model: to a person"
+     ],
+     "shadow": {
+      "decide": {
+       "choice": "kill",
+       "confidence": 0.9224,
+       "gap": 2,
+       "still_learning": 0.5672
+      }
+     }
+    },
+    {
+     "arm_id": "a03",
+     "verdict": "pending",
+     "tier": "person",
+     "reasons": [
+      "falls +0.87/min over teacher",
+      "ang_err 1.19x teacher",
+      "down 2.3%",
+      "no acting decision model: to a person",
+      "outranked (quota 2)"
+     ],
+     "shadow": {
+      "decide": {
+       "choice": "kill",
+       "confidence": 0.9245,
+       "gap": 2,
+       "still_learning": 0.5793
+      }
+     }
+    }
+   ]
+  },
+  {
+   "rung": 2,
+   "iters": 600,
+   "train_seconds": 1725.2,
+   "advance": [
+    "a02",
+    "a01"
+   ],
+   "decisions": [
+    {
+     "arm_id": "a01",
+     "verdict": "keep",
+     "tier": "rule",
+     "reasons": [
+      "within every keep line"
+     ],
+     "shadow": {
+      "decide": {
+       "choice": "kill",
+       "confidence": 0.9219,
+       "gap": 2,
+       "still_learning": 0.577
+      }
+     }
+    },
+    {
+     "arm_id": "a02",
+     "verdict": "keep",
+     "tier": "rule",
+     "reasons": [
+      "within every keep line"
+     ],
+     "shadow": {
+      "decide": {
+       "choice": "kill",
+       "confidence": 0.9259,
+       "gap": 2,
+       "still_learning": 0.5689
+      }
+     }
+    }
+   ]
+  }
+ ],
+ "judges": {
+  "models": {
+   "decide": {
+    "rule_settled": 5,
+    "agreement": 0.6,
+    "by_rule": {
+     "keep": {
+      "n": 2,
+      "agree": 0
+     },
+     "kill": {
+      "n": 3,
+      "agree": 3
+     }
+    },
+    "confident_and_wrong": 2,
+    "mean_confidence": 0.9237,
+    "errors": 0
+   },
+   "jev": {
+    "rule_settled": 5,
+    "agreement": 0.8,
+    "by_rule": {
+     "keep": {
+      "n": 2,
+      "agree": 1
+     },
+     "kill": {
+      "n": 3,
+      "agree": 3
+     }
+    },
+    "confident_and_wrong": 0,
+    "mean_confidence": 0.598,
+    "errors": 0
+   }
+  },
+  "uncertain": [
+   {
+    "rung": 0,
+    "arm_id": "a01",
+    "final": "pending",
+    "tier": "person",
+    "decide": "kill",
+    "jev": "kill"
+   },
+   {
+    "rung": 0,
+    "arm_id": "a02",
+    "final": "pending",
+    "tier": "person",
+    "decide": "kill",
+    "jev": "kill"
+   },
+   {
+    "rung": 0,
+    "arm_id": "a03",
+    "final": "pending",
+    "tier": "person",
+    "decide": "kill",
+    "jev": "kill"
+   },
+   {
+    "rung": 1,
+    "arm_id": "a01",
+    "final": "pending",
+    "tier": "person",
+    "decide": "kill",
+    "jev": "kill"
+   },
+   {
+    "rung": 1,
+    "arm_id": "a02",
+    "final": "pending",
+    "tier": "person",
+    "decide": "kill",
+    "jev": "kill"
+   },
+   {
+    "rung": 1,
+    "arm_id": "a03",
+    "final": "pending",
+    "tier": "person",
+    "decide": "kill",
+    "jev": "kill"
+   }
+  ]
+ },
+ "gates": {
+  "falls_keep_abs": 0.25,
+  "falls_kill_abs": 1.5,
+  "lin_keep_ratio": 1.15,
+  "lin_kill_ratio": 1.6,
+  "ang_keep_ratio": 1.15,
+  "ang_kill_ratio": 1.6,
+  "down_keep": 0.02,
+  "down_kill": 0.1,
+  "recover_keep_drop": 0.1,
+  "recover_kill_drop": 0.3,
+  "jev_act_alone": 0.9,
+  "audit_share": 0.1
+ }
+}

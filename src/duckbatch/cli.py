@@ -41,6 +41,15 @@ def main(argv: list[str] | None = None) -> int:
     pu.add_argument("--bench", default=None, help="bench.json (default: <batch>/bench.json)")
     pu.add_argument("--space", default=None, help="also upload space/ to this Space repo id")
 
+    hj = sub.add_parser("hf-job", help="re-run a menu on Hugging Face Jobs (billed to you)")
+    hj.add_argument("menu")
+    hj.add_argument("--dataset", required=True, help="dataset repo that receives the records")
+    hj.add_argument("--flavor", default="l4x1")
+    hj.add_argument("--timeout", default="4h")
+    hj.add_argument("--commit", default=None, help="default: HEAD (must be pushed)")
+    hj.add_argument("--jev", action="store_true", help="pass TYPESAFE_API_KEY to the job")
+    hj.add_argument("--dry-run", action="store_true")
+
     a = p.parse_args(argv)
     if a.cmd == "probe":
         from .probe import probe
@@ -58,6 +67,10 @@ def main(argv: list[str] | None = None) -> int:
         from .batch.rejudge import rejudge
 
         rejudge(a.batch_dir, [m for m in a.models.split(",") if m])
+    elif a.cmd == "hf-job":
+        from .hf_job import launch
+
+        launch(a.menu, a.dataset, a.flavor, a.timeout, a.commit, a.jev, a.dry_run)
     elif a.cmd == "publish":
         from .publish import publish_batch
 

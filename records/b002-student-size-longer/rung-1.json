@@ -1,0 +1,202 @@
+{
+ "rung": 1,
+ "iters": 300,
+ "train_seconds": 869.5,
+ "gates": {
+  "falls_keep_abs": 0.25,
+  "falls_kill_abs": 8.0,
+  "lin_keep_ratio": 1.15,
+  "lin_kill_ratio": 3.0,
+  "ang_keep_ratio": 1.15,
+  "ang_kill_ratio": 3.0,
+  "down_keep": 0.02,
+  "down_kill": 0.25,
+  "recover_keep_drop": 0.1,
+  "recover_kill_drop": 0.5,
+  "jev_act_alone": 0.9,
+  "audit_share": 0.1
+ },
+ "eval": {
+  "seconds": 20.0,
+  "recover_seconds": 6.0,
+  "seed": 1000,
+  "profile": "walk+recover",
+  "rows": {
+   "teacher": {
+    "envs": 128,
+    "sim_seconds": 20.0,
+    "falls_per_min": 0.046875,
+    "down_frac": 0.0001953125,
+    "lin_err": 0.18073722033045167,
+    "ang_err": 0.3756428096508183,
+    "teacher_mse": 0.0,
+    "reward_per_s": 7.24000132009387,
+    "recovered_frac": 0.9921875,
+    "t_up_s": 0.5940157771110535
+   },
+   "a01": {
+    "envs": 128,
+    "sim_seconds": 20.0,
+    "falls_per_min": 0.328125,
+    "down_frac": 0.005859375,
+    "lin_err": 0.18751373586298675,
+    "ang_err": 0.4075592644772033,
+    "teacher_mse": 0.0019527098195394501,
+    "reward_per_s": 6.988587887957692,
+    "recovered_frac": 0.9609375,
+    "t_up_s": 0.5673170685768127
+   },
+   "a02": {
+    "envs": 128,
+    "sim_seconds": 20.0,
+    "falls_per_min": 0.46875,
+    "down_frac": 0.0060625,
+    "lin_err": 0.1811153851672028,
+    "ang_err": 0.3987627586223701,
+    "teacher_mse": 0.0031417597602121533,
+    "reward_per_s": 6.9290227852761745,
+    "recovered_frac": 0.96875,
+    "t_up_s": 0.5364516377449036
+   },
+   "a03": {
+    "envs": 128,
+    "sim_seconds": 20.0,
+    "falls_per_min": 0.9140625,
+    "down_frac": 0.022828125,
+    "lin_err": 0.19446519005258395,
+    "ang_err": 0.4460773520170094,
+    "teacher_mse": 0.004411298101767897,
+    "reward_per_s": 6.590589481592178,
+    "recovered_frac": 0.984375,
+    "t_up_s": 0.6057142615318298
+   }
+  }
+ },
+ "decisions": [
+  {
+   "arm_id": "a01",
+   "verdict": "pending",
+   "tier": "person",
+   "reasons": [
+    "falls +0.28/min over teacher",
+    "no acting decision model: to a person"
+   ],
+   "confidence": null,
+   "audit": false,
+   "shadow": {
+    "decide": {
+     "choice": "kill",
+     "confidence": 0.9158,
+     "gap": 2,
+     "still_learning": 0.5676
+    }
+   },
+   "case_text": "Microduck walking policy attempt a01: a 57,934-parameter student distilled from Pollen's 197,774-parameter default walker, after training rung 2 (1 rung(s) left). Simulator eval with pushes and domain randomization; the teacher ran in the same eval.\nFalls per minute: attempt 0.33, teacher 0.05.\nTime spent fallen: attempt 0.6%, teacher 0.0%.\nPlanar velocity error: attempt 0.188 m/s, teacher 0.181 m/s (1.04x the teacher).\nYaw rate error: attempt 0.408 rad/s, teacher 0.376 rad/s (1.08x the teacher).\nGets up from a prone spawn within 6 s: attempt 96%, teacher 99%.\nAction gap to the teacher (mean squared): 0.0020.\nTraining loss, last checkpoints: 0.0036, 0.0036, 0.0036, 0.0035, 0.0036, 0.0036.\nLab conventions: an attempt that falls about 0.25 more times per minute than the teacher, or tracks velocity more than 15% worse, is noticeably worse; 8.0 more falls per minute, or 200% worse tracking, is clearly unacceptable."
+  },
+  {
+   "arm_id": "a02",
+   "verdict": "pending",
+   "tier": "person",
+   "reasons": [
+    "falls +0.42/min over teacher",
+    "no acting decision model: to a person"
+   ],
+   "confidence": null,
+   "audit": false,
+   "shadow": {
+    "decide": {
+     "choice": "kill",
+     "confidence": 0.9224,
+     "gap": 2,
+     "still_learning": 0.5672
+    }
+   },
+   "case_text": "Microduck walking policy attempt a02: a 26,254-parameter student distilled from Pollen's 197,774-parameter default walker, after training rung 2 (1 rung(s) left). Simulator eval with pushes and domain randomization; the teacher ran in the same eval.\nFalls per minute: attempt 0.47, teacher 0.05.\nTime spent fallen: attempt 0.6%, teacher 0.0%.\nPlanar velocity error: attempt 0.181 m/s, teacher 0.181 m/s (1.00x the teacher).\nYaw rate error: attempt 0.399 rad/s, teacher 0.376 rad/s (1.06x the teacher).\nGets up from a prone spawn within 6 s: attempt 97%, teacher 99%.\nAction gap to the teacher (mean squared): 0.0031.\nTraining loss, last checkpoints: 0.006, 0.006, 0.006, 0.0058, 0.006, 0.0058.\nLab conventions: an attempt that falls about 0.25 more times per minute than the teacher, or tracks velocity more than 15% worse, is noticeably worse; 8.0 more falls per minute, or 200% worse tracking, is clearly unacceptable."
+  },
+  {
+   "arm_id": "a03",
+   "verdict": "pending",
+   "tier": "person",
+   "reasons": [
+    "falls +0.87/min over teacher",
+    "ang_err 1.19x teacher",
+    "down 2.3%",
+    "no acting decision model: to a person",
+    "outranked (quota 2)"
+   ],
+   "confidence": null,
+   "audit": false,
+   "shadow": {
+    "decide": {
+     "choice": "kill",
+     "confidence": 0.9245,
+     "gap": 2,
+     "still_learning": 0.5793
+    }
+   },
+   "case_text": "Microduck walking policy attempt a03: a 17,102-parameter student distilled from Pollen's 197,774-parameter default walker, after training rung 2 (1 rung(s) left). Simulator eval with pushes and domain randomization; the teacher ran in the same eval.\nFalls per minute: attempt 0.91, teacher 0.05.\nTime spent fallen: attempt 2.3%, teacher 0.0%.\nPlanar velocity error: attempt 0.194 m/s, teacher 0.181 m/s (1.08x the teacher).\nYaw rate error: attempt 0.446 rad/s, teacher 0.376 rad/s (1.19x the teacher).\nGets up from a prone spawn within 6 s: attempt 98%, teacher 99%.\nAction gap to the teacher (mean squared): 0.0044.\nTraining loss, last checkpoints: 0.0075, 0.0075, 0.0076, 0.0077, 0.0075, 0.0075.\nLab conventions: an attempt that falls about 0.25 more times per minute than the teacher, or tracks velocity more than 15% worse, is noticeably worse; 8.0 more falls per minute, or 200% worse tracking, is clearly unacceptable."
+  }
+ ],
+ "advance": [
+  "a01",
+  "a02"
+ ],
+ "model_calls": {
+  "decide": [
+   {
+    "model": "fastino/GLiNER2.5-Decide@65624f1",
+    "text": "Microduck walking policy attempt a01: a 57,934-parameter student distilled from Pollen's 197,774-parameter default walker, after training rung 2 (1 rung(s) left). Simulator eval with pushes and domain randomization; the teacher ran in the same eval.\nFalls per minute: attempt 0.33, teacher 0.05.\nTime spent fallen: attempt 0.6%, teacher 0.0%.\nPlanar velocity error: attempt 0.188 m/s, teacher 0.181 m/s (1.04x the teacher).\nYaw rate error: attempt 0.408 rad/s, teacher 0.376 rad/s (1.08x the teacher).\nGets up from a prone spawn within 6 s: attempt 96%, teacher 99%.\nAction gap to the teacher (mean squared): 0.0020.\nTraining loss, last checkpoints: 0.0036, 0.0036, 0.0036, 0.0035, 0.0036, 0.0036.\nLab conventions: an attempt that falls about 0.25 more times per minute than the teacher, or tracks velocity more than 15% worse, is noticeably worse; 8.0 more falls per minute, or 200% worse tracking, is clearly unacceptable.",
+    "answers": {
+     "decision": {
+      "choice": "kill",
+      "confidence": 0.9158380031585693
+     },
+     "gap": {
+      "score": 2,
+      "confidence": 0.9400991201400757
+     },
+     "still_learning": {
+      "noul": 0.5676285028457642
+     }
+    },
+    "seconds": 10.241
+   },
+   {
+    "model": "fastino/GLiNER2.5-Decide@65624f1",
+    "text": "Microduck walking policy attempt a02: a 26,254-parameter student distilled from Pollen's 197,774-parameter default walker, after training rung 2 (1 rung(s) left). Simulator eval with pushes and domain randomization; the teacher ran in the same eval.\nFalls per minute: attempt 0.47, teacher 0.05.\nTime spent fallen: attempt 0.6%, teacher 0.0%.\nPlanar velocity error: attempt 0.181 m/s, teacher 0.181 m/s (1.00x the teacher).\nYaw rate error: attempt 0.399 rad/s, teacher 0.376 rad/s (1.06x the teacher).\nGets up from a prone spawn within 6 s: attempt 97%, teacher 99%.\nAction gap to the teacher (mean squared): 0.0031.\nTraining loss, last checkpoints: 0.006, 0.006, 0.006, 0.0058, 0.006, 0.0058.\nLab conventions: an attempt that falls about 0.25 more times per minute than the teacher, or tracks velocity more than 15% worse, is noticeably worse; 8.0 more falls per minute, or 200% worse tracking, is clearly unacceptable.",
+    "answers": {
+     "decision": {
+      "choice": "kill",
+      "confidence": 0.9224275946617126
+     },
+     "gap": {
+      "score": 2,
+      "confidence": 0.9383431077003479
+     },
+     "still_learning": {
+      "noul": 0.5672466158866882
+     }
+    },
+    "seconds": 3.588
+   },
+   {
+    "model": "fastino/GLiNER2.5-Decide@65624f1",
+    "text": "Microduck walking policy attempt a03: a 17,102-parameter student distilled from Pollen's 197,774-parameter default walker, after training rung 2 (1 rung(s) left). Simulator eval with pushes and domain randomization; the teacher ran in the same eval.\nFalls per minute: attempt 0.91, teacher 0.05.\nTime spent fallen: attempt 2.3%, teacher 0.0%.\nPlanar velocity error: attempt 0.194 m/s, teacher 0.181 m/s (1.08x the teacher).\nYaw rate error: attempt 0.446 rad/s, teacher 0.376 rad/s (1.19x the teacher).\nGets up from a prone spawn within 6 s: attempt 98%, teacher 99%.\nAction gap to the teacher (mean squared): 0.0044.\nTraining loss, last checkpoints: 0.0075, 0.0075, 0.0076, 0.0077, 0.0075, 0.0075.\nLab conventions: an attempt that falls about 0.25 more times per minute than the teacher, or tracks velocity more than 15% worse, is noticeably worse; 8.0 more falls per minute, or 200% worse tracking, is clearly unacceptable.",
+    "answers": {
+     "decision": {
+      "choice": "kill",
+      "confidence": 0.9245410561561584
+     },
+     "gap": {
+      "score": 2,
+      "confidence": 0.9417958855628967
+     },
+     "still_learning": {
+      "noul": 0.579325795173645
+     }
+    },
+    "seconds": 2.93
+   }
+  ]
+ }
+}

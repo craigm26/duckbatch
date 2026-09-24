@@ -110,6 +110,7 @@ def run_batch(menu_path: str | Path, out_root: str | Path = "records", device: s
         f"shadow={sorted(models) or 'none'}")
 
     t_start = time.perf_counter()
+    commit = _git_sha()  # at start: a commit made while the batch runs must not be credited
     env = make_env(task, num_envs, device=device, seed=seed)
     arms = [Arm("teacher", "teacher")] + [
         Arm(a["id"], "student", tuple(a["hidden"]), float(a.get("lr", 1e-3)),
@@ -225,7 +226,7 @@ def run_batch(menu_path: str | Path, out_root: str | Path = "records", device: s
             "host": platform.node(), "platform": platform.platform(),
             "gpu": torch.cuda.get_device_name(0) if torch.cuda.is_available() else None,
             "num_envs": num_envs, "wall_seconds": round(total_s, 1),
-            "duckbatch_commit": _git_sha(),
+            "duckbatch_commit": commit,
             "judge": chain,
             "shadow_models": sorted(models),
             "rank": menu.get("rank", "quality"),

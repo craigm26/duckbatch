@@ -1,0 +1,109 @@
+[
+ {
+  "file": "records/b002-student-size-longer/policies/a01/policy.onnx",
+  "hidden": [
+   256,
+   128,
+   64
+  ],
+  "params": 57934,
+  "flops": 114944,
+  "bytes": 234137,
+  "fp32": {
+   "p50_us": 14.532,
+   "p99_us": 38.82403000000005,
+   "mean_us": 16.180094
+  },
+  "inputs": "recorded",
+  "host": {
+   "machine": "x86_64",
+   "processor": "x86_64",
+   "system": "Linux",
+   "cpus": 20,
+   "ort": "1.30.0",
+   "threads": 1
+  },
+  "int8": {
+   "file": "records/b002-student-size-longer/policies/a01/policy.int8.onnx",
+   "bytes": 65905,
+   "p50_us": 20.937,
+   "p99_us": 70.04127,
+   "mean_us": 23.5594168,
+   "drift_vs_fp32": {
+    "max_abs": 0.12646672129631042,
+    "mean_abs": 0.016729803755879402
+   }
+  }
+ },
+ {
+  "file": "records/b002-student-size-longer/policies/a02/policy.onnx",
+  "hidden": [
+   128,
+   128
+  ],
+  "params": 26254,
+  "flops": 51968,
+  "bytes": 107125,
+  "fp32": {
+   "p50_us": 10.794,
+   "p99_us": 31.178350000000048,
+   "mean_us": 12.1937102
+  },
+  "inputs": "recorded",
+  "host": {
+   "machine": "x86_64",
+   "processor": "x86_64",
+   "system": "Linux",
+   "cpus": 20,
+   "ort": "1.30.0",
+   "threads": 1
+  },
+  "int8": {
+   "file": "records/b002-student-size-longer/policies/a02/policy.int8.onnx",
+   "bytes": 32265,
+   "p50_us": 12.296,
+   "p99_us": 38.351560000000056,
+   "mean_us": 14.273799799999999,
+   "drift_vs_fp32": {
+    "max_abs": 0.16549333930015564,
+    "mean_abs": 0.02795063890516758
+   }
+  }
+ },
+ {
+  "file": "records/b002-student-size-longer/bench-in/teacher/policy.onnx",
+  "hidden": [
+   512,
+   256,
+   128
+  ],
+  "params": 197774,
+  "flops": 393728,
+  "bytes": 793705,
+  "fp32": {
+   "p50_us": 29.033,
+   "p99_us": 84.67210000000007,
+   "mean_us": 34.1194156
+  },
+  "inputs": "recorded",
+  "host": {
+   "machine": "x86_64",
+   "processor": "x86_64",
+   "system": "Linux",
+   "cpus": 20,
+   "ort": "1.30.0",
+   "threads": 1
+  },
+  "int8": {
+   "file": "records/b002-student-size-longer/bench-in/teacher/policy.int8.onnx",
+   "bytes": 207473,
+   "p50_us": 18.1175,
+   "p99_us": 43.46993000000005,
+   "mean_us": 19.5210316,
+   "drift_vs_fp32": {
+    "max_abs": 0.16946673393249512,
+    "mean_abs": 0.01788879558444023
+   }
+  }
+ }
+]

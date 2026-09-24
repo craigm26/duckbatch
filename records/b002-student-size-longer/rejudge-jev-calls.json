@@ -1,0 +1,717 @@
+[
+ {
+  "state": "Microduck walking policy attempt a01: a 57,934-parameter student distilled from Pollen's 197,774-parameter default walker, after training rung 1 (2 rung(s) left). Simulator eval with pushes and domain randomization; the teacher ran in the same eval.\nFalls per minute: attempt 0.70, teacher 0.16.\nTime spent fallen: attempt 2.3%, teacher 0.1%.\nPlanar velocity error: attempt 0.175 m/s, teacher 0.185 m/s (0.94x the teacher).\nYaw rate error: attempt 0.425 rad/s, teacher 0.362 rad/s (1.17x the teacher).\nGets up from a prone spawn within 6 s: attempt 96%, teacher 96%.\nAction gap to the teacher (mean squared): 0.0039.\nTraining loss, last checkpoints: 0.0077, 0.0077, 0.0077, 0.0077, 0.0076, 0.0078.\nLab conventions: an attempt that falls about 0.25 more times per minute than the teacher, or tracks velocity more than 15% worse, is noticeably worse; 8.0 more falls per minute, or 200% worse tracking, is clearly unacceptable.",
+  "questions": {
+   "decision": {
+    "type": "choice",
+    "instructions": "Given only the observed numbers for this attempt and the teacher row from the same evaluation, should this attempt get the next rung's training budget?",
+    "criteria": {
+     "extend": "Worth more budget: its gap to the teacher is small, or its loss is still falling fast enough that more training plausibly closes it.",
+     "kill": "Not worth more budget: its gap to the teacher is material and its loss has flattened, or it falls or drifts where the teacher does not."
+    }
+   },
+   "gap": {
+    "type": "score",
+    "instructions": "How large is this attempt's real deficit against the teacher, reading the teacher row as the eval's noise floor?",
+    "criteria": [
+     "None: indistinguishable from the teacher within eval noise",
+     "Small: a gap, but one a user would not notice while driving the duck",
+     "Material: visibly worse tracking or stability than the teacher",
+     "Severe: falls, drifts or ignores commands where the teacher does not"
+    ]
+   },
+   "still_learning": {
+    "type": "noul",
+    "instructions": "Is the loss trail still falling enough that the next rung's budget would likely change the verdict?"
+   }
+  },
+  "answers": {
+   "decision": {
+    "type": "choice",
+    "choice": "kill",
+    "confidence": 0.4,
+    "probabilities": {
+     "extend": 0.3,
+     "kill": 0.7
+    }
+   },
+   "gap": {
+    "type": "score",
+    "score": 1.95,
+    "confidence": 0.71,
+    "legend": {
+     "0": "None: indistinguishable from the teacher within eval noise",
+     "1": "Small: a gap, but one a user would not notice while driving the duck",
+     "2": "Material: visibly worse tracking or stability than the teacher",
+     "3": "Severe: falls, drifts or ignores commands where the teacher does not"
+    },
+    "probabilities": {
+     "0": 0.01,
+     "1": 0.16,
+     "2": 0.71,
+     "3": 0.12
+    }
+   },
+   "still_learning": {
+    "type": "noul",
+    "noul": 0.17
+   }
+  },
+  "model": "jev-1.13.0",
+  "usage": {
+   "input_tokens": 843,
+   "output_tokens": 62
+  },
+  "seconds": 0.26
+ },
+ {
+  "state": "Microduck walking policy attempt a02: a 26,254-parameter student distilled from Pollen's 197,774-parameter default walker, after training rung 1 (2 rung(s) left). Simulator eval with pushes and domain randomization; the teacher ran in the same eval.\nFalls per minute: attempt 0.82, teacher 0.16.\nTime spent fallen: attempt 2.1%, teacher 0.1%.\nPlanar velocity error: attempt 0.201 m/s, teacher 0.185 m/s (1.09x the teacher).\nYaw rate error: attempt 0.469 rad/s, teacher 0.362 rad/s (1.29x the teacher).\nGets up from a prone spawn within 6 s: attempt 100%, teacher 96%.\nAction gap to the teacher (mean squared): 0.0063.\nTraining loss, last checkpoints: 0.0123, 0.0122, 0.0123, 0.012, 0.012, 0.0119.\nLab conventions: an attempt that falls about 0.25 more times per minute than the teacher, or tracks velocity more than 15% worse, is noticeably worse; 8.0 more falls per minute, or 200% worse tracking, is clearly unacceptable.",
+  "questions": {
+   "decision": {
+    "type": "choice",
+    "instructions": "Given only the observed numbers for this attempt and the teacher row from the same evaluation, should this attempt get the next rung's training budget?",
+    "criteria": {
+     "extend": "Worth more budget: its gap to the teacher is small, or its loss is still falling fast enough that more training plausibly closes it.",
+     "kill": "Not worth more budget: its gap to the teacher is material and its loss has flattened, or it falls or drifts where the teacher does not."
+    }
+   },
+   "gap": {
+    "type": "score",
+    "instructions": "How large is this attempt's real deficit against the teacher, reading the teacher row as the eval's noise floor?",
+    "criteria": [
+     "None: indistinguishable from the teacher within eval noise",
+     "Small: a gap, but one a user would not notice while driving the duck",
+     "Material: visibly worse tracking or stability than the teacher",
+     "Severe: falls, drifts or ignores commands where the teacher does not"
+    ]
+   },
+   "still_learning": {
+    "type": "noul",
+    "instructions": "Is the loss trail still falling enough that the next rung's budget would likely change the verdict?"
+   }
+  },
+  "answers": {
+   "decision": {
+    "type": "choice",
+    "choice": "kill",
+    "confidence": 0.37,
+    "probabilities": {
+     "kill": 0.69,
+     "extend": 0.31
+    }
+   },
+   "gap": {
+    "type": "score",
+    "score": 2.1,
+    "confidence": 0.65,
+    "legend": {
+     "0": "None: indistinguishable from the teacher within eval noise",
+     "1": "Small: a gap, but one a user would not notice while driving the duck",
+     "2": "Material: visibly worse tracking or stability than the teacher",
+     "3": "Severe: falls, drifts or ignores commands where the teacher does not"
+    },
+    "probabilities": {
+     "0": 0.0,
+     "1": 0.12,
+     "2": 0.66,
+     "3": 0.22
+    }
+   },
+   "still_learning": {
+    "type": "noul",
+    "noul": 0.16
+   }
+  },
+  "model": "jev-1.13.0",
+  "usage": {
+   "input_tokens": 842,
+   "output_tokens": 62
+  },
+  "seconds": 0.164
+ },
+ {
+  "state": "Microduck walking policy attempt a03: a 17,102-parameter student distilled from Pollen's 197,774-parameter default walker, after training rung 1 (2 rung(s) left). Simulator eval with pushes and domain randomization; the teacher ran in the same eval.\nFalls per minute: attempt 1.46, teacher 0.16.\nTime spent fallen: attempt 5.4%, teacher 0.1%.\nPlanar velocity error: attempt 0.203 m/s, teacher 0.185 m/s (1.10x the teacher).\nYaw rate error: attempt 0.514 rad/s, teacher 0.362 rad/s (1.42x the teacher).\nGets up from a prone spawn within 6 s: attempt 89%, teacher 96%.\nAction gap to the teacher (mean squared): 0.0082.\nTraining loss, last checkpoints: 0.0146, 0.0146, 0.0146, 0.0142, 0.0147, 0.0142.\nLab conventions: an attempt that falls about 0.25 more times per minute than the teacher, or tracks velocity more than 15% worse, is noticeably worse; 8.0 more falls per minute, or 200% worse tracking, is clearly unacceptable.",
+  "questions": {
+   "decision": {
+    "type": "choice",
+    "instructions": "Given only the observed numbers for this attempt and the teacher row from the same evaluation, should this attempt get the next rung's training budget?",
+    "criteria": {
+     "extend": "Worth more budget: its gap to the teacher is small, or its loss is still falling fast enough that more training plausibly closes it.",
+     "kill": "Not worth more budget: its gap to the teacher is material and its loss has flattened, or it falls or drifts where the teacher does not."
+    }
+   },
+   "gap": {
+    "type": "score",
+    "instructions": "How large is this attempt's real deficit against the teacher, reading the teacher row as the eval's noise floor?",
+    "criteria": [
+     "None: indistinguishable from the teacher within eval noise",
+     "Small: a gap, but one a user would not notice while driving the duck",
+     "Material: visibly worse tracking or stability than the teacher",
+     "Severe: falls, drifts or ignores commands where the teacher does not"
+    ]
+   },
+   "still_learning": {
+    "type": "noul",
+    "instructions": "Is the loss trail still falling enough that the next rung's budget would likely change the verdict?"
+   }
+  },
+  "answers": {
+   "decision": {
+    "type": "choice",
+    "choice": "kill",
+    "confidence": 0.42,
+    "probabilities": {
+     "kill": 0.71,
+     "extend": 0.29
+    }
+   },
+   "gap": {
+    "type": "score",
+    "score": 2.36,
+    "confidence": 0.49,
+    "legend": {
+     "0": "None: indistinguishable from the teacher within eval noise",
+     "1": "Small: a gap, but one a user would not notice while driving the duck",
+     "2": "Material: visibly worse tracking or stability than the teacher",
+     "3": "Severe: falls, drifts or ignores commands where the teacher does not"
+    },
+    "probabilities": {
+     "0": 0.0,
+     "1": 0.07,
+     "2": 0.5,
+     "3": 0.43
+    }
+   },
+   "still_learning": {
+    "type": "noul",
+    "noul": 0.2
+   }
+  },
+  "model": "jev-1.13.0",
+  "usage": {
+   "input_tokens": 843,
+   "output_tokens": 62
+  },
+  "seconds": 0.146
+ },
+ {
+  "state": "Microduck walking policy attempt a04: a 9,038-parameter student distilled from Pollen's 197,774-parameter default walker, after training rung 1 (2 rung(s) left). Simulator eval with pushes and domain randomization; the teacher ran in the same eval.\nFalls per minute: attempt 2.10, teacher 0.16.\nTime spent fallen: attempt 7.8%, teacher 0.1%.\nPlanar velocity error: attempt 0.222 m/s, teacher 0.185 m/s (1.20x the teacher).\nYaw rate error: attempt 0.561 rad/s, teacher 0.362 rad/s (1.55x the teacher).\nGets up from a prone spawn within 6 s: attempt 99%, teacher 96%.\nAction gap to the teacher (mean squared): 0.0124.\nTraining loss, last checkpoints: 0.0201, 0.0201, 0.0199, 0.0198, 0.0202, 0.0196.\nLab conventions: an attempt that falls about 0.25 more times per minute than the teacher, or tracks velocity more than 15% worse, is noticeably worse; 8.0 more falls per minute, or 200% worse tracking, is clearly unacceptable.",
+  "questions": {
+   "decision": {
+    "type": "choice",
+    "instructions": "Given only the observed numbers for this attempt and the teacher row from the same evaluation, should this attempt get the next rung's training budget?",
+    "criteria": {
+     "extend": "Worth more budget: its gap to the teacher is small, or its loss is still falling fast enough that more training plausibly closes it.",
+     "kill": "Not worth more budget: its gap to the teacher is material and its loss has flattened, or it falls or drifts where the teacher does not."
+    }
+   },
+   "gap": {
+    "type": "score",
+    "instructions": "How large is this attempt's real deficit against the teacher, reading the teacher row as the eval's noise floor?",
+    "criteria": [
+     "None: indistinguishable from the teacher within eval noise",
+     "Small: a gap, but one a user would not notice while driving the duck",
+     "Material: visibly worse tracking or stability than the teacher",
+     "Severe: falls, drifts or ignores commands where the teacher does not"
+    ]
+   },
+   "still_learning": {
+    "type": "noul",
+    "instructions": "Is the loss trail still falling enough that the next rung's budget would likely change the verdict?"
+   }
+  },
+  "answers": {
+   "decision": {
+    "type": "choice",
+    "choice": "kill",
+    "confidence": 0.69,
+    "probabilities": {
+     "kill": 0.85,
+     "extend": 0.15
+    }
+   },
+   "gap": {
+    "type": "score",
+    "score": 2.57,
+    "confidence": 0.57,
+    "legend": {
+     "0": "None: indistinguishable from the teacher within eval noise",
+     "1": "Small: a gap, but one a user would not notice while driving the duck",
+     "2": "Material: visibly worse tracking or stability than the teacher",
+     "3": "Severe: falls, drifts or ignores commands where the teacher does not"
+    },
+    "probabilities": {
+     "0": 0.0,
+     "1": 0.02,
+     "2": 0.38,
+     "3": 0.6
+    }
+   },
+   "still_learning": {
+    "type": "noul",
+    "noul": 0.17
+   }
+  },
+  "model": "jev-1.13.0",
+  "usage": {
+   "input_tokens": 842,
+   "output_tokens": 62
+  },
+  "seconds": 0.169
+ },
+ {
+  "state": "Microduck walking policy attempt a05: a 6,510-parameter student distilled from Pollen's 197,774-parameter default walker, after training rung 1 (2 rung(s) left). Simulator eval with pushes and domain randomization; the teacher ran in the same eval.\nFalls per minute: attempt 2.05, teacher 0.16.\nTime spent fallen: attempt 6.0%, teacher 0.1%.\nPlanar velocity error: attempt 0.212 m/s, teacher 0.185 m/s (1.15x the teacher).\nYaw rate error: attempt 0.605 rad/s, teacher 0.362 rad/s (1.67x the teacher).\nGets up from a prone spawn within 6 s: attempt 89%, teacher 96%.\nAction gap to the teacher (mean squared): 0.0154.\nTraining loss, last checkpoints: 0.0256, 0.0253, 0.0252, 0.0255, 0.0253, 0.0258.\nLab conventions: an attempt that falls about 0.25 more times per minute than the teacher, or tracks velocity more than 15% worse, is noticeably worse; 8.0 more falls per minute, or 200% worse tracking, is clearly unacceptable.",
+  "questions": {
+   "decision": {
+    "type": "choice",
+    "instructions": "Given only the observed numbers for this attempt and the teacher row from the same evaluation, should this attempt get the next rung's training budget?",
+    "criteria": {
+     "extend": "Worth more budget: its gap to the teacher is small, or its loss is still falling fast enough that more training plausibly closes it.",
+     "kill": "Not worth more budget: its gap to the teacher is material and its loss has flattened, or it falls or drifts where the teacher does not."
+    }
+   },
+   "gap": {
+    "type": "score",
+    "instructions": "How large is this attempt's real deficit against the teacher, reading the teacher row as the eval's noise floor?",
+    "criteria": [
+     "None: indistinguishable from the teacher within eval noise",
+     "Small: a gap, but one a user would not notice while driving the duck",
+     "Material: visibly worse tracking or stability than the teacher",
+     "Severe: falls, drifts or ignores commands where the teacher does not"
+    ]
+   },
+   "still_learning": {
+    "type": "noul",
+    "instructions": "Is the loss trail still falling enough that the next rung's budget would likely change the verdict?"
+   }
+  },
+  "answers": {
+   "decision": {
+    "type": "choice",
+    "choice": "kill",
+    "confidence": 0.73,
+    "probabilities": {
+     "extend": 0.14,
+     "kill": 0.86
+    }
+   },
+   "gap": {
+    "type": "score",
+    "score": 2.58,
+    "confidence": 0.58,
+    "legend": {
+     "0": "None: indistinguishable from the teacher within eval noise",
+     "1": "Small: a gap, but one a user would not notice while driving the duck",
+     "2": "Material: visibly worse tracking or stability than the teacher",
+     "3": "Severe: falls, drifts or ignores commands where the teacher does not"
+    },
+    "probabilities": {
+     "0": 0.0,
+     "1": 0.02,
+     "2": 0.38,
+     "3": 0.6
+    }
+   },
+   "still_learning": {
+    "type": "noul",
+    "noul": 0.18
+   }
+  },
+  "model": "jev-1.13.0",
+  "usage": {
+   "input_tokens": 842,
+   "output_tokens": 62
+  },
+  "seconds": 0.18
+ },
+ {
+  "state": "Microduck walking policy attempt a06: a 3,502-parameter student distilled from Pollen's 197,774-parameter default walker, after training rung 1 (2 rung(s) left). Simulator eval with pushes and domain randomization; the teacher ran in the same eval.\nFalls per minute: attempt 4.97, teacher 0.16.\nTime spent fallen: attempt 18.9%, teacher 0.1%.\nPlanar velocity error: attempt 0.234 m/s, teacher 0.185 m/s (1.27x the teacher).\nYaw rate error: attempt 0.730 rad/s, teacher 0.362 rad/s (2.01x the teacher).\nGets up from a prone spawn within 6 s: attempt 92%, teacher 96%.\nAction gap to the teacher (mean squared): 0.0255.\nTraining loss, last checkpoints: 0.0346, 0.0341, 0.034, 0.0341, 0.0348, 0.0343.\nLab conventions: an attempt that falls about 0.25 more times per minute than the teacher, or tracks velocity more than 15% worse, is noticeably worse; 8.0 more falls per minute, or 200% worse tracking, is clearly unacceptable.",
+  "questions": {
+   "decision": {
+    "type": "choice",
+    "instructions": "Given only the observed numbers for this attempt and the teacher row from the same evaluation, should this attempt get the next rung's training budget?",
+    "criteria": {
+     "extend": "Worth more budget: its gap to the teacher is small, or its loss is still falling fast enough that more training plausibly closes it.",
+     "kill": "Not worth more budget: its gap to the teacher is material and its loss has flattened, or it falls or drifts where the teacher does not."
+    }
+   },
+   "gap": {
+    "type": "score",
+    "instructions": "How large is this attempt's real deficit against the teacher, reading the teacher row as the eval's noise floor?",
+    "criteria": [
+     "None: indistinguishable from the teacher within eval noise",
+     "Small: a gap, but one a user would not notice while driving the duck",
+     "Material: visibly worse tracking or stability than the teacher",
+     "Severe: falls, drifts or ignores commands where the teacher does not"
+    ]
+   },
+   "still_learning": {
+    "type": "noul",
+    "instructions": "Is the loss trail still falling enough that the next rung's budget would likely change the verdict?"
+   }
+  },
+  "answers": {
+   "decision": {
+    "type": "choice",
+    "choice": "kill",
+    "confidence": 0.85,
+    "probabilities": {
+     "extend": 0.07,
+     "kill": 0.93
+    }
+   },
+   "gap": {
+    "type": "score",
+    "score": 2.75,
+    "confidence": 0.75,
+    "legend": {
+     "0": "None: indistinguishable from the teacher within eval noise",
+     "1": "Small: a gap, but one a user would not notice while driving the duck",
+     "2": "Material: visibly worse tracking or stability than the teacher",
+     "3": "Severe: falls, drifts or ignores commands where the teacher does not"
+    },
+    "probabilities": {
+     "0": 0.0,
+     "1": 0.01,
+     "2": 0.24,
+     "3": 0.75
+    }
+   },
+   "still_learning": {
+    "type": "noul",
+    "noul": 0.17
+   }
+  },
+  "model": "jev-1.13.0",
+  "usage": {
+   "input_tokens": 842,
+   "output_tokens": 62
+  },
+  "seconds": 0.161
+ },
+ {
+  "state": "Microduck walking policy attempt a01: a 57,934-parameter student distilled from Pollen's 197,774-parameter default walker, after training rung 2 (1 rung(s) left). Simulator eval with pushes and domain randomization; the teacher ran in the same eval.\nFalls per minute: attempt 0.33, teacher 0.05.\nTime spent fallen: attempt 0.6%, teacher 0.0%.\nPlanar velocity error: attempt 0.188 m/s, teacher 0.181 m/s (1.04x the teacher).\nYaw rate error: attempt 0.408 rad/s, teacher 0.376 rad/s (1.08x the teacher).\nGets up from a prone spawn within 6 s: attempt 96%, teacher 99%.\nAction gap to the teacher (mean squared): 0.0020.\nTraining loss, last checkpoints: 0.0036, 0.0036, 0.0036, 0.0035, 0.0036, 0.0036.\nLab conventions: an attempt that falls about 0.25 more times per minute than the teacher, or tracks velocity more than 15% worse, is noticeably worse; 8.0 more falls per minute, or 200% worse tracking, is clearly unacceptable.",
+  "questions": {
+   "decision": {
+    "type": "choice",
+    "instructions": "Given only the observed numbers for this attempt and the teacher row from the same evaluation, should this attempt get the next rung's training budget?",
+    "criteria": {
+     "extend": "Worth more budget: its gap to the teacher is small, or its loss is still falling fast enough that more training plausibly closes it.",
+     "kill": "Not worth more budget: its gap to the teacher is material and its loss has flattened, or it falls or drifts where the teacher does not."
+    }
+   },
+   "gap": {
+    "type": "score",
+    "instructions": "How large is this attempt's real deficit against the teacher, reading the teacher row as the eval's noise floor?",
+    "criteria": [
+     "None: indistinguishable from the teacher within eval noise",
+     "Small: a gap, but one a user would not notice while driving the duck",
+     "Material: visibly worse tracking or stability than the teacher",
+     "Severe: falls, drifts or ignores commands where the teacher does not"
+    ]
+   },
+   "still_learning": {
+    "type": "noul",
+    "instructions": "Is the loss trail still falling enough that the next rung's budget would likely change the verdict?"
+   }
+  },
+  "answers": {
+   "decision": {
+    "type": "choice",
+    "choice": "kill",
+    "confidence": 0.36,
+    "probabilities": {
+     "extend": 0.32,
+     "kill": 0.68
+    }
+   },
+   "gap": {
+    "type": "score",
+    "score": 1.78,
+    "confidence": 0.62,
+    "legend": {
+     "0": "None: indistinguishable from the teacher within eval noise",
+     "1": "Small: a gap, but one a user would not notice while driving the duck",
+     "2": "Material: visibly worse tracking or stability than the teacher",
+     "3": "Severe: falls, drifts or ignores commands where the teacher does not"
+    },
+    "probabilities": {
+     "0": 0.01,
+     "1": 0.27,
+     "2": 0.64,
+     "3": 0.08
+    }
+   },
+   "still_learning": {
+    "type": "noul",
+    "noul": 0.16
+   }
+  },
+  "model": "jev-1.13.0",
+  "usage": {
+   "input_tokens": 843,
+   "output_tokens": 62
+  },
+  "seconds": 0.144
+ },
+ {
+  "state": "Microduck walking policy attempt a02: a 26,254-parameter student distilled from Pollen's 197,774-parameter default walker, after training rung 2 (1 rung(s) left). Simulator eval with pushes and domain randomization; the teacher ran in the same eval.\nFalls per minute: attempt 0.47, teacher 0.05.\nTime spent fallen: attempt 0.6%, teacher 0.0%.\nPlanar velocity error: attempt 0.181 m/s, teacher 0.181 m/s (1.00x the teacher).\nYaw rate error: attempt 0.399 rad/s, teacher 0.376 rad/s (1.06x the teacher).\nGets up from a prone spawn within 6 s: attempt 97%, teacher 99%.\nAction gap to the teacher (mean squared): 0.0031.\nTraining loss, last checkpoints: 0.006, 0.006, 0.006, 0.0058, 0.006, 0.0058.\nLab conventions: an attempt that falls about 0.25 more times per minute than the teacher, or tracks velocity more than 15% worse, is noticeably worse; 8.0 more falls per minute, or 200% worse tracking, is clearly unacceptable.",
+  "questions": {
+   "decision": {
+    "type": "choice",
+    "instructions": "Given only the observed numbers for this attempt and the teacher row from the same evaluation, should this attempt get the next rung's training budget?",
+    "criteria": {
+     "extend": "Worth more budget: its gap to the teacher is small, or its loss is still falling fast enough that more training plausibly closes it.",
+     "kill": "Not worth more budget: its gap to the teacher is material and its loss has flattened, or it falls or drifts where the teacher does not."
+    }
+   },
+   "gap": {
+    "type": "score",
+    "instructions": "How large is this attempt's real deficit against the teacher, reading the teacher row as the eval's noise floor?",
+    "criteria": [
+     "None: indistinguishable from the teacher within eval noise",
+     "Small: a gap, but one a user would not notice while driving the duck",
+     "Material: visibly worse tracking or stability than the teacher",
+     "Severe: falls, drifts or ignores commands where the teacher does not"
+    ]
+   },
+   "still_learning": {
+    "type": "noul",
+    "instructions": "Is the loss trail still falling enough that the next rung's budget would likely change the verdict?"
+   }
+  },
+  "answers": {
+   "decision": {
+    "type": "choice",
+    "choice": "kill",
+    "confidence": 0.47,
+    "probabilities": {
+     "extend": 0.27,
+     "kill": 0.73
+    }
+   },
+   "gap": {
+    "type": "score",
+    "score": 1.84,
+    "confidence": 0.65,
+    "legend": {
+     "0": "None: indistinguishable from the teacher within eval noise",
+     "1": "Small: a gap, but one a user would not notice while driving the duck",
+     "2": "Material: visibly worse tracking or stability than the teacher",
+     "3": "Severe: falls, drifts or ignores commands where the teacher does not"
+    },
+    "probabilities": {
+     "0": 0.01,
+     "1": 0.24,
+     "2": 0.65,
+     "3": 0.1
+    }
+   },
+   "still_learning": {
+    "type": "noul",
+    "noul": 0.16
+   }
+  },
+  "model": "jev-1.13.0",
+  "usage": {
+   "input_tokens": 839,
+   "output_tokens": 62
+  },
+  "seconds": 0.149
+ },
+ {
+  "state": "Microduck walking policy attempt a03: a 17,102-parameter student distilled from Pollen's 197,774-parameter default walker, after training rung 2 (1 rung(s) left). Simulator eval with pushes and domain randomization; the teacher ran in the same eval.\nFalls per minute: attempt 0.91, teacher 0.05.\nTime spent fallen: attempt 2.3%, teacher 0.0%.\nPlanar velocity error: attempt 0.194 m/s, teacher 0.181 m/s (1.08x the teacher).\nYaw rate error: attempt 0.446 rad/s, teacher 0.376 rad/s (1.19x the teacher).\nGets up from a prone spawn within 6 s: attempt 98%, teacher 99%.\nAction gap to the teacher (mean squared): 0.0044.\nTraining loss, last checkpoints: 0.0075, 0.0075, 0.0076, 0.0077, 0.0075, 0.0075.\nLab conventions: an attempt that falls about 0.25 more times per minute than the teacher, or tracks velocity more than 15% worse, is noticeably worse; 8.0 more falls per minute, or 200% worse tracking, is clearly unacceptable.",
+  "questions": {
+   "decision": {
+    "type": "choice",
+    "instructions": "Given only the observed numbers for this attempt and the teacher row from the same evaluation, should this attempt get the next rung's training budget?",
+    "criteria": {
+     "extend": "Worth more budget: its gap to the teacher is small, or its loss is still falling fast enough that more training plausibly closes it.",
+     "kill": "Not worth more budget: its gap to the teacher is material and its loss has flattened, or it falls or drifts where the teacher does not."
+    }
+   },
+   "gap": {
+    "type": "score",
+    "instructions": "How large is this attempt's real deficit against the teacher, reading the teacher row as the eval's noise floor?",
+    "criteria": [
+     "None: indistinguishable from the teacher within eval noise",
+     "Small: a gap, but one a user would not notice while driving the duck",
+     "Material: visibly worse tracking or stability than the teacher",
+     "Severe: falls, drifts or ignores commands where the teacher does not"
+    ]
+   },
+   "still_learning": {
+    "type": "noul",
+    "instructions": "Is the loss trail still falling enough that the next rung's budget would likely change the verdict?"
+   }
+  },
+  "answers": {
+   "decision": {
+    "type": "choice",
+    "choice": "kill",
+    "confidence": 0.56,
+    "probabilities": {
+     "extend": 0.22,
+     "kill": 0.78
+    }
+   },
+   "gap": {
+    "type": "score",
+    "score": 2.15,
+    "confidence": 0.54,
+    "legend": {
+     "0": "None: indistinguishable from the teacher within eval noise",
+     "1": "Small: a gap, but one a user would not notice while driving the duck",
+     "2": "Material: visibly worse tracking or stability than the teacher",
+     "3": "Severe: falls, drifts or ignores commands where the teacher does not"
+    },
+    "probabilities": {
+     "0": 0.01,
+     "1": 0.14,
+     "2": 0.55,
+     "3": 0.3
+    }
+   },
+   "still_learning": {
+    "type": "noul",
+    "noul": 0.16
+   }
+  },
+  "model": "jev-1.13.0",
+  "usage": {
+   "input_tokens": 843,
+   "output_tokens": 62
+  },
+  "seconds": 0.162
+ },
+ {
+  "state": "Microduck walking policy attempt a01: a 57,934-parameter student distilled from Pollen's 197,774-parameter default walker, after training rung 3 (0 rung(s) left). Simulator eval with pushes and domain randomization; the teacher ran in the same eval.\nFalls per minute: attempt 0.19, teacher 0.28.\nTime spent fallen: attempt 1.0%, teacher 1.5%.\nPlanar velocity error: attempt 0.183 m/s, teacher 0.182 m/s (1.00x the teacher).\nYaw rate error: attempt 0.382 rad/s, teacher 0.381 rad/s (1.00x the teacher).\nGets up from a prone spawn within 6 s: attempt 97%, teacher 96%.\nAction gap to the teacher (mean squared): 0.0012.\nTraining loss, last checkpoints: 0.0025, 0.0024, 0.0025, 0.0025, 0.0024, 0.0024.\nLab conventions: an attempt that falls about 0.25 more times per minute than the teacher, or tracks velocity more than 15% worse, is noticeably worse; 1.5 more falls per minute, or 60% worse tracking, is clearly unacceptable.",
+  "questions": {
+   "decision": {
+    "type": "choice",
+    "instructions": "Given only the observed numbers for this attempt and the teacher row from the same evaluation, should this attempt get the next rung's training budget?",
+    "criteria": {
+     "extend": "Worth more budget: its gap to the teacher is small, or its loss is still falling fast enough that more training plausibly closes it.",
+     "kill": "Not worth more budget: its gap to the teacher is material and its loss has flattened, or it falls or drifts where the teacher does not."
+    }
+   },
+   "gap": {
+    "type": "score",
+    "instructions": "How large is this attempt's real deficit against the teacher, reading the teacher row as the eval's noise floor?",
+    "criteria": [
+     "None: indistinguishable from the teacher within eval noise",
+     "Small: a gap, but one a user would not notice while driving the duck",
+     "Material: visibly worse tracking or stability than the teacher",
+     "Severe: falls, drifts or ignores commands where the teacher does not"
+    ]
+   },
+   "still_learning": {
+    "type": "noul",
+    "instructions": "Is the loss trail still falling enough that the next rung's budget would likely change the verdict?"
+   }
+  },
+  "answers": {
+   "decision": {
+    "type": "choice",
+    "choice": "extend",
+    "confidence": 0.61,
+    "probabilities": {
+     "kill": 0.19,
+     "extend": 0.81
+    }
+   },
+   "gap": {
+    "type": "score",
+    "score": 0.26,
+    "confidence": 0.74,
+    "legend": {
+     "0": "None: indistinguishable from the teacher within eval noise",
+     "1": "Small: a gap, but one a user would not notice while driving the duck",
+     "2": "Material: visibly worse tracking or stability than the teacher",
+     "3": "Severe: falls, drifts or ignores commands where the teacher does not"
+    },
+    "probabilities": {
+     "0": 0.75,
+     "1": 0.25,
+     "2": 0.0,
+     "3": 0.0
+    }
+   },
+   "still_learning": {
+    "type": "noul",
+    "noul": 0.11
+   }
+  },
+  "model": "jev-1.13.0",
+  "usage": {
+   "input_tokens": 842,
+   "output_tokens": 62
+  },
+  "seconds": 0.167
+ },
+ {
+  "state": "Microduck walking policy attempt a02: a 26,254-parameter student distilled from Pollen's 197,774-parameter default walker, after training rung 3 (0 rung(s) left). Simulator eval with pushes and domain randomization; the teacher ran in the same eval.\nFalls per minute: attempt 0.40, teacher 0.28.\nTime spent fallen: attempt 1.2%, teacher 1.5%.\nPlanar velocity error: attempt 0.184 m/s, teacher 0.182 m/s (1.01x the teacher).\nYaw rate error: attempt 0.417 rad/s, teacher 0.381 rad/s (1.10x the teacher).\nGets up from a prone spawn within 6 s: attempt 95%, teacher 96%.\nAction gap to the teacher (mean squared): 0.0024.\nTraining loss, last checkpoints: 0.0046, 0.0046, 0.0046, 0.0045, 0.0045, 0.0045.\nLab conventions: an attempt that falls about 0.25 more times per minute than the teacher, or tracks velocity more than 15% worse, is noticeably worse; 1.5 more falls per minute, or 60% worse tracking, is clearly unacceptable.",
+  "questions": {
+   "decision": {
+    "type": "choice",
+    "instructions": "Given only the observed numbers for this attempt and the teacher row from the same evaluation, should this attempt get the next rung's training budget?",
+    "criteria": {
+     "extend": "Worth more budget: its gap to the teacher is small, or its loss is still falling fast enough that more training plausibly closes it.",
+     "kill": "Not worth more budget: its gap to the teacher is material and its loss has flattened, or it falls or drifts where the teacher does not."
+    }
+   },
+   "gap": {
+    "type": "score",
+    "instructions": "How large is this attempt's real deficit against the teacher, reading the teacher row as the eval's noise floor?",
+    "criteria": [
+     "None: indistinguishable from the teacher within eval noise",
+     "Small: a gap, but one a user would not notice while driving the duck",
+     "Material: visibly worse tracking or stability than the teacher",
+     "Severe: falls, drifts or ignores commands where the teacher does not"
+    ]
+   },
+   "still_learning": {
+    "type": "noul",
+    "instructions": "Is the loss trail still falling enough that the next rung's budget would likely change the verdict?"
+   }
+  },
+  "answers": {
+   "decision": {
+    "type": "choice",
+    "choice": "kill",
+    "confidence": 0.11,
+    "probabilities": {
+     "extend": 0.44,
+     "kill": 0.56
+    }
+   },
+   "gap": {
+    "type": "score",
+    "score": 1.08,
+    "confidence": 0.75,
+    "legend": {
+     "0": "None: indistinguishable from the teacher within eval noise",
+     "1": "Small: a gap, but one a user would not notice while driving the duck",
+     "2": "Material: visibly worse tracking or stability than the teacher",
+     "3": "Severe: falls, drifts or ignores commands where the teacher does not"
+    },
+    "probabilities": {
+     "0": 0.08,
+     "1": 0.76,
+     "2": 0.16,
+     "3": 0.0
+    }
+   },
+   "still_learning": {
+    "type": "noul",
+    "noul": 0.14
+   }
+  },
+  "model": "jev-1.13.0",
+  "usage": {
+   "input_tokens": 842,
+   "output_tokens": 62
+  },
+  "seconds": 0.155
+ }
+]

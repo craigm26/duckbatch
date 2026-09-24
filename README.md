@@ -8,7 +8,37 @@ judge, not trusted as one.
 
 **Simulation only.** Nothing in this repo has run on a real Microduck.
 
-<!-- RESULTS -->
+## Results so far (b002, 2026-09-24)
+
+A **26,254-parameter** student (61-128-128-14, **7.5x smaller** than Pollen's 197,774-parameter
+default walker, **2.7x faster** per step) tracks velocity within 5% (planar) and 11% (yaw) of
+the teacher, and gets up from a prone fall just as often. It **falls about 3x as often** under
+pushes: once every ~2.2 minutes of walking, against once every ~7.
+
+| Held-out seeds 2001-2003 | Pollen teacher | 256-128-64 | 128-128 |
+|---|---|---|---|
+| Parameters | 197,774 | 57,934 | 26,254 |
+| Planar / yaw error (x teacher) | 1.00 / 1.00 | 1.02 / 1.06 | 1.05 / 1.11 |
+| Falls per min, walking | 0.14 | 0.38 | 0.46 |
+| Gets up from prone within 6 s | 96.9% | 98.2% | 97.1% |
+| p50 latency, 1 thread (x86 laptop) | 29.0 µs | 14.5 µs | 10.8 µs |
+
+**Drive them in Pollen's simulator:**
+[128-128](https://pollen-robotics-microduck-simulator.hf.space/?move=craigm26/microduck-duckbatch-b002-128x128) ·
+[256-128-64](https://pollen-robotics-microduck-simulator.hf.space/?move=craigm26/microduck-duckbatch-b002-256x128x64) ·
+results page: [spaces/craigm26/duckbatch](https://huggingface.co/spaces/craigm26/duckbatch) ·
+records: [datasets/craigm26/duckbatch-records](https://huggingface.co/datasets/craigm26/duckbatch-records)
+
+![The 128-128 student driving Pollen's browser simulator](docs/pollen-sim-duckbatch-128x128.png)
+
+**Decision models as judges.** Both saw every case in shadow, on identical text, and were
+graded on the cases the pre-registered rules settle. GLiNER2.5-Decide answered "kill, gap 2" at
+0.92 to 0.94 on all 17 cases; it would have confidently killed both finalists. Jev's severity
+score tracked quality (gap 2.75, falling to 0.26 on the best finalist), and it never made a
+confident wrong call. The rules did the deciding. Details:
+[`notes/2026-09-24-b002-close.md`](notes/2026-09-24-b002-close.md). The first batch, b001 (every
+attempt killed at rung 0, by my own over-strict early gates), is in
+[`notes/2026-09-24-b001-close.md`](notes/2026-09-24-b001-close.md).
 
 ## The idea
 
@@ -19,7 +49,7 @@ advances all K at once: one physics step, one teacher forward pass over the whol
 tiny student passes. A batch of attempts costs about what one attempt costs. Pollen's teacher
 runs as an extra arm, so every evaluation carries its own reference row.
 
-**Successive halving, judged.** After each rung (60, then 120, then 240 iterations) every arm is
+**Successive halving, judged.** After each rung (b002: 150, then 300, then 600 iterations) every arm is
 evaluated next to the teacher. The judge is a cascade:
 
 | Tier | Decides | Source |
@@ -70,10 +100,17 @@ git clone https://github.com/craigm26/duckbatch && cd duckbatch
 uv sync --extra sim --extra decide --extra dev
 ./scripts/fetch_teachers.sh                        # Pollen's policies, pinned revision + sha256
 uv run duckbatch probe --envs 256,512,1024         # what fits on your GPU
-uv run duckbatch batch menus/b001-student-size.yaml
-uv run duckbatch rejudge records/b001-student-size  # decision-model agreement
-uv run duckbatch bench records/b001-student-size/policies/*/policy.onnx teachers/velstand.onnx \
-    --int8 --obs records/b001-student-size/obs_sample.npy
+uv run duckbatch batch menus/b002-student-size-longer.yaml       # ~70 min, RTX 3050 4 GB
+uv run duckbatch rejudge records/b002-student-size-longer        # decision-model agreement
+uv run duckbatch bench records/b002-student-size-longer/policies/*/policy.onnx \
+    teachers/velstand.onnx --int8 --obs records/b002-student-size-longer/obs_sample.npy
+```
+
+No GPU? Re-run a menu on Hugging Face Jobs (billed to your account). It clones this repo at your
+pushed commit and uploads the records to your dataset:
+
+```bash
+uv run duckbatch hf-job menus/b002-student-size-longer.yaml --dataset <you>/duckbatch-records
 ```
 
 The core install (`uv sync`, with no extras) runs `bench`, `rejudge` with stored answers, and
@@ -86,7 +123,7 @@ Publish a batch (each finalist becomes a Hub repo in Pollen's policy format, pla
 simulator with `?move=<repo>`):
 
 ```bash
-uv run duckbatch publish records/b001-student-size --namespace <you> \
+uv run duckbatch publish records/b002-student-size-longer --namespace <you> \
     --dataset <you>/duckbatch-records --space <you>/duckbatch
 ```
 

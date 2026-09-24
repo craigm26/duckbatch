@@ -1,0 +1,301 @@
+{
+ "batch": "b002-student-size-longer",
+ "cases": 11,
+ "models": {
+  "decide": {
+   "rule_settled": 5,
+   "agreement": 0.6,
+   "by_rule": {
+    "keep": {
+     "n": 2,
+     "agree": 0
+    },
+    "kill": {
+     "n": 3,
+     "agree": 3
+    }
+   },
+   "confident_and_wrong": 2,
+   "mean_confidence": 0.9237,
+   "errors": 0
+  },
+  "jev": {
+   "rule_settled": 5,
+   "agreement": 0.8,
+   "by_rule": {
+    "keep": {
+     "n": 2,
+     "agree": 1
+    },
+    "kill": {
+     "n": 3,
+     "agree": 3
+    }
+   },
+   "confident_and_wrong": 0,
+   "mean_confidence": 0.598,
+   "errors": 0
+  }
+ },
+ "uncertain": [
+  {
+   "rung": 0,
+   "arm_id": "a01",
+   "final": "pending",
+   "tier": "person",
+   "decide": "kill",
+   "jev": "kill"
+  },
+  {
+   "rung": 0,
+   "arm_id": "a02",
+   "final": "pending",
+   "tier": "person",
+   "decide": "kill",
+   "jev": "kill"
+  },
+  {
+   "rung": 0,
+   "arm_id": "a03",
+   "final": "pending",
+   "tier": "person",
+   "decide": "kill",
+   "jev": "kill"
+  },
+  {
+   "rung": 1,
+   "arm_id": "a01",
+   "final": "pending",
+   "tier": "person",
+   "decide": "kill",
+   "jev": "kill"
+  },
+  {
+   "rung": 1,
+   "arm_id": "a02",
+   "final": "pending",
+   "tier": "person",
+   "decide": "kill",
+   "jev": "kill"
+  },
+  {
+   "rung": 1,
+   "arm_id": "a03",
+   "final": "pending",
+   "tier": "person",
+   "decide": "kill",
+   "jev": "kill"
+  }
+ ],
+ "cases_detail": [
+  {
+   "rung": 0,
+   "arm_id": "a01",
+   "rule": "uncertain",
+   "shadow": {
+    "decide": {
+     "choice": "kill",
+     "confidence": 0.9216,
+     "gap": 2,
+     "still_learning": 0.5881
+    },
+    "jev": {
+     "choice": "kill",
+     "confidence": 0.4,
+     "gap": 1.95,
+     "still_learning": 0.17
+    }
+   }
+  },
+  {
+   "rung": 0,
+   "arm_id": "a02",
+   "rule": "uncertain",
+   "shadow": {
+    "decide": {
+     "choice": "kill",
+     "confidence": 0.9214,
+     "gap": 2,
+     "still_learning": 0.5814
+    },
+    "jev": {
+     "choice": "kill",
+     "confidence": 0.37,
+     "gap": 2.1,
+     "still_learning": 0.16
+    }
+   }
+  },
+  {
+   "rung": 0,
+   "arm_id": "a03",
+   "rule": "uncertain",
+   "shadow": {
+    "decide": {
+     "choice": "kill",
+     "confidence": 0.924,
+     "gap": 2,
+     "still_learning": 0.5914
+    },
+    "jev": {
+     "choice": "kill",
+     "confidence": 0.42,
+     "gap": 2.36,
+     "still_learning": 0.2
+    }
+   }
+  },
+  {
+   "rung": 0,
+   "arm_id": "a04",
+   "rule": "kill",
+   "shadow": {
+    "decide": {
+     "choice": "kill",
+     "confidence": 0.9197,
+     "gap": 2,
+     "still_learning": 0.5852
+    },
+    "jev": {
+     "choice": "kill",
+     "confidence": 0.69,
+     "gap": 2.57,
+     "still_learning": 0.17
+    }
+   }
+  },
+  {
+   "rung": 0,
+   "arm_id": "a05",
+   "rule": "kill",
+   "shadow": {
+    "decide": {
+     "choice": "kill",
+     "confidence": 0.9261,
+     "gap": 2,
+     "still_learning": 0.5958
+    },
+    "jev": {
+     "choice": "kill",
+     "confidence": 0.73,
+     "gap": 2.58,
+     "still_learning": 0.18
+    }
+   }
+  },
+  {
+   "rung": 0,
+   "arm_id": "a06",
+   "rule": "kill",
+   "shadow": {
+    "decide": {
+     "choice": "kill",
+     "confidence": 0.9251,
+     "gap": 2,
+     "still_learning": 0.5904
+    },
+    "jev": {
+     "choice": "kill",
+     "confidence": 0.85,
+     "gap": 2.75,
+     "still_learning": 0.17
+    }
+   }
+  },
+  {
+   "rung": 1,
+   "arm_id": "a01",
+   "rule": "uncertain",
+   "shadow": {
+    "decide": {
+     "choice": "kill",
+     "confidence": 0.9158,
+     "gap": 2,
+     "still_learning": 0.5676
+    },
+    "jev": {
+     "choice": "kill",
+     "confidence": 0.36,
+     "gap": 1.78,
+     "still_learning": 0.16
+    }
+   }
+  },
+  {
+   "rung": 1,
+   "arm_id": "a02",
+   "rule": "uncertain",
+   "shadow": {
+    "decide": {
+     "choice": "kill",
+     "confidence": 0.9224,
+     "gap": 2,
+     "still_learning": 0.5672
+    },
+    "jev": {
+     "choice": "kill",
+     "confidence": 0.47,
+     "gap": 1.84,
+     "still_learning": 0.16
+    }
+   }
+  },
+  {
+   "rung": 1,
+   "arm_id": "a03",
+   "rule": "uncertain",
+   "shadow": {
+    "decide": {
+     "choice": "kill",
+     "confidence": 0.9245,
+     "gap": 2,
+     "still_learning": 0.5793
+    },
+    "jev": {
+     "choice": "kill",
+     "confidence": 0.56,
+     "gap": 2.15,
+     "still_learning": 0.16
+    }
+   }
+  },
+  {
+   "rung": 2,
+   "arm_id": "a01",
+   "rule": "keep",
+   "shadow": {
+    "decide": {
+     "choice": "kill",
+     "confidence": 0.9219,
+     "gap": 2,
+     "still_learning": 0.577
+    },
+    "jev": {
+     "choice": "extend",
+     "confidence": 0.61,
+     "gap": 0.26,
+     "still_learning": 0.11
+    }
+   }
+  },
+  {
+   "rung": 2,
+   "arm_id": "a02",
+   "rule": "keep",
+   "shadow": {
+    "decide": {
+     "choice": "kill",
+     "confidence": 0.9259,
+     "gap": 2,
+     "still_learning": 0.5689
+    },
+    "jev": {
+     "choice": "kill",
+     "confidence": 0.11,
+     "gap": 1.08,
+     "still_learning": 0.14
+    }
+   }
+  }
+ ]
+}

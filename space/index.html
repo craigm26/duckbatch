@@ -162,8 +162,10 @@ details summary { cursor: pointer; color: var(--text-secondary); font-size: 13px
 uv sync --extra sim --extra decide      # Linux / WSL2, CUDA GPU (4 GB is enough)
 ./scripts/fetch_teachers.sh             # Pollen's policies, pinned + sha256-checked
 uv run duckbatch probe                  # how many envs fit on your GPU
-uv run duckbatch batch menus/b001-student-size.yaml
-uv run duckbatch rejudge records/b001-student-size   # decision-model agreement</pre>
+uv run duckbatch batch menus/b002-student-size-longer.yaml     # ~70 min on an RTX 3050
+uv run duckbatch rejudge records/b002-student-size-longer      # decision-model agreement
+# no GPU? run the same menu on Hugging Face Jobs (billed to you):
+uv run duckbatch hf-job menus/b002-student-size-longer.yaml --dataset &lt;you&gt;/duckbatch-records</pre>
   <p class="muted" id="foot"></p>
 </main>
 <div id="tip" role="tooltip"></div>
@@ -227,7 +229,7 @@ function scatter(el, pts, yMax, band, yLabel, yFmt) {
     const c = p.kind === "teacher" ? "var(--series-2)" : "var(--series-1)";
     s += `<g class="pt" data-i="${i}"><circle cx="${X(p.x)}" cy="${Y(p.y)}" r="14" fill="transparent"/>`
       + `<circle cx="${X(p.x)}" cy="${Y(p.y)}" r="5" fill="${c}" stroke="var(--surface-1)" stroke-width="2"/>`
-      + `<text class="lab" x="${X(p.x)}" y="${Y(p.y) - 10}" text-anchor="middle">${esc(p.name)}</text></g>`;
+      + `<text class="lab" x="${X(p.x)}" y="${i % 2 ? Y(p.y) + 18 : Y(p.y) - 10}" text-anchor="middle">${esc(p.name)}</text></g>`;
   });
   s += "</svg>";
   el.innerHTML = s;
@@ -250,17 +252,20 @@ fetch("data.json").then((r) => r.json()).then((d) => {
     && (a.final.recovered_frac.mean == null || a.final.recovered_frac.mean >= tf.recovered_frac.min - 0.05);
   const best = fin.slice().sort((a, b) => a.params - b.params).find(holds);
   const smallest = fin.slice().sort((a, b) => a.params - b.params)[0];
+  const r2 = (a, m) => a.final[m].mean / tf[m].mean;
+  const pctd = (x) => Math.round(Math.abs(x - 1) * 100) + "%";
   const lead = best
-    ? `A ${int(best.params)}-parameter student (${label(best)}, ${(T.params / best.params).toFixed(0)}x smaller) walks within the teacher's own seed-to-seed spread in simulation.`
+    ? `A ${int(best.params)}-parameter student (${label(best)}, ${(T.params / best.params).toFixed(1)}x smaller than Pollen's walker) walks within the teacher's own seed-to-seed spread in simulation.`
     : smallest
-      ? `No student held the teacher's line within its seed-to-seed spread. The smallest finalist, ${label(smallest)} (${int(smallest.params)} params), shows the gap below.`
+      ? `A ${int(smallest.params)}-parameter student (${label(smallest)}, ${(T.params / smallest.params).toFixed(1)}x smaller than Pollen's walker) tracks velocity within ${pctd(r2(smallest, "lin_err"))} (planar) and ${pctd(r2(smallest, "ang_err"))} (yaw) of the teacher and gets up from a fall as often, but falls ${r2(smallest, "falls_per_min").toFixed(1)}x as often under pushes.`
       : "No attempt reached the final evaluation.";
   $("#lead").textContent = lead;
 
   const tiles = [];
-  if (best) {
-    tiles.push([`${(T.params / best.params).toFixed(0)}x`, `fewer parameters than Pollen's walker (${int(best.params)} vs ${int(T.params)})`]);
-    if (best.bench && T.bench) tiles.push([`${(T.bench.p50_us / best.bench.p50_us).toFixed(1)}x`, "faster per step, 1-thread onnxruntime (laptop)"]);
+  const hero = best || smallest;
+  if (hero) {
+    tiles.push([`${(T.params / hero.params).toFixed(1)}x`, `fewer parameters than Pollen's walker (${int(hero.params)} vs ${int(T.params)})`]);
+    if (hero.bench && T.bench) tiles.push([`${(T.bench.p50_us / hero.bench.p50_us).toFixed(1)}x`, "faster per step, 1-thread onnxruntime (laptop)"]);
   }
   const nAttempts = d.arms.length;
   tiles.push([`${nAttempts} → ${fin.length}`, `attempts in one 4 GB GPU batch → finalists`]);
