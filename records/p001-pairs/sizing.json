@@ -1,0 +1,134 @@
+{
+ "true_ranking": [
+  "student_256x128x64",
+  "student_128x128",
+  "velstand",
+  "alpha_walking"
+ ],
+ "true_utility": {
+  "velstand": -0.2695414396336427,
+  "alpha_walking": -0.7594040068255149,
+  "student_256x128x64": 0.6863419738184644,
+  "student_128x128": 0.3426034726406929
+ },
+ "curves": {
+  "temperature_0.5": {
+   "ceiling": 0.8743,
+   "rows": [
+    {
+     "n": 25,
+     "accuracy": 0.8503,
+     "kendall_tau": 0.7333,
+     "tau_min": 0.6667,
+     "cos_w": 0.2719,
+     "beta": 0.6423,
+     "beta_sd": 1.1551
+    },
+    {
+     "n": 50,
+     "accuracy": 0.8603,
+     "kendall_tau": 0.8,
+     "tau_min": 0.6667,
+     "cos_w": 0.2787,
+     "beta": 0.4253,
+     "beta_sd": 0.5589
+    },
+    {
+     "n": 100,
+     "accuracy": 0.8662,
+     "kendall_tau": 0.7333,
+     "tau_min": 0.6667,
+     "cos_w": 0.3192,
+     "beta": 0.5061,
+     "beta_sd": 0.1923
+    },
+    {
+     "n": 200,
+     "accuracy": 0.8708,
+     "kendall_tau": 0.7333,
+     "tau_min": 0.6667,
+     "cos_w": 0.3638,
+     "beta": 0.2046,
+     "beta_sd": 0.2345
+    },
+    {
+     "n": 400,
+     "accuracy": 0.8719,
+     "kendall_tau": 0.7667,
+     "tau_min": 0.6667,
+     "cos_w": 0.389,
+     "beta": 0.3116,
+     "beta_sd": 0.1777
+    },
+    {
+     "n": 800,
+     "accuracy": 0.8741,
+     "kendall_tau": 0.8,
+     "tau_min": 0.6667,
+     "cos_w": 0.4734,
+     "beta": 0.2965,
+     "beta_sd": 0.1637
+    }
+   ]
+  },
+  "temperature_2.0": {
+   "ceiling": 0.7188,
+   "rows": [
+    {
+     "n": 25,
+     "accuracy": 0.6696,
+     "kendall_tau": 0.6667,
+     "tau_min": -0.6667,
+     "cos_w": 0.1369,
+     "beta": 0.2227,
+     "beta_sd": 0.4422
+    },
+    {
+     "n": 50,
+     "accuracy": 0.6825,
+     "kendall_tau": 0.8,
+     "tau_min": 0.3333,
+     "cos_w": 0.2514,
+     "beta": 0.4281,
+     "beta_sd": 0.3172
+    },
+    {
+     "n": 100,
+     "accuracy": 0.7128,
+     "kendall_tau": 0.9,
+     "tau_min": 0.6667,
+     "cos_w": 0.3119,
+     "beta": 0.1958,
+     "beta_sd": 0.1732
+    },
+    {
+     "n": 200,
+     "accuracy": 0.7178,
+     "kendall_tau": 0.8,
+     "tau_min": 0.6667,
+     "cos_w": 0.3803,
+     "beta": 0.3253,
+     "beta_sd": 0.1581
+    },
+    {
+     "n": 400,
+     "accuracy": 0.7194,
+     "kendall_tau": 0.9333,
+     "tau_min": 0.6667,
+     "cos_w": 0.5461,
+     "beta": 0.2674,
+     "beta_sd": 0.1447
+    },
+    {
+     "n": 800,
+     "accuracy": 0.7211,
+     "kendall_tau": 1.0,
+     "tau_min": 1.0,
+     "cos_w": 0.7118,
+     "beta": 0.3066,
+     "beta_sd": 0.0797
+    }
+   ]
+  }
+ }
+}

@@ -1,0 +1,54 @@
+{
+ "format": "duckbatch.pairs.v1",
+ "task": "Mjlab-VelStand-Flat-MicroDuck",
+ "seed": 3001,
+ "seconds": 8.0,
+ "num_envs": 512,
+ "profile": "walk",
+ "features": [
+  "lin_err",
+  "ang_err",
+  "fell",
+  "down_frac",
+  "action_rate",
+  "jitter",
+  "wobble"
+ ],
+ "policies": {
+  "velstand": "teachers/velstand.onnx",
+  "alpha_walking": "teachers/alpha_walking.onnx",
+  "student_256x128x64": "records/b002-student-size-longer/policies/a01/policy.onnx",
+  "student_128x128": "records/b002-student-size-longer/policies/a02/policy.onnx"
+ },
+ "commands": {
+  "fwd_015": [
+   0.15,
+   0.0,
+   0.0
+  ],
+  "fwd_025": [
+   0.25,
+   0.0,
+   0.0
+  ],
+  "turn_06": [
+   0.0,
+   0.0,
+   0.6
+  ],
+  "arc": [
+   0.15,
+   0.0,
+   0.4
+  ],
+  "stand": [
+   0.0,
+   0.0,
+   0.0
+  ]
+ },
+ "trajectories": {
+  "envs": 4,
+  "columns": "root pos (3), root quat wxyz (4), joint pos"
+ }
+}

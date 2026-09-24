@@ -64,6 +64,17 @@ def main(argv: list[str] | None = None) -> int:
     fb.add_argument("paths", nargs="+", help=".jsonl files or directories of them")
     fb.add_argument("--out", default=None, help="export-decide: where to write the JSONL")
 
+    pa = sub.add_parser("pairs", help="paired rollouts of several policies under identical conditions")
+    pa.add_argument("--out", default="records/p001-pairs")
+    pa.add_argument("--envs", type=int, default=512)
+    pa.add_argument("--seconds", type=float, default=8.0)
+
+    pf = sub.add_parser("prefer", help="preference model: size it with simulated raters, or fit real records")
+    pf.add_argument("action", choices=["sizing", "fit"])
+    pf.add_argument("pairs", help="a `duckbatch pairs` output directory")
+    pf.add_argument("feedback", nargs="*", help="fit: duck-feedback/0 .jsonl files or dirs")
+    pf.add_argument("--out", default=None)
+
     a = p.parse_args(argv)
     if a.cmd == "probe":
         from .probe import probe
@@ -123,6 +134,32 @@ def main(argv: list[str] | None = None) -> int:
             if not a.out:
                 raise SystemExit("export-decide needs --out")
             print(json.dumps(feedback.export_decide(records, a.out)))
+    elif a.cmd == "pairs":
+        from .pairs import generate
+
+        generate(a.out, num_envs=a.envs, seconds=a.seconds)
+    elif a.cmd == "prefer":
+        import json
+
+        from . import feedback, preference
+
+        ps = preference.PairSet.load(a.pairs)
+        if a.action == "sizing":
+            res = preference.sizing(ps)
+            for temp, curve in res["curves"].items():
+                print(f"[prefer] SIMULATED raters, {temp} (noise ceiling {curve['ceiling']}):")
+                for r in curve["rows"]:
+                    print(f"   N={r['n']:>4}  held-out acc {r['accuracy']:.3f}  tau {r['kendall_tau']:+.2f} "
+                          f"(min {r['tau_min']:+.2f})  cos(w,w*) {r['cos_w']:.2f}  "
+                          f"beta {r['beta']:+.2f}±{r['beta_sd']:.2f} (true +0.30)")
+            print("[prefer] true ranking:", " > ".join(res["true_ranking"]))
+        else:
+            res = preference.fit_records(ps, feedback.read(a.feedback))
+            print(json.dumps(res, indent=1))
+        if a.out:
+            from pathlib import Path
+
+            Path(a.out).write_text(json.dumps(res, indent=1))
     elif a.cmd == "publish":
         from .publish import publish_batch
 

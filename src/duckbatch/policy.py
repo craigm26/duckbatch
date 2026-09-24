@@ -158,3 +158,37 @@ def export_onnx(net, path: str | Path, metadata: dict[str, str] | None = None) -
     onnx.save(model, str(path))
     net.train(was_training)
     return path
+
+
+ALPHA_HIDDEN = (512, 256, 128)
+
+
+def identity_bytes(path: str | Path) -> tuple[str, bytes]:
+    """duckkit's `DuckPolicy.canonicalIdentityBytes`, in Python: (scheme, bytes).
+
+    v1 for the alpha shape (mean, std, then each layer's weights and biases, little-endian
+    float32); v2 for any other shape (`DPv2`, the layer count and each layer's widths as
+    little-endian uint32, then the v1 bytes). Checked against duckkit's recorded official
+    fingerprints in the tests, so the two implementations cannot drift apart silently.
+    """
+    import struct
+
+    w = onnx_mlp_weights(path)
+    body = [w.mean.astype("<f4").tobytes(), w.std.astype("<f4").tobytes()]
+    for W, b in w.layers:
+        body += [W.astype("<f4").tobytes(), b.astype("<f4").tobytes()]
+    v1 = b"".join(body)
+    if w.hidden == ALPHA_HIDDEN:
+        return "canonical-parameter-bytes-v1", v1
+    widths = [OBS_LEN, *w.hidden, ACTION_LEN]
+    header = b"DPv2" + struct.pack("<I", len(widths) - 1)
+    for a, o in zip(widths[:-1], widths[1:]):
+        header += struct.pack("<II", a, o)
+    return "canonical-parameter-bytes-v2", header + v1
+
+
+def fingerprint(path: str | Path) -> str:
+    """`sha256:<hex>` over the identity bytes: duckkit's `DuckPolicy.fingerprint`."""
+    import hashlib
+
+    return "sha256:" + hashlib.sha256(identity_bytes(path)[1]).hexdigest()
