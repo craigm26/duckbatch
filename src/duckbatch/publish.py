@@ -44,6 +44,34 @@ def repo_name(record: dict, arm_id: str) -> str:
     return f"microduck-duckbatch-{record['batch_id'].split('-')[0]}-{hidden}"
 
 
+def jev_verdict(record: dict, arm_id: str, summary: dict) -> dict | None:
+    """Jev's 0-3 gap score on the final held-out comparison, as a manifest `verdict` block.
+
+    WHY ONLY THE GAP. In duckbatch's batches Jev's extend/kill choice was weak, but its gap
+    score tracked quality from 2.75 (worst arm) down to 0.26 and 1.08 (the finalists), so the
+    gap is the one decision-model output worth putting in front of a person. Duck Studio shows
+    it as "Jev judges: ...", a model's reading of the numbers, never as a measurement. The case
+    text is the batch judge's own `render_case`, so a published verdict is comparable with the
+    recorded ones. `None` when no TYPESAFE_API_KEY is set: then there is simply no verdict.
+    """
+    from .batch import jev as jevmod
+    from .batch import judge as judgemod
+
+    if not jevmod.available():
+        return None
+    row = {k: v["mean"] for k, v in summary[arm_id].items()}
+    teacher = {k: v["mean"] for k, v in summary["teacher"].items()}
+    text = judgemod.render_case(arm_id, row, teacher, [], len(record["rungs"]) - 1, 0,
+                                record["arms"][arm_id]["params"],
+                                {**judgemod.DEFAULT_GATES, **record.get("gates", {})})
+    q = judgemod.jev_questions()
+    ans = jevmod.JevClient().ask(text, {"gap": q["gap"]})
+    return {"model": "jev-latest", "gap": round(float(ans["gap"]["score"]), 3),
+            "levels": list(q["gap"]["criteria"]),
+            "probabilities": ans["gap"].get("probabilities"),
+            "over": "final held-out comparison (eval.student vs eval.teacher_same_eval)"}
+
+
 def build_manifest(record: dict, arm_id: str, summary: dict) -> dict:
     arm = record["arms"][arm_id]
     hidden = "-".join(str(h) for h in arm["hidden"])
@@ -86,6 +114,9 @@ def build_manifest(record: dict, arm_id: str, summary: dict) -> dict:
             "teacher_same_eval": {k: round(v["mean"], 4) for k, v in summary["teacher"].items()},
         },
     }
+    verdict = jev_verdict(record, arm_id, summary)
+    if verdict:
+        m["verdict"] = verdict
     try:  # Pollen's own validator, when the sim extra is installed
         from mjlab_microduck.publish.manifest import validate_manifest
     except ImportError:
