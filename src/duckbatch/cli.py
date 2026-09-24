@@ -59,6 +59,11 @@ def main(argv: list[str] | None = None) -> int:
     re_.add_argument("--models", default="decide,jev")
     re_.add_argument("--out", default="records")
 
+    fb = sub.add_parser("feedback", help="duck-feedback/0: validate, report, export")
+    fb.add_argument("action", choices=["validate", "report", "export-decide"])
+    fb.add_argument("paths", nargs="+", help=".jsonl files or directories of them")
+    fb.add_argument("--out", default=None, help="export-decide: where to write the JSONL")
+
     a = p.parse_args(argv)
     if a.cmd == "probe":
         from .probe import probe
@@ -103,6 +108,21 @@ def main(argv: list[str] | None = None) -> int:
                       f"sound {res['counts']['sound']} | exact {res['exact_requests']} "
                       f"| out-of-scope refused {res['out_of_scope_refused']} "
                       f"| mean conf when wrong {res['mean_confidence_when_wrong']}")
+    elif a.cmd == "feedback":
+        import json
+
+        from . import feedback
+
+        records = feedback.read(a.paths)
+        kinds = {k: sum(r["kind"] == k for r in records) for k in feedback.KINDS}
+        held = sum(feedback.is_held_out(r["id"]) for r in records)
+        print(f"[feedback] {len(records)} valid records {kinds}; {held} held out")
+        if a.action == "report":
+            print(json.dumps(feedback.calibration(records), indent=1))
+        elif a.action == "export-decide":
+            if not a.out:
+                raise SystemExit("export-decide needs --out")
+            print(json.dumps(feedback.export_decide(records, a.out)))
     elif a.cmd == "publish":
         from .publish import publish_batch
 
