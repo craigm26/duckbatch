@@ -39,3 +39,40 @@ Guards to update: duckkit `DuckPolicyTests`, `DuckPolicyIntrospectionTests`,
 `PolicyBlendTests`, `WeightSearchTests` ("197,774"), `PhoneBenchReportTests`, and
 `check_phonebench_fresh.sh`. `check_no_studio_math.sh` bans the literal `61` in the app target,
 so the shape rules belong in the kit.
+
+## Progress (2026-09-24)
+
+- duckkit **v1.36.0** (craigm26/duckkit#1, merged): loader and writer take students of the alpha
+  graph; identity v2 carries the shape. 385 tests, 0 failures, Linux x86_64, Swift 6.4.
+- craigm26/duck-studio#1 (draft; the SwiftUI screens need Xcode): blend shape refusal, refusal
+  corpus updated, the "Against its teacher" card from the manifest's comparison and Jev
+  verdict, and `PolicyTiming` (on-device inference p50/p95/p99, same-device comparisons only).
+  StudioKit: 2,552 tests; the only failures are 2 pre-existing `WeightSearchTests` that read a
+  fixture from an absolute path on the Pi.
+
+## Future direction: a plan editor (Craig, 2026-09-24)
+
+When someone makes a new plan, sequence or motion, it should be customisable in a flow-chart
+style visual editor and viewer, in the control and editor tabs. That is the place to get
+creative with training new motions, plans and sequences:
+
+- **Plain-language requests.** "Walk to the ball and kick it" becomes a proposed graph the user
+  then edits. The router (GLiNER2.5-Decide, whose strength is intents) proposes; it does not
+  execute.
+- **Mimicry** from YouTube or other videos, and from real life through AR on iOS.
+- **On-device models.** New MLX and Apple models in iOS 27 and on newer hardware may be powerful
+  enough to run the router or planner on the phone.
+
+What is already in duck-studio to build on:
+
+- `StudioKit/DuckPlanFile.swift` (`duck-plan/1`). Its rule is that the file stores what was
+  **measured** and the plan is recomputed every time it is read. The same rule suits an
+  editable graph: nodes hold intents and parameters, and feasibility is re-derived.
+- `DuckSequence.swift`, `Choreography.swift`, `DuckMove`/`.duckmove`.
+- The `microduck-tree.json` and `microduck-rl-tree.json` test fixtures.
+- In duckkit, the documented-but-empty steering and deliberation tiers
+  (`docs/adr/0001-three-loops.md`).
+
+The connection to duckbatch: each node is a skill policy (walk, stand, get up, kick …) or a
+trained student. The planner is a tree over those nodes, and a decision model scores branches.
+In duckbatch that was the one role Jev's gap score earned, not acting alone.
