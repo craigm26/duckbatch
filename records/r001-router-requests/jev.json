@@ -1,0 +1,1183 @@
+{
+ "model": "jev",
+ "accuracy": {
+  "action": 1.0,
+  "speed": 1.0,
+  "head": 0.75,
+  "sound": 1.0
+ },
+ "counts": {
+  "action": "55/55",
+  "speed": "24/24",
+  "head": "18/24",
+  "sound": "8/8"
+ },
+ "exact_requests": "40/46",
+ "out_of_scope_refused": "7/7",
+ "mean_confidence_when_wrong": 0.9483,
+ "rows": [
+  {
+   "request": "walk forward",
+   "clause": "walk forward",
+   "gold": {
+    "action": "walk_forward",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "walk_forward",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "chirp"
+   },
+   "confidence": {
+    "action": 1.0,
+    "speed": 1.0,
+    "head": 1.0,
+    "sound": 0.93
+   }
+  },
+  {
+   "request": "go backwards",
+   "clause": "go backwards",
+   "gold": {
+    "action": "walk_backward",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "walk_backward",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "chirp"
+   },
+   "confidence": {
+    "action": 1.0,
+    "speed": 1.0,
+    "head": 0.92,
+    "sound": 0.72
+   }
+  },
+  {
+   "request": "turn left",
+   "clause": "turn left",
+   "gold": {
+    "action": "turn_left",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "turn_left",
+    "speed": "normal",
+    "head": "look_left",
+    "sound": "chirp"
+   },
+   "confidence": {
+    "action": 1.0,
+    "speed": 1.0,
+    "head": 0.99,
+    "sound": 0.88
+   }
+  },
+  {
+   "request": "turn right",
+   "clause": "turn right",
+   "gold": {
+    "action": "turn_right",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "turn_right",
+    "speed": "normal",
+    "head": "look_right",
+    "sound": "chirp"
+   },
+   "confidence": {
+    "action": 1.0,
+    "speed": 1.0,
+    "head": 0.99,
+    "sound": 0.9
+   }
+  },
+  {
+   "request": "stop",
+   "clause": "stop",
+   "gold": {
+    "action": "stop",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "stop",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "alarm"
+   },
+   "confidence": {
+    "action": 1.0,
+    "speed": 0.75,
+    "head": 0.99,
+    "sound": 0.64
+   }
+  },
+  {
+   "request": "kick with your left foot",
+   "clause": "kick with your left foot",
+   "gold": {
+    "action": "kick_left",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "kick_left",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "chirp"
+   },
+   "confidence": {
+    "action": 1.0,
+    "speed": 1.0,
+    "head": 0.34,
+    "sound": 0.75
+   }
+  },
+  {
+   "request": "kick right",
+   "clause": "kick right",
+   "gold": {
+    "action": "kick_right",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "kick_right",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "chirp"
+   },
+   "confidence": {
+    "action": 1.0,
+    "speed": 1.0,
+    "head": 0.53,
+    "sound": 0.8
+   }
+  },
+  {
+   "request": "sit down",
+   "clause": "sit down",
+   "gold": {
+    "action": "sit_or_stand",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "sit_or_stand",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "chirp"
+   },
+   "confidence": {
+    "action": 1.0,
+    "speed": 0.98,
+    "head": 0.45,
+    "sound": 0.76
+   }
+  },
+  {
+   "request": "do a roll",
+   "clause": "do a roll",
+   "gold": {
+    "action": "roll",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "roll",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "wheee"
+   },
+   "confidence": {
+    "action": 1.0,
+    "speed": 1.0,
+    "head": 0.73,
+    "sound": 0.45
+   }
+  },
+  {
+   "request": "peck at the ground",
+   "clause": "peck at the ground",
+   "gold": {
+    "action": "peck_ground",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "peck_ground",
+    "speed": "normal",
+    "head": "look_down",
+    "sound": "peck"
+   },
+   "confidence": {
+    "action": 1.0,
+    "speed": 0.77,
+    "head": 1.0,
+    "sound": 0.98
+   }
+  },
+  {
+   "request": "say hello",
+   "clause": "say hello",
+   "gold": {
+    "action": "make_sound",
+    "sound": "greet",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "make_sound",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "greet"
+   },
+   "confidence": {
+    "action": 1.0,
+    "speed": 1.0,
+    "head": 0.99,
+    "sound": 0.97
+   }
+  },
+  {
+   "request": "sound the alarm",
+   "clause": "sound the alarm",
+   "gold": {
+    "action": "make_sound",
+    "sound": "alarm",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "make_sound",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "alarm"
+   },
+   "confidence": {
+    "action": 1.0,
+    "speed": 0.47,
+    "head": 0.71,
+    "sound": 1.0
+   }
+  },
+  {
+   "request": "waddle ahead slowly",
+   "clause": "waddle ahead slowly",
+   "gold": {
+    "action": "walk_forward",
+    "speed": "slow",
+    "head": "straight"
+   },
+   "got": {
+    "action": "walk_forward",
+    "speed": "slow",
+    "head": "straight",
+    "sound": "chirp"
+   },
+   "confidence": {
+    "action": 1.0,
+    "speed": 1.0,
+    "head": 0.93,
+    "sound": 0.94
+   }
+  },
+  {
+   "request": "hurry forward",
+   "clause": "hurry forward",
+   "gold": {
+    "action": "walk_forward",
+    "speed": "fast",
+    "head": "straight"
+   },
+   "got": {
+    "action": "walk_forward",
+    "speed": "fast",
+    "head": "straight",
+    "sound": "chirp"
+   },
+   "confidence": {
+    "action": 1.0,
+    "speed": 1.0,
+    "head": 1.0,
+    "sound": 0.55
+   }
+  },
+  {
+   "request": "back up a little",
+   "clause": "back up a little",
+   "gold": {
+    "action": "walk_backward",
+    "speed": "slow",
+    "head": "straight"
+   },
+   "got": {
+    "action": "walk_backward",
+    "speed": "slow",
+    "head": "straight",
+    "sound": "chirp"
+   },
+   "confidence": {
+    "action": 1.0,
+    "speed": 0.85,
+    "head": 0.93,
+    "sound": 0.62
+   }
+  },
+  {
+   "request": "spin to your left quickly",
+   "clause": "spin to your left quickly",
+   "gold": {
+    "action": "turn_left",
+    "speed": "fast",
+    "head": "straight"
+   },
+   "got": {
+    "action": "turn_left",
+    "speed": "fast",
+    "head": "look_left",
+    "sound": "wheee"
+   },
+   "confidence": {
+    "action": 1.0,
+    "speed": 1.0,
+    "head": 0.92,
+    "sound": 0.63
+   }
+  },
+  {
+   "request": "rotate clockwise",
+   "clause": "rotate clockwise",
+   "gold": {
+    "action": "turn_right",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "turn_right",
+    "speed": "normal",
+    "head": "look_right",
+    "sound": "chirp"
+   },
+   "confidence": {
+    "action": 1.0,
+    "speed": 1.0,
+    "head": 0.81,
+    "sound": 0.73
+   }
+  },
+  {
+   "request": "freeze!",
+   "clause": "freeze",
+   "gold": {
+    "action": "stop",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "stop",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "alarm"
+   },
+   "confidence": {
+    "action": 1.0,
+    "speed": 0.79,
+    "head": 1.0,
+    "sound": 0.28
+   }
+  },
+  {
+   "request": "stand still",
+   "clause": "stand still",
+   "gold": {
+    "action": "stop",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "stop",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "coo"
+   },
+   "confidence": {
+    "action": 1.0,
+    "speed": 0.42,
+    "head": 1.0,
+    "sound": 0.33
+   }
+  },
+  {
+   "request": "boot the ball with your right leg",
+   "clause": "boot the ball with your right leg",
+   "gold": {
+    "action": "kick_right",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "kick_right",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "chirp"
+   },
+   "confidence": {
+    "action": 1.0,
+    "speed": 1.0,
+    "head": 0.21,
+    "sound": 0.52
+   }
+  },
+  {
+   "request": "take a seat",
+   "clause": "take a seat",
+   "gold": {
+    "action": "sit_or_stand",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "sit_or_stand",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "chirp"
+   },
+   "confidence": {
+    "action": 1.0,
+    "speed": 0.98,
+    "head": 0.41,
+    "sound": 0.76
+   }
+  },
+  {
+   "request": "get up",
+   "clause": "get up",
+   "gold": {
+    "action": "sit_or_stand",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "sit_or_stand",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "chirp"
+   },
+   "confidence": {
+    "action": 1.0,
+    "speed": 0.99,
+    "head": 0.41,
+    "sound": 0.63
+   }
+  },
+  {
+   "request": "tumble forward",
+   "clause": "tumble forward",
+   "gold": {
+    "action": "roll",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "roll",
+    "speed": "normal",
+    "head": "look_down",
+    "sound": "wheee"
+   },
+   "confidence": {
+    "action": 1.0,
+    "speed": 0.98,
+    "head": 0.83,
+    "sound": 0.54
+   }
+  },
+  {
+   "request": "look for food on the floor",
+   "clause": "look for food on the floor",
+   "gold": {
+    "action": "peck_ground",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "peck_ground",
+    "speed": "normal",
+    "head": "look_down",
+    "sound": "peck"
+   },
+   "confidence": {
+    "action": 0.95,
+    "speed": 0.96,
+    "head": 1.0,
+    "sound": 0.84
+   }
+  },
+  {
+   "request": "quack happily",
+   "clause": "quack happily",
+   "gold": {
+    "action": "make_sound",
+    "sound": "chirp",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "make_sound",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "chirp"
+   },
+   "confidence": {
+    "action": 1.0,
+    "speed": 0.82,
+    "head": 0.83,
+    "sound": 1.0
+   }
+  },
+  {
+   "request": "ask a question",
+   "clause": "ask a question",
+   "gold": {
+    "action": "make_sound",
+    "sound": "inquire",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "make_sound",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "inquire"
+   },
+   "confidence": {
+    "action": 0.9,
+    "speed": 1.0,
+    "head": 0.72,
+    "sound": 1.0
+   }
+  },
+  {
+   "request": "make a soft cooing noise",
+   "clause": "make a soft cooing noise",
+   "gold": {
+    "action": "make_sound",
+    "sound": "coo",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "make_sound",
+    "speed": "slow",
+    "head": "straight",
+    "sound": "coo"
+   },
+   "confidence": {
+    "action": 1.0,
+    "speed": 0.5,
+    "head": 0.94,
+    "sound": 1.0
+   }
+  },
+  {
+   "request": "wheee!",
+   "clause": "wheee",
+   "gold": {
+    "action": "make_sound",
+    "sound": "wheee",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "make_sound",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "wheee"
+   },
+   "confidence": {
+    "action": 0.57,
+    "speed": 0.37,
+    "head": 0.61,
+    "sound": 0.99
+   }
+  },
+  {
+   "request": "walk forward and look left",
+   "clause": "walk forward and look left",
+   "gold": {
+    "action": "walk_forward",
+    "speed": "normal",
+    "head": "look_left"
+   },
+   "got": {
+    "action": "walk_forward",
+    "speed": "normal",
+    "head": "look_left",
+    "sound": "chirp"
+   },
+   "confidence": {
+    "action": 0.83,
+    "speed": 1.0,
+    "head": 0.99,
+    "sound": 0.82
+   }
+  },
+  {
+   "request": "walk slowly while looking to the right",
+   "clause": "walk slowly while looking to the right",
+   "gold": {
+    "action": "walk_forward",
+    "speed": "slow",
+    "head": "look_right"
+   },
+   "got": {
+    "action": "walk_forward",
+    "speed": "slow",
+    "head": "look_right",
+    "sound": "chirp"
+   },
+   "confidence": {
+    "action": 0.79,
+    "speed": 1.0,
+    "head": 1.0,
+    "sound": 0.61
+   }
+  },
+  {
+   "request": "turn left and look up",
+   "clause": "turn left and look up",
+   "gold": {
+    "action": "turn_left",
+    "speed": "normal",
+    "head": "look_up"
+   },
+   "got": {
+    "action": "turn_left",
+    "speed": "normal",
+    "head": "look_up",
+    "sound": "chirp"
+   },
+   "confidence": {
+    "action": 0.99,
+    "speed": 1.0,
+    "head": 0.8,
+    "sound": 0.69
+   }
+  },
+  {
+   "request": "stop and look down at your feet",
+   "clause": "stop and look down at your feet",
+   "gold": {
+    "action": "stop",
+    "speed": "normal",
+    "head": "look_down"
+   },
+   "got": {
+    "action": "stop",
+    "speed": "normal",
+    "head": "look_down",
+    "sound": "peck"
+   },
+   "confidence": {
+    "action": 0.95,
+    "speed": 0.94,
+    "head": 1.0,
+    "sound": 0.45
+   }
+  },
+  {
+   "request": "walk forward then kick left",
+   "clause": "walk forward",
+   "gold": {
+    "action": "walk_forward",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "walk_forward",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "chirp"
+   },
+   "confidence": {
+    "action": 1.0,
+    "speed": 1.0,
+    "head": 1.0,
+    "sound": 0.91
+   }
+  },
+  {
+   "request": "walk forward then kick left",
+   "clause": "kick left",
+   "gold": {
+    "action": "kick_left",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "kick_left",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "chirp"
+   },
+   "confidence": {
+    "action": 1.0,
+    "speed": 1.0,
+    "head": 0.35,
+    "sound": 0.72
+   }
+  },
+  {
+   "request": "turn right, then walk forward fast",
+   "clause": "turn right",
+   "gold": {
+    "action": "turn_right",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "turn_right",
+    "speed": "normal",
+    "head": "look_right",
+    "sound": "chirp"
+   },
+   "confidence": {
+    "action": 1.0,
+    "speed": 1.0,
+    "head": 0.99,
+    "sound": 0.9
+   }
+  },
+  {
+   "request": "turn right, then walk forward fast",
+   "clause": "walk forward fast",
+   "gold": {
+    "action": "walk_forward",
+    "speed": "fast",
+    "head": "straight"
+   },
+   "got": {
+    "action": "walk_forward",
+    "speed": "fast",
+    "head": "straight",
+    "sound": "chirp"
+   },
+   "confidence": {
+    "action": 1.0,
+    "speed": 1.0,
+    "head": 1.0,
+    "sound": 0.7
+   }
+  },
+  {
+   "request": "say hello then sit down",
+   "clause": "say hello",
+   "gold": {
+    "action": "make_sound",
+    "sound": "greet",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "make_sound",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "greet"
+   },
+   "confidence": {
+    "action": 1.0,
+    "speed": 1.0,
+    "head": 0.99,
+    "sound": 0.96
+   }
+  },
+  {
+   "request": "say hello then sit down",
+   "clause": "sit down",
+   "gold": {
+    "action": "sit_or_stand",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "sit_or_stand",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "chirp"
+   },
+   "confidence": {
+    "action": 1.0,
+    "speed": 0.99,
+    "head": 0.48,
+    "sound": 0.73
+   }
+  },
+  {
+   "request": "back up slowly; turn left; stop",
+   "clause": "back up slowly",
+   "gold": {
+    "action": "walk_backward",
+    "speed": "slow",
+    "head": "straight"
+   },
+   "got": {
+    "action": "walk_backward",
+    "speed": "slow",
+    "head": "straight",
+    "sound": "chirp"
+   },
+   "confidence": {
+    "action": 1.0,
+    "speed": 1.0,
+    "head": 0.89,
+    "sound": 0.42
+   }
+  },
+  {
+   "request": "back up slowly; turn left; stop",
+   "clause": "turn left",
+   "gold": {
+    "action": "turn_left",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "turn_left",
+    "speed": "normal",
+    "head": "look_left",
+    "sound": "chirp"
+   },
+   "confidence": {
+    "action": 1.0,
+    "speed": 1.0,
+    "head": 0.99,
+    "sound": 0.87
+   }
+  },
+  {
+   "request": "back up slowly; turn left; stop",
+   "clause": "stop",
+   "gold": {
+    "action": "stop",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "stop",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "alarm"
+   },
+   "confidence": {
+    "action": 1.0,
+    "speed": 0.78,
+    "head": 0.99,
+    "sound": 0.59
+   }
+  },
+  {
+   "request": "peck the ground and then chirp",
+   "clause": "peck the ground",
+   "gold": {
+    "action": "peck_ground",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "peck_ground",
+    "speed": "normal",
+    "head": "look_down",
+    "sound": "peck"
+   },
+   "confidence": {
+    "action": 1.0,
+    "speed": 0.97,
+    "head": 1.0,
+    "sound": 0.99
+   }
+  },
+  {
+   "request": "peck the ground and then chirp",
+   "clause": "chirp",
+   "gold": {
+    "action": "make_sound",
+    "sound": "chirp",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "make_sound",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "chirp"
+   },
+   "confidence": {
+    "action": 1.0,
+    "speed": 0.85,
+    "head": 0.76,
+    "sound": 1.0
+   }
+  },
+  {
+   "request": "walk to the ball then kick it with your right foot",
+   "clause": "walk to the ball",
+   "gold": {
+    "action": "walk_forward",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "walk_forward",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "chirp"
+   },
+   "confidence": {
+    "action": 1.0,
+    "speed": 0.98,
+    "head": 0.87,
+    "sound": 0.83
+   }
+  },
+  {
+   "request": "walk to the ball then kick it with your right foot",
+   "clause": "kick it with your right foot",
+   "gold": {
+    "action": "kick_right",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "kick_right",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "chirp"
+   },
+   "confidence": {
+    "action": 1.0,
+    "speed": 1.0,
+    "head": 0.21,
+    "sound": 0.7
+   }
+  },
+  {
+   "request": "stand up then do a roll after that stop",
+   "clause": "stand up",
+   "gold": {
+    "action": "sit_or_stand",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "sit_or_stand",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "chirp"
+   },
+   "confidence": {
+    "action": 1.0,
+    "speed": 0.99,
+    "head": 0.9,
+    "sound": 0.87
+   }
+  },
+  {
+   "request": "stand up then do a roll after that stop",
+   "clause": "do a roll",
+   "gold": {
+    "action": "roll",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "roll",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "wheee"
+   },
+   "confidence": {
+    "action": 1.0,
+    "speed": 1.0,
+    "head": 0.74,
+    "sound": 0.47
+   }
+  },
+  {
+   "request": "stand up then do a roll after that stop",
+   "clause": "stop",
+   "gold": {
+    "action": "stop",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "stop",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "alarm"
+   },
+   "confidence": {
+    "action": 1.0,
+    "speed": 0.83,
+    "head": 0.98,
+    "sound": 0.6
+   }
+  },
+  {
+   "request": "fly to the kitchen",
+   "clause": "fly to the kitchen",
+   "gold": {
+    "action": "unsupported",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "unsupported",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "chirp"
+   },
+   "confidence": {
+    "action": 0.89,
+    "speed": 0.94,
+    "head": 0.86,
+    "sound": 0.6
+   }
+  },
+  {
+   "request": "open the fridge",
+   "clause": "open the fridge",
+   "gold": {
+    "action": "unsupported",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "unsupported",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "chirp"
+   },
+   "confidence": {
+    "action": 0.99,
+    "speed": 0.98,
+    "head": 0.89,
+    "sound": 0.63
+   }
+  },
+  {
+   "request": "climb the stairs",
+   "clause": "climb the stairs",
+   "gold": {
+    "action": "unsupported",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "unsupported",
+    "speed": "normal",
+    "head": "look_up",
+    "sound": "chirp"
+   },
+   "confidence": {
+    "action": 0.97,
+    "speed": 0.97,
+    "head": 0.65,
+    "sound": 0.6
+   }
+  },
+  {
+   "request": "do a backflip",
+   "clause": "do a backflip",
+   "gold": {
+    "action": "unsupported",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "unsupported",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "wheee"
+   },
+   "confidence": {
+    "action": 0.95,
+    "speed": 0.91,
+    "head": 0.46,
+    "sound": 0.69
+   }
+  },
+  {
+   "request": "pick up the red cup",
+   "clause": "pick up the red cup",
+   "gold": {
+    "action": "unsupported",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "unsupported",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "chirp"
+   },
+   "confidence": {
+    "action": 0.92,
+    "speed": 1.0,
+    "head": 0.54,
+    "sound": 0.77
+   }
+  },
+  {
+   "request": "what's the weather like",
+   "clause": "what's the weather like",
+   "gold": {
+    "action": "unsupported",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "unsupported",
+    "speed": "normal",
+    "head": "look_up",
+    "sound": "inquire"
+   },
+   "confidence": {
+    "action": 0.96,
+    "speed": 0.99,
+    "head": 0.5,
+    "sound": 0.98
+   }
+  },
+  {
+   "request": "swim across the pond",
+   "clause": "swim across the pond",
+   "gold": {
+    "action": "unsupported",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "unsupported",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "chirp"
+   },
+   "confidence": {
+    "action": 0.98,
+    "speed": 0.97,
+    "head": 0.94,
+    "sound": 0.89
+   }
+  }
+ ]
+}

@@ -1,0 +1,1183 @@
+{
+ "model": "decide",
+ "accuracy": {
+  "action": 0.8545,
+  "speed": 0.9583,
+  "head": 0.7917,
+  "sound": 1.0
+ },
+ "counts": {
+  "action": "47/55",
+  "speed": "23/24",
+  "head": "19/24",
+  "sound": "8/8"
+ },
+ "exact_requests": "32/46",
+ "out_of_scope_refused": "6/7",
+ "mean_confidence_when_wrong": 0.3665,
+ "rows": [
+  {
+   "request": "walk forward",
+   "clause": "walk forward",
+   "gold": {
+    "action": "walk_forward",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "walk_forward",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "coo"
+   },
+   "confidence": {
+    "action": 0.5564077496528625,
+    "speed": 0.49686938524246216,
+    "head": 0.581707775592804,
+    "sound": 0.23246316611766815
+   }
+  },
+  {
+   "request": "go backwards",
+   "clause": "go backwards",
+   "gold": {
+    "action": "walk_backward",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "walk_backward",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "coo"
+   },
+   "confidence": {
+    "action": 0.7039340138435364,
+    "speed": 0.4538983404636383,
+    "head": 0.3172806203365326,
+    "sound": 0.2334836721420288
+   }
+  },
+  {
+   "request": "turn left",
+   "clause": "turn left",
+   "gold": {
+    "action": "turn_left",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "turn_left",
+    "speed": "normal",
+    "head": "look_left",
+    "sound": "coo"
+   },
+   "confidence": {
+    "action": 0.6574215292930603,
+    "speed": 0.4829271733760834,
+    "head": 0.5572665929794312,
+    "sound": 0.22469176352024078
+   }
+  },
+  {
+   "request": "turn right",
+   "clause": "turn right",
+   "gold": {
+    "action": "turn_right",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "turn_right",
+    "speed": "normal",
+    "head": "look_right",
+    "sound": "coo"
+   },
+   "confidence": {
+    "action": 0.7098216414451599,
+    "speed": 0.4852163791656494,
+    "head": 0.4551733434200287,
+    "sound": 0.21414165198802948
+   }
+  },
+  {
+   "request": "stop",
+   "clause": "stop",
+   "gold": {
+    "action": "stop",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "stop",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "coo"
+   },
+   "confidence": {
+    "action": 0.5839789509773254,
+    "speed": 0.45189663767814636,
+    "head": 0.4329352378845215,
+    "sound": 0.22008474171161652
+   }
+  },
+  {
+   "request": "kick with your left foot",
+   "clause": "kick with your left foot",
+   "gold": {
+    "action": "kick_left",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "kick_left",
+    "speed": "normal",
+    "head": "look_left",
+    "sound": "coo"
+   },
+   "confidence": {
+    "action": 0.5975371599197388,
+    "speed": 0.4709532558917999,
+    "head": 0.3839503824710846,
+    "sound": 0.22310055792331696
+   }
+  },
+  {
+   "request": "kick right",
+   "clause": "kick right",
+   "gold": {
+    "action": "kick_right",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "kick_right",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "coo"
+   },
+   "confidence": {
+    "action": 0.6502295732498169,
+    "speed": 0.46927520632743835,
+    "head": 0.3331007659435272,
+    "sound": 0.20895731449127197
+   }
+  },
+  {
+   "request": "sit down",
+   "clause": "sit down",
+   "gold": {
+    "action": "sit_or_stand",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "sit_or_stand",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "coo"
+   },
+   "confidence": {
+    "action": 0.5688130259513855,
+    "speed": 0.5001378059387207,
+    "head": 0.4405285120010376,
+    "sound": 0.23891422152519226
+   }
+  },
+  {
+   "request": "do a roll",
+   "clause": "do a roll",
+   "gold": {
+    "action": "roll",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "roll",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "chirp"
+   },
+   "confidence": {
+    "action": 0.7037476897239685,
+    "speed": 0.49857279658317566,
+    "head": 0.41685810685157776,
+    "sound": 0.23421338200569153
+   }
+  },
+  {
+   "request": "peck at the ground",
+   "clause": "peck at the ground",
+   "gold": {
+    "action": "peck_ground",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "peck_ground",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "peck"
+   },
+   "confidence": {
+    "action": 0.5968830585479736,
+    "speed": 0.48449957370758057,
+    "head": 0.3863638937473297,
+    "sound": 0.374613493680954
+   }
+  },
+  {
+   "request": "say hello",
+   "clause": "say hello",
+   "gold": {
+    "action": "make_sound",
+    "sound": "greet",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "unsupported",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "greet"
+   },
+   "confidence": {
+    "action": 0.2019660323858261,
+    "speed": 0.4999268651008606,
+    "head": 0.42294952273368835,
+    "sound": 0.5213872790336609
+   }
+  },
+  {
+   "request": "sound the alarm",
+   "clause": "sound the alarm",
+   "gold": {
+    "action": "make_sound",
+    "sound": "alarm",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "make_sound",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "alarm"
+   },
+   "confidence": {
+    "action": 0.2604703903198242,
+    "speed": 0.42351794242858887,
+    "head": 0.42333105206489563,
+    "sound": 0.6732616424560547
+   }
+  },
+  {
+   "request": "waddle ahead slowly",
+   "clause": "waddle ahead slowly",
+   "gold": {
+    "action": "walk_forward",
+    "speed": "slow",
+    "head": "straight"
+   },
+   "got": {
+    "action": "walk_forward",
+    "speed": "slow",
+    "head": "straight",
+    "sound": "coo"
+   },
+   "confidence": {
+    "action": 0.3443027138710022,
+    "speed": 0.8004274964332581,
+    "head": 0.5338340997695923,
+    "sound": 0.2629377245903015
+   }
+  },
+  {
+   "request": "hurry forward",
+   "clause": "hurry forward",
+   "gold": {
+    "action": "walk_forward",
+    "speed": "fast",
+    "head": "straight"
+   },
+   "got": {
+    "action": "walk_forward",
+    "speed": "fast",
+    "head": "straight",
+    "sound": "chirp"
+   },
+   "confidence": {
+    "action": 0.41668900847435,
+    "speed": 0.8237271904945374,
+    "head": 0.5337294936180115,
+    "sound": 0.23305365443229675
+   }
+  },
+  {
+   "request": "back up a little",
+   "clause": "back up a little",
+   "gold": {
+    "action": "walk_backward",
+    "speed": "slow",
+    "head": "straight"
+   },
+   "got": {
+    "action": "walk_backward",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "coo"
+   },
+   "confidence": {
+    "action": 0.48157036304473877,
+    "speed": 0.45655182003974915,
+    "head": 0.35025250911712646,
+    "sound": 0.2373805195093155
+   }
+  },
+  {
+   "request": "spin to your left quickly",
+   "clause": "spin to your left quickly",
+   "gold": {
+    "action": "turn_left",
+    "speed": "fast",
+    "head": "straight"
+   },
+   "got": {
+    "action": "turn_left",
+    "speed": "fast",
+    "head": "look_left",
+    "sound": "chirp"
+   },
+   "confidence": {
+    "action": 0.6192868947982788,
+    "speed": 0.7383645176887512,
+    "head": 0.5188823938369751,
+    "sound": 0.23621542751789093
+   }
+  },
+  {
+   "request": "rotate clockwise",
+   "clause": "rotate clockwise",
+   "gold": {
+    "action": "turn_right",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "turn_right",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "coo"
+   },
+   "confidence": {
+    "action": 0.5246325135231018,
+    "speed": 0.48743101954460144,
+    "head": 0.2930346131324768,
+    "sound": 0.22375652194023132
+   }
+  },
+  {
+   "request": "freeze!",
+   "clause": "freeze",
+   "gold": {
+    "action": "stop",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "stop",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "coo"
+   },
+   "confidence": {
+    "action": 0.5214536190032959,
+    "speed": 0.4402924180030823,
+    "head": 0.4354780614376068,
+    "sound": 0.2034524828195572
+   }
+  },
+  {
+   "request": "stand still",
+   "clause": "stand still",
+   "gold": {
+    "action": "stop",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "sit_or_stand",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "coo"
+   },
+   "confidence": {
+    "action": 0.41323065757751465,
+    "speed": 0.4923635721206665,
+    "head": 0.4936845004558563,
+    "sound": 0.25272640585899353
+   }
+  },
+  {
+   "request": "boot the ball with your right leg",
+   "clause": "boot the ball with your right leg",
+   "gold": {
+    "action": "kick_right",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "kick_right",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "coo"
+   },
+   "confidence": {
+    "action": 0.6972677707672119,
+    "speed": 0.48178139328956604,
+    "head": 0.3798925578594208,
+    "sound": 0.21078045666217804
+   }
+  },
+  {
+   "request": "take a seat",
+   "clause": "take a seat",
+   "gold": {
+    "action": "sit_or_stand",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "sit_or_stand",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "coo"
+   },
+   "confidence": {
+    "action": 0.6258096098899841,
+    "speed": 0.5074058175086975,
+    "head": 0.4583139419555664,
+    "sound": 0.24156306684017181
+   }
+  },
+  {
+   "request": "get up",
+   "clause": "get up",
+   "gold": {
+    "action": "sit_or_stand",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "sit_or_stand",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "coo"
+   },
+   "confidence": {
+    "action": 0.20031142234802246,
+    "speed": 0.4654150903224945,
+    "head": 0.4062834084033966,
+    "sound": 0.2149856835603714
+   }
+  },
+  {
+   "request": "tumble forward",
+   "clause": "tumble forward",
+   "gold": {
+    "action": "roll",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "roll",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "chirp"
+   },
+   "confidence": {
+    "action": 0.5397832989692688,
+    "speed": 0.46669742465019226,
+    "head": 0.5284653306007385,
+    "sound": 0.2158336490392685
+   }
+  },
+  {
+   "request": "look for food on the floor",
+   "clause": "look for food on the floor",
+   "gold": {
+    "action": "peck_ground",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "peck_ground",
+    "speed": "normal",
+    "head": "look_down",
+    "sound": "peck"
+   },
+   "confidence": {
+    "action": 0.4721411466598511,
+    "speed": 0.48333975672721863,
+    "head": 0.4333001971244812,
+    "sound": 0.23846662044525146
+   }
+  },
+  {
+   "request": "quack happily",
+   "clause": "quack happily",
+   "gold": {
+    "action": "make_sound",
+    "sound": "chirp",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "make_sound",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "chirp"
+   },
+   "confidence": {
+    "action": 0.22154131531715393,
+    "speed": 0.5082293152809143,
+    "head": 0.4099555015563965,
+    "sound": 0.27957138419151306
+   }
+  },
+  {
+   "request": "ask a question",
+   "clause": "ask a question",
+   "gold": {
+    "action": "make_sound",
+    "sound": "inquire",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "unsupported",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "inquire"
+   },
+   "confidence": {
+    "action": 0.3179660141468048,
+    "speed": 0.48456090688705444,
+    "head": 0.42581143975257874,
+    "sound": 0.4690154790878296
+   }
+  },
+  {
+   "request": "make a soft cooing noise",
+   "clause": "make a soft cooing noise",
+   "gold": {
+    "action": "make_sound",
+    "sound": "coo",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "make_sound",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "coo"
+   },
+   "confidence": {
+    "action": 0.3191687762737274,
+    "speed": 0.5041036605834961,
+    "head": 0.45279163122177124,
+    "sound": 0.6909591555595398
+   }
+  },
+  {
+   "request": "wheee!",
+   "clause": "wheee",
+   "gold": {
+    "action": "make_sound",
+    "sound": "wheee",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "unsupported",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "wheee"
+   },
+   "confidence": {
+    "action": 0.1992550790309906,
+    "speed": 0.4526205062866211,
+    "head": 0.4023554027080536,
+    "sound": 0.4322873651981354
+   }
+  },
+  {
+   "request": "walk forward and look left",
+   "clause": "walk forward and look left",
+   "gold": {
+    "action": "walk_forward",
+    "speed": "normal",
+    "head": "look_left"
+   },
+   "got": {
+    "action": "walk_forward",
+    "speed": "normal",
+    "head": "look_left",
+    "sound": "coo"
+   },
+   "confidence": {
+    "action": 0.5236440896987915,
+    "speed": 0.5213919281959534,
+    "head": 0.9184763431549072,
+    "sound": 0.24144436419010162
+   }
+  },
+  {
+   "request": "walk slowly while looking to the right",
+   "clause": "walk slowly while looking to the right",
+   "gold": {
+    "action": "walk_forward",
+    "speed": "slow",
+    "head": "look_right"
+   },
+   "got": {
+    "action": "turn_right",
+    "speed": "slow",
+    "head": "look_right",
+    "sound": "coo"
+   },
+   "confidence": {
+    "action": 0.25548258423805237,
+    "speed": 0.8629820942878723,
+    "head": 0.9278632998466492,
+    "sound": 0.2542305588722229
+   }
+  },
+  {
+   "request": "turn left and look up",
+   "clause": "turn left and look up",
+   "gold": {
+    "action": "turn_left",
+    "speed": "normal",
+    "head": "look_up"
+   },
+   "got": {
+    "action": "turn_left",
+    "speed": "normal",
+    "head": "look_up",
+    "sound": "coo"
+   },
+   "confidence": {
+    "action": 0.732232391834259,
+    "speed": 0.519165575504303,
+    "head": 0.8018596172332764,
+    "sound": 0.23971812427043915
+   }
+  },
+  {
+   "request": "stop and look down at your feet",
+   "clause": "stop and look down at your feet",
+   "gold": {
+    "action": "stop",
+    "speed": "normal",
+    "head": "look_down"
+   },
+   "got": {
+    "action": "stop",
+    "speed": "normal",
+    "head": "look_down",
+    "sound": "coo"
+   },
+   "confidence": {
+    "action": 0.5631476640701294,
+    "speed": 0.5110037922859192,
+    "head": 0.962981641292572,
+    "sound": 0.2756991982460022
+   }
+  },
+  {
+   "request": "walk forward then kick left",
+   "clause": "walk forward",
+   "gold": {
+    "action": "walk_forward",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "walk_forward",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "coo"
+   },
+   "confidence": {
+    "action": 0.5564077496528625,
+    "speed": 0.49686938524246216,
+    "head": 0.581707775592804,
+    "sound": 0.23246316611766815
+   }
+  },
+  {
+   "request": "walk forward then kick left",
+   "clause": "kick left",
+   "gold": {
+    "action": "kick_left",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "kick_left",
+    "speed": "normal",
+    "head": "look_left",
+    "sound": "coo"
+   },
+   "confidence": {
+    "action": 0.5533638000488281,
+    "speed": 0.46943315863609314,
+    "head": 0.45958927273750305,
+    "sound": 0.21919727325439453
+   }
+  },
+  {
+   "request": "turn right, then walk forward fast",
+   "clause": "turn right",
+   "gold": {
+    "action": "turn_right",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "turn_right",
+    "speed": "normal",
+    "head": "look_right",
+    "sound": "coo"
+   },
+   "confidence": {
+    "action": 0.7098216414451599,
+    "speed": 0.4852163791656494,
+    "head": 0.4551733434200287,
+    "sound": 0.21414165198802948
+   }
+  },
+  {
+   "request": "turn right, then walk forward fast",
+   "clause": "walk forward fast",
+   "gold": {
+    "action": "walk_forward",
+    "speed": "fast",
+    "head": "straight"
+   },
+   "got": {
+    "action": "walk_forward",
+    "speed": "fast",
+    "head": "straight",
+    "sound": "chirp"
+   },
+   "confidence": {
+    "action": 0.5260523557662964,
+    "speed": 0.9522901773452759,
+    "head": 0.5636879801750183,
+    "sound": 0.22467856109142303
+   }
+  },
+  {
+   "request": "say hello then sit down",
+   "clause": "say hello",
+   "gold": {
+    "action": "make_sound",
+    "sound": "greet",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "unsupported",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "greet"
+   },
+   "confidence": {
+    "action": 0.2019660323858261,
+    "speed": 0.4999268651008606,
+    "head": 0.42294952273368835,
+    "sound": 0.5213872790336609
+   }
+  },
+  {
+   "request": "say hello then sit down",
+   "clause": "sit down",
+   "gold": {
+    "action": "sit_or_stand",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "sit_or_stand",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "coo"
+   },
+   "confidence": {
+    "action": 0.5688130259513855,
+    "speed": 0.5001378059387207,
+    "head": 0.4405285120010376,
+    "sound": 0.23891422152519226
+   }
+  },
+  {
+   "request": "back up slowly; turn left; stop",
+   "clause": "back up slowly",
+   "gold": {
+    "action": "walk_backward",
+    "speed": "slow",
+    "head": "straight"
+   },
+   "got": {
+    "action": "walk_backward",
+    "speed": "slow",
+    "head": "straight",
+    "sound": "coo"
+   },
+   "confidence": {
+    "action": 0.440143883228302,
+    "speed": 0.7493475079536438,
+    "head": 0.3544021546840668,
+    "sound": 0.2510784864425659
+   }
+  },
+  {
+   "request": "back up slowly; turn left; stop",
+   "clause": "turn left",
+   "gold": {
+    "action": "turn_left",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "turn_left",
+    "speed": "normal",
+    "head": "look_left",
+    "sound": "coo"
+   },
+   "confidence": {
+    "action": 0.6574215292930603,
+    "speed": 0.4829271733760834,
+    "head": 0.5572665929794312,
+    "sound": 0.22469176352024078
+   }
+  },
+  {
+   "request": "back up slowly; turn left; stop",
+   "clause": "stop",
+   "gold": {
+    "action": "stop",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "stop",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "coo"
+   },
+   "confidence": {
+    "action": 0.5839789509773254,
+    "speed": 0.45189663767814636,
+    "head": 0.4329352378845215,
+    "sound": 0.22008474171161652
+   }
+  },
+  {
+   "request": "peck the ground and then chirp",
+   "clause": "peck the ground",
+   "gold": {
+    "action": "peck_ground",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "peck_ground",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "peck"
+   },
+   "confidence": {
+    "action": 0.6735574007034302,
+    "speed": 0.49002426862716675,
+    "head": 0.41185247898101807,
+    "sound": 0.3489990830421448
+   }
+  },
+  {
+   "request": "peck the ground and then chirp",
+   "clause": "chirp",
+   "gold": {
+    "action": "make_sound",
+    "sound": "chirp",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "unsupported",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "chirp"
+   },
+   "confidence": {
+    "action": 0.21923820674419403,
+    "speed": 0.5162248015403748,
+    "head": 0.41704314947128296,
+    "sound": 0.622799813747406
+   }
+  },
+  {
+   "request": "walk to the ball then kick it with your right foot",
+   "clause": "walk to the ball",
+   "gold": {
+    "action": "walk_forward",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "walk_forward",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "coo"
+   },
+   "confidence": {
+    "action": 0.4541758596897125,
+    "speed": 0.49096739292144775,
+    "head": 0.5194910764694214,
+    "sound": 0.2291504144668579
+   }
+  },
+  {
+   "request": "walk to the ball then kick it with your right foot",
+   "clause": "kick it with your right foot",
+   "gold": {
+    "action": "kick_right",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "kick_right",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "coo"
+   },
+   "confidence": {
+    "action": 0.6925557255744934,
+    "speed": 0.47036537528038025,
+    "head": 0.35965049266815186,
+    "sound": 0.216082364320755
+   }
+  },
+  {
+   "request": "stand up then do a roll after that stop",
+   "clause": "stand up",
+   "gold": {
+    "action": "sit_or_stand",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "sit_or_stand",
+    "speed": "normal",
+    "head": "look_up",
+    "sound": "coo"
+   },
+   "confidence": {
+    "action": 0.5025073885917664,
+    "speed": 0.5003513693809509,
+    "head": 0.3991260826587677,
+    "sound": 0.22299326956272125
+   }
+  },
+  {
+   "request": "stand up then do a roll after that stop",
+   "clause": "do a roll",
+   "gold": {
+    "action": "roll",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "roll",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "chirp"
+   },
+   "confidence": {
+    "action": 0.7037476897239685,
+    "speed": 0.49857279658317566,
+    "head": 0.41685810685157776,
+    "sound": 0.23421338200569153
+   }
+  },
+  {
+   "request": "stand up then do a roll after that stop",
+   "clause": "stop",
+   "gold": {
+    "action": "stop",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "stop",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "coo"
+   },
+   "confidence": {
+    "action": 0.5839789509773254,
+    "speed": 0.45189663767814636,
+    "head": 0.4329352378845215,
+    "sound": 0.22008474171161652
+   }
+  },
+  {
+   "request": "fly to the kitchen",
+   "clause": "fly to the kitchen",
+   "gold": {
+    "action": "unsupported",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "unsupported",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "chirp"
+   },
+   "confidence": {
+    "action": 0.49172261357307434,
+    "speed": 0.4600878655910492,
+    "head": 0.4649924039840698,
+    "sound": 0.2231716513633728
+   }
+  },
+  {
+   "request": "open the fridge",
+   "clause": "open the fridge",
+   "gold": {
+    "action": "unsupported",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "unsupported",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "coo"
+   },
+   "confidence": {
+    "action": 0.26382991671562195,
+    "speed": 0.48106497526168823,
+    "head": 0.4316498041152954,
+    "sound": 0.2211279720067978
+   }
+  },
+  {
+   "request": "climb the stairs",
+   "clause": "climb the stairs",
+   "gold": {
+    "action": "unsupported",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "unsupported",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "coo"
+   },
+   "confidence": {
+    "action": 0.3852236866950989,
+    "speed": 0.44116175174713135,
+    "head": 0.40741294622421265,
+    "sound": 0.20585183799266815
+   }
+  },
+  {
+   "request": "do a backflip",
+   "clause": "do a backflip",
+   "gold": {
+    "action": "unsupported",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "unsupported",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "chirp"
+   },
+   "confidence": {
+    "action": 0.2655899226665497,
+    "speed": 0.480547696352005,
+    "head": 0.3651868402957916,
+    "sound": 0.24300174415111542
+   }
+  },
+  {
+   "request": "pick up the red cup",
+   "clause": "pick up the red cup",
+   "gold": {
+    "action": "unsupported",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "peck_ground",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "peck"
+   },
+   "confidence": {
+    "action": 0.3217693865299225,
+    "speed": 0.47234925627708435,
+    "head": 0.41239187121391296,
+    "sound": 0.2658187747001648
+   }
+  },
+  {
+   "request": "what's the weather like",
+   "clause": "what's the weather like",
+   "gold": {
+    "action": "unsupported",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "unsupported",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "inquire"
+   },
+   "confidence": {
+    "action": 0.2332632690668106,
+    "speed": 0.5163748860359192,
+    "head": 0.4377981424331665,
+    "sound": 0.28357768058776855
+   }
+  },
+  {
+   "request": "swim across the pond",
+   "clause": "swim across the pond",
+   "gold": {
+    "action": "unsupported",
+    "speed": "normal",
+    "head": "straight"
+   },
+   "got": {
+    "action": "unsupported",
+    "speed": "normal",
+    "head": "straight",
+    "sound": "coo"
+   },
+   "confidence": {
+    "action": 0.4146654009819031,
+    "speed": 0.4746164381504059,
+    "head": 0.4636882245540619,
+    "sound": 0.23188115656375885
+   }
+  }
+ ]
+}

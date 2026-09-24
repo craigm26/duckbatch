@@ -50,6 +50,15 @@ def main(argv: list[str] | None = None) -> int:
     hj.add_argument("--jev", action="store_true", help="pass TYPESAFE_API_KEY to the job")
     hj.add_argument("--dry-run", action="store_true")
 
+    ro = sub.add_parser("route", help="plain language -> proposed duck steps")
+    ro.add_argument("text")
+    ro.add_argument("--model", default="decide", choices=["decide", "jev"])
+
+    re_ = sub.add_parser("route-eval", help="score the router on a pre-registered request set")
+    re_.add_argument("menu")
+    re_.add_argument("--models", default="decide,jev")
+    re_.add_argument("--out", default="records")
+
     a = p.parse_args(argv)
     if a.cmd == "probe":
         from .probe import probe
@@ -71,6 +80,29 @@ def main(argv: list[str] | None = None) -> int:
         from .hf_job import launch
 
         launch(a.menu, a.dataset, a.flavor, a.timeout, a.commit, a.jev, a.dry_run)
+    elif a.cmd in ("route", "route-eval"):
+        import json
+
+        from . import router
+
+        make = {"decide": router.DecideRouter, "jev": router.JevRouter}
+        if a.cmd == "route":
+            print(json.dumps(router.route(a.text, make[a.model]()), indent=1))
+        else:
+            import yaml
+            from pathlib import Path
+
+            menu = yaml.safe_load(Path(a.menu).read_text())
+            out = Path(a.out) / menu["id"]
+            out.mkdir(parents=True, exist_ok=True)
+            for name in a.models.split(","):
+                res = router.evaluate(menu["requests"], make[name]())
+                (out / f"{name}.json").write_text(json.dumps(res, indent=1))
+                print(f"[route-eval] {name:>6}: action {res['counts']['action']} "
+                      f"speed {res['counts']['speed']} head {res['counts']['head']} "
+                      f"sound {res['counts']['sound']} | exact {res['exact_requests']} "
+                      f"| out-of-scope refused {res['out_of_scope_refused']} "
+                      f"| mean conf when wrong {res['mean_confidence_when_wrong']}")
     elif a.cmd == "publish":
         from .publish import publish_batch
 
