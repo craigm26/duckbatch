@@ -1,0 +1,172 @@
+{
+ "schema": "duckbatch.batch.v1",
+ "batch_id": "b001-student-size",
+ "created": "2026-09-24T19:50:58Z",
+ "task": "Mjlab-VelStand-Flat-MicroDuck",
+ "teacher": {
+  "file": "velstand.onnx",
+  "params": 197774,
+  "flops": 393728,
+  "source": "pollen-robotics/microduck-policies@1b56c396825c052a4e26e95cf2b8d8298af9e9b4/velstand.onnx"
+ },
+ "executed": {
+  "host": "CRAIGM-A00641",
+  "platform": "Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+  "gpu": "NVIDIA GeForce RTX 3050 Laptop GPU",
+  "num_envs": 512,
+  "wall_seconds": 518.4,
+  "duckbatch_commit": "d35efb42bc1f01ec7578c06a1d08151feff6090f",
+  "judge": "rule->person",
+  "shadow_models": [
+   "decide"
+  ],
+  "rank": "efficiency"
+ },
+ "gates": {
+  "falls_keep_abs": 0.25,
+  "falls_kill_abs": 1.5,
+  "lin_keep_ratio": 1.15,
+  "lin_kill_ratio": 1.6,
+  "ang_keep_ratio": 1.15,
+  "ang_kill_ratio": 1.6,
+  "down_keep": 0.02,
+  "down_kill": 0.1,
+  "recover_keep_drop": 0.1,
+  "recover_kill_drop": 0.3,
+  "jev_act_alone": 0.9,
+  "audit_share": 0.1
+ },
+ "rungs": [
+  "rung-0.json"
+ ],
+ "arms": {
+  "a01": {
+   "hidden": [
+    256,
+    128,
+    64
+   ],
+   "lr": 0.001,
+   "params": 57934,
+   "flops": 114944,
+   "status": "closed",
+   "closed_at_rung": 0,
+   "verdict": "kill",
+   "tier": "rule",
+   "reasons": [
+    "falls +2.34/min over teacher > 1.5",
+    "down 11.6% > 10%"
+   ],
+   "samples_seen": 105120
+  },
+  "a02": {
+   "hidden": [
+    128,
+    128
+   ],
+   "lr": 0.001,
+   "params": 26254,
+   "flops": 51968,
+   "status": "closed",
+   "closed_at_rung": 0,
+   "verdict": "kill",
+   "tier": "rule",
+   "reasons": [
+    "falls +1.97/min over teacher > 1.5",
+    "ang_err 1.69x teacher > 1.6"
+   ],
+   "samples_seen": 105120
+  },
+  "a03": {
+   "hidden": [
+    128,
+    64
+   ],
+   "lr": 0.001,
+   "params": 17102,
+   "flops": 33792,
+   "status": "closed",
+   "closed_at_rung": 0,
+   "verdict": "kill",
+   "tier": "rule",
+   "reasons": [
+    "falls +3.89/min over teacher > 1.5",
+    "ang_err 1.74x teacher > 1.6",
+    "down 12.0% > 10%"
+   ],
+   "samples_seen": 106560
+  },
+  "a04": {
+   "hidden": [
+    64,
+    64
+   ],
+   "lr": 0.001,
+   "params": 9038,
+   "flops": 17792,
+   "status": "closed",
+   "closed_at_rung": 0,
+   "verdict": "kill",
+   "tier": "rule",
+   "reasons": [
+    "falls +4.93/min over teacher > 1.5",
+    "ang_err 2.19x teacher > 1.6",
+    "down 15.4% > 10%"
+   ],
+   "samples_seen": 105120
+  },
+  "a05": {
+   "hidden": [
+    64,
+    32
+   ],
+   "lr": 0.001,
+   "params": 6510,
+   "flops": 12800,
+   "status": "closed",
+   "closed_at_rung": 0,
+   "verdict": "kill",
+   "tier": "rule",
+   "reasons": [
+    "falls +6.62/min over teacher > 1.5",
+    "ang_err 2.48x teacher > 1.6",
+    "down 16.4% > 10%"
+   ],
+   "samples_seen": 105120
+  },
+  "a06": {
+   "hidden": [
+    32,
+    32
+   ],
+   "lr": 0.001,
+   "params": 3502,
+   "flops": 6848,
+   "status": "closed",
+   "closed_at_rung": 0,
+   "verdict": "kill",
+   "tier": "rule",
+   "reasons": [
+    "falls +11.34/min over teacher > 1.5",
+    "lin_err 1.62x teacher > 1.6",
+    "ang_err 3.39x teacher > 1.6",
+    "down 29.4% > 10%"
+   ],
+   "samples_seen": 105120
+  }
+ },
+ "final_eval": {
+  "seconds": 30.0,
+  "recover_seconds": 6.0,
+  "seeds": [
+   2001,
+   2002,
+   2003
+  ],
+  "profile": "walk+recover",
+  "by_seed": {}
+ },
+ "model_calls_total": {
+  "decide": 6
+ }
+}

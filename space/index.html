@@ -79,7 +79,7 @@ pre { background: var(--surface-1); border: 1px solid var(--border); border-radi
 .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin: 20px 0; }
 .tile .num { font-size: 30px; font-weight: 650; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
 .tile .lbl { color: var(--text-secondary); font-size: 13px; }
-.charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; }
+.charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
 .legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; color: var(--text-secondary); margin: 4px 0 8px; }
 .legend span { display: inline-flex; align-items: center; gap: 6px; }
 .sw { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
@@ -118,15 +118,18 @@ details summary { cursor: pointer; color: var(--text-secondary); font-size: 13px
   <div class="tiles" id="tiles"></div>
 
   <h2>Size against walking quality</h2>
-  <p>Each dot is a student that reached the final evaluation: held-out seeds, pushes and domain
-    randomization on, with the teacher in the same run. The shaded band is the teacher's own spread
+  <p>Each dot is a student that reached the final evaluation: held-out seeds, stumble pushes and
+    domain randomization on, with the teacher in the same run. Walking is measured with the
+    task's deliberate prone spawns and topple pushes off; getting up is measured with every
+    episode spawned prone. The shaded band is the teacher's own spread
     across seeds; inside it, a student is indistinguishable from the teacher.</p>
   <div class="legend"><span><i class="sw" style="background:var(--series-1)"></i>Student</span>
     <span><i class="sw" style="background:var(--series-2)"></i>Teacher (Pollen velstand)</span>
     <span><i class="sw band"></i>Teacher spread across seeds</span></div>
   <div class="charts">
     <div class="card"><h3>Planar velocity error, relative to the teacher</h3><div id="c-lin"></div></div>
-    <div class="card"><h3>Falls per minute</h3><div id="c-falls"></div></div>
+    <div class="card"><h3>Falls per minute (walking)</h3><div id="c-falls"></div></div>
+    <div class="card"><h3>Gets up from prone within 6 s</h3><div id="c-rec"></div></div>
   </div>
   <details><summary>Table view</summary><div class="tablewrap card" style="margin-top:8px"><table id="t-final"></table></div></details>
 
@@ -195,12 +198,15 @@ const hideTip = () => { tip.style.display = "none"; };
 
 function label(a) { return a.hidden.join("-"); }
 
-function scatter(el, pts, yOf, band, yLabel, yFmt) {
+function scatter(el, pts, yMax, band, yLabel, yFmt) {
   // pts: [{x, y, name, kind, html}]; log-x params, linear y from 0.
   const W = 440, H = 260, m = { l: 44, r: 16, t: 12, b: 36 };
   const xs = pts.map((p) => p.x), ys = pts.map((p) => p.y).concat(band ? [band[1]] : []);
   const x0 = Math.log10(Math.min(...xs) / 1.6), x1 = Math.log10(Math.max(...xs) * 1.6);
-  const y1 = Math.max(...ys) * 1.18 || 1;
+  const top = Math.max(...ys) * 1.12 || 1;
+  const raw = top / 4, mag = Math.pow(10, Math.floor(Math.log10(raw)));
+  const step = [1, 2, 2.5, 5, 10].map((k) => k * mag).find((k) => k >= raw);
+  const y1 = yMax || step * 4;
   const X = (v) => m.l + (Math.log10(v) - x0) / (x1 - x0) * (W - m.l - m.r);
   const Y = (v) => H - m.b - v / y1 * (H - m.t - m.b);
   let s = `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${esc(yLabel)} against parameter count">`;
@@ -238,8 +244,10 @@ fetch("data.json").then((r) => r.json()).then((d) => {
   $("#bid").textContent = `${d.batch_id} · ${d.created.slice(0, 10)} · ${d.executed.gpu}`;
   const T = d.teacher, tf = T.final;
   const fin = d.arms.filter((a) => a.status === "finalist" && a.final);
-  const holds = (a) => a.final.lin_err.mean <= tf.lin_err.max * 1.0
-    && a.final.falls_per_min.mean <= tf.falls_per_min.max + 0.25;
+  const holds = (a) => a.final.lin_err.mean <= tf.lin_err.max
+    && a.final.ang_err.mean <= tf.ang_err.max
+    && a.final.falls_per_min.mean <= tf.falls_per_min.max + 0.25
+    && (a.final.recovered_frac.mean == null || a.final.recovered_frac.mean >= tf.recovered_frac.min - 0.05);
   const best = fin.slice().sort((a, b) => a.params - b.params).find(holds);
   const smallest = fin.slice().sort((a, b) => a.params - b.params)[0];
   const lead = best
@@ -263,16 +271,19 @@ fetch("data.json").then((r) => r.json()).then((d) => {
     `<strong>${esc(name)}</strong> · ${int(params)} params<br>`
     + `planar err ${fmt(f.lin_err.mean)} ± ${fmt(f.lin_err.sd)} m/s<br>`
     + `yaw err ${fmt(f.ang_err.mean)} ± ${fmt(f.ang_err.sd)} rad/s<br>`
-    + `falls ${fmt(f.falls_per_min.mean, 2)}/min · down ${pct(f.down_frac.mean)}`;
+    + `falls ${fmt(f.falls_per_min.mean, 2)}/min · down ${pct(f.down_frac.mean)}<br>`
+    + `gets up ${pct(f.recovered_frac.mean)} of prone spawns` + (f.t_up_s.mean != null ? ` in ${fmt(f.t_up_s.mean, 2)} s` : "");
   const pts = fin.map((a) => ({ x: a.params, name: label(a), kind: "student", f: a.final, html: rowHtml(label(a), a.final, a.params) }));
   pts.push({ x: T.params, name: "teacher", kind: "teacher", f: tf, html: rowHtml("Pollen velstand (teacher)", tf, T.params) });
   scatter($("#c-lin"), pts.map((p) => ({ ...p, y: p.f.lin_err.mean / tf.lin_err.mean })), null,
     [tf.lin_err.min / tf.lin_err.mean, tf.lin_err.max / tf.lin_err.mean], "planar error ratio", (v) => v.toFixed(2) + "x");
   scatter($("#c-falls"), pts.map((p) => ({ ...p, y: p.f.falls_per_min.mean })), null,
     [tf.falls_per_min.min, tf.falls_per_min.max], "falls per minute", (v) => v.toFixed(1));
+  scatter($("#c-rec"), pts.map((p) => ({ ...p, y: p.f.recovered_frac.mean || 0 })), 1,
+    [tf.recovered_frac.min, tf.recovered_frac.max], "share of prone spawns back up", (v) => Math.round(v * 100) + "%");
 
-  const hdr = "<tr><th>Policy</th><th class=r>Params</th><th class=r>Planar err (m/s)</th><th class=r>Yaw err (rad/s)</th><th class=r>Falls/min</th><th class=r>Down</th><th class=r>Action gap to teacher</th></tr>";
-  const tr = (n, p, f) => `<tr><td>${esc(n)}</td><td class=r>${int(p)}</td><td class=r>${fmt(f.lin_err.mean)} ± ${fmt(f.lin_err.sd)}</td><td class=r>${fmt(f.ang_err.mean)} ± ${fmt(f.ang_err.sd)}</td><td class=r>${fmt(f.falls_per_min.mean, 2)} ± ${fmt(f.falls_per_min.sd, 2)}</td><td class=r>${pct(f.down_frac.mean)}</td><td class=r>${fmt(f.teacher_mse.mean, 4)}</td></tr>`;
+  const hdr = "<tr><th>Policy</th><th class=r>Params</th><th class=r>Planar err (m/s)</th><th class=r>Yaw err (rad/s)</th><th class=r>Falls/min</th><th class=r>Down</th><th class=r>Gets up</th><th class=r>Time to get up</th><th class=r>Action gap to teacher</th></tr>";
+  const tr = (n, p, f) => `<tr><td>${esc(n)}</td><td class=r>${int(p)}</td><td class=r>${fmt(f.lin_err.mean)} ± ${fmt(f.lin_err.sd)}</td><td class=r>${fmt(f.ang_err.mean)} ± ${fmt(f.ang_err.sd)}</td><td class=r>${fmt(f.falls_per_min.mean, 2)} ± ${fmt(f.falls_per_min.sd, 2)}</td><td class=r>${pct(f.down_frac.mean)}</td><td class=r>${pct(f.recovered_frac.mean)}</td><td class=r>${f.t_up_s.mean == null ? "–" : fmt(f.t_up_s.mean, 2) + " s"}</td><td class=r>${fmt(f.teacher_mse.mean, 4)}</td></tr>`;
   $("#t-final").innerHTML = hdr + tr("teacher (Pollen velstand)", T.params, tf) + fin.map((a) => tr(label(a), a.params, a.final)).join("");
 
   $("#t-play").innerHTML = "<tr><th>Policy</th><th class=r>Params</th><th>Hub repo</th><th>Play</th></tr>"

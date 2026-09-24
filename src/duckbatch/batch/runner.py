@@ -80,6 +80,9 @@ def run_batch(menu_path: str | Path, out_root: str | Path = "records", device: s
     eta = int(menu.get("eta", 2))
     seed = int(menu.get("seed", 0))
     gates = menu.get("gates", {})
+    # Early rungs (all but the last) may carry looser kill lines: successive halving prunes
+    # early by RANK, and absolute bars belong on the final, full-budget rung (b001 lesson).
+    gates_early = {**gates, **menu.get("gates_early", {})}
     ev = menu.get("eval", {})
     rung_eval_s = float(ev.get("rung_seconds", 20.0))
     recover_s = float(ev.get("recover_seconds", 6.0))
@@ -139,7 +142,7 @@ def run_batch(menu_path: str | Path, out_root: str | Path = "records", device: s
         last = r == len(menu["rungs"]) - 1
         n_log = {k: len(m.log) for k, m in models.items()}
         decisions = judgemod.judge_rung(rows, "teacher", meta, r, len(menu["rungs"]) - r - 1,
-                                        gates, models, actors)
+                                        gates if last else gates_early, models, actors)
         quota = len(live) if last else max(1, math.ceil(len(live) / eta))
         keep = judgemod.survivors(decisions, rows, "teacher", quota,
                                   mode=menu.get("rank", "quality"),
@@ -149,6 +152,7 @@ def run_batch(menu_path: str | Path, out_root: str | Path = "records", device: s
                 d.reasons.append(f"outranked (quota {quota})")
         rung_rec = {
             "rung": r, "iters": iters, "train_seconds": round(train_s, 1),
+            "gates": {**judgemod.DEFAULT_GATES, **(gates if last else gates_early)},
             "eval": {"seconds": rung_eval_s, "recover_seconds": recover_s,
                      "seed": rung_eval_seed, "profile": "walk+recover", "rows": rows},
             "decisions": [d.as_dict() for d in decisions],

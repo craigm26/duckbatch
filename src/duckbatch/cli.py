@@ -39,6 +39,7 @@ def main(argv: list[str] | None = None) -> int:
     pu.add_argument("--private", action="store_true")
     pu.add_argument("--dry-run", action="store_true", help="write the repo folders, upload nothing")
     pu.add_argument("--bench", default=None, help="bench.json (default: <batch>/bench.json)")
+    pu.add_argument("--space", default=None, help="also upload space/ to this Space repo id")
 
     a = p.parse_args(argv)
     if a.cmd == "probe":
@@ -63,6 +64,10 @@ def main(argv: list[str] | None = None) -> int:
         publish_batch(a.batch_dir, a.namespace, arms=a.arms.split(",") if a.arms else None,
                       dataset=a.dataset, private=a.private, dry_run=a.dry_run,
                       bench_file=a.bench)
+        if a.space and not a.dry_run:
+            from .publish import publish_space
+
+            publish_space("space", a.space, private=a.private)
     return 0
 
 

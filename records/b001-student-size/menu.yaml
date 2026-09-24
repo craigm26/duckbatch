@@ -1,0 +1,35 @@
+# b001: how small can Pollen's default walker get and still hold its line?
+# Pre-registered 2026-09-24, before the batch ran. See notes/2026-09-24-b001-design.md.
+batch_id: b001-student-size
+task: Mjlab-VelStand-Flat-MicroDuck
+teacher: teachers/velstand.onnx
+teacher_source: pollen-robotics/microduck-policies@1b56c396825c052a4e26e95cf2b8d8298af9e9b4/velstand.onnx
+num_envs: 512          # the 4 GB ceiling for VelStand (1024 runs out of memory)
+seed: 0
+eta: 2                 # keep ceil(n/2) per rung
+rank: efficiency       # among arms that pass every keep line, the smallest advance first
+judge:
+  models: [decide, jev]  # all available ones answer every case, in shadow, on identical text
+  act: [jev]             # only Jev may decide an uncertain case (>= 0.90); Decide is unmeasured
+rungs:
+  - {iters: 60}
+  - {iters: 120}
+  - {iters: 240}
+train:
+  steps_per_iter: 24
+  grad_steps: 20
+  beta0: 1.0
+  beta_decay_iters: 40
+eval:
+  rung_seconds: 20
+  recover_seconds: 6     # recovery profile: every episode spawns prone
+  rung_seed: 1000
+  final_seconds: 30
+  final_seeds: [2001, 2002, 2003]
+arms:                  # the teacher is 61-512-256-128-14 (197,774 params)
+  - {id: a01, hidden: [256, 128, 64]}
+  - {id: a02, hidden: [128, 128]}
+  - {id: a03, hidden: [128, 64]}
+  - {id: a04, hidden: [64, 64]}
+  - {id: a05, hidden: [64, 32]}
+  - {id: a06, hidden: [32, 32]}

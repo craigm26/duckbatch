@@ -62,9 +62,12 @@ def build_manifest(record: dict, arm_id: str, summary: dict) -> dict:
             f"default walker ({record['teacher']['params']:,} params) in simulation. Sim only: "
             f"never run on hardware."
         ),
+        # `twist` as a list: duck-studio's PolicyManifest decodes [String] (a string decodes as
+        # empty there); Pollen's validator only checks `encoding` and `idle`; the community
+        # flamingo-cycle manifest uses the same list form.
         "command": {"encoding": "constant", "idle": [0.0, 0.0, 0.0],
-                    "twist": "vx, vy, wz (m/s, m/s, rad/s)", "head": "neck/head pose",
-                    "body": "unused (zeros)"},
+                    "twist": ["vx (m/s)", "vy (m/s)", "wz (rad/s)"],
+                    "head": "neck/head pose", "body": "unused (zeros)"},
         "duration_s": None,
         "training": {
             "repo": "craigm26/duckbatch",
@@ -184,6 +187,13 @@ def publish_batch(batch_dir: str | Path, namespace: str, arms: list[str] | None 
         folder = out_root / repo_name(record, arm_id)
         folder.mkdir(parents=True, exist_ok=True)
         shutil.copy(batch_dir / record["arms"][arm_id]["policy"], folder / "policy.onnx")
+        try:  # Pollen's pre-upload smoke run: shapes, NaN/inf, a network that never changes
+            from mjlab_microduck.publish.manifest import check_onnx, smoke_run_onnx
+        except ImportError:
+            pass
+        else:
+            check_onnx(folder / "policy.onnx")
+            smoke_run_onnx(folder / "policy.onnx")
         (folder / "manifest.json").write_text(
             json.dumps(build_manifest(record, arm_id, summary), indent=2) + "\n")
         b = None
@@ -205,3 +215,20 @@ def publish_batch(batch_dir: str | Path, namespace: str, arms: list[str] | None 
                           commit_message=f"duckbatch {record['batch_id']}")
         print(f"[publish] records -> datasets/{dataset}")
     return published
+
+
+def publish_space(space_dir: str | Path, repo_id: str, private: bool = False) -> str:
+    """Upload the static results page (index.html + data.json + README) as an HF Space."""
+    from huggingface_hub import HfApi
+
+    from .batch.jev import load_dotenv
+
+    load_dotenv()
+    api = HfApi()
+    api.create_repo(repo_id, repo_type="space", space_sdk="static", private=private,
+                    exist_ok=True)
+    api.upload_folder(repo_id=repo_id, repo_type="space", folder_path=str(space_dir),
+                      allow_patterns=["index.html", "data.json", "README.md"],
+                      commit_message="duckbatch results page")
+    print(f"[publish] space -> https://huggingface.co/spaces/{repo_id}")
+    return repo_id
