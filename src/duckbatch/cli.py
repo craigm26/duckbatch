@@ -27,6 +27,10 @@ def main(argv: list[str] | None = None) -> int:
     be.add_argument("--runs", type=int, default=5000)
     be.add_argument("--out", default=None)
 
+    rj = sub.add_parser("rejudge", help="replay/measure decision models on a batch's cases")
+    rj.add_argument("batch_dir")
+    rj.add_argument("--models", default="", help="comma-separated: jev,decide (ask them now)")
+
     pu = sub.add_parser("publish", help="push a batch's finalists and records to the HF Hub")
     pu.add_argument("batch_dir")
     pu.add_argument("--namespace", required=True, help="HF user or org")
@@ -34,6 +38,7 @@ def main(argv: list[str] | None = None) -> int:
     pu.add_argument("--dataset", default=None, help="dataset repo for the records")
     pu.add_argument("--private", action="store_true")
     pu.add_argument("--dry-run", action="store_true", help="write the repo folders, upload nothing")
+    pu.add_argument("--bench", default=None, help="bench.json (default: <batch>/bench.json)")
 
     a = p.parse_args(argv)
     if a.cmd == "probe":
@@ -48,11 +53,16 @@ def main(argv: list[str] | None = None) -> int:
         from .bench import main as bench_main
 
         bench_main(a.onnx, a.int8, a.out, a.runs, a.obs)
+    elif a.cmd == "rejudge":
+        from .batch.rejudge import rejudge
+
+        rejudge(a.batch_dir, [m for m in a.models.split(",") if m])
     elif a.cmd == "publish":
         from .publish import publish_batch
 
         publish_batch(a.batch_dir, a.namespace, arms=a.arms.split(",") if a.arms else None,
-                      dataset=a.dataset, private=a.private, dry_run=a.dry_run)
+                      dataset=a.dataset, private=a.private, dry_run=a.dry_run,
+                      bench_file=a.bench)
     return 0
 
 

@@ -42,6 +42,16 @@ def _git_sha() -> str | None:
         return None
 
 
+def evaluate_both(pop, walk_s: float, recover_s: float, seed: int, record_obs: int = 0) -> dict:
+    """Walk profile (no prone spawns, no deliberate topples) + recovery profile, one row per arm.
+    The walk eval runs first so `recorded_obs` holds walking observations."""
+    rows = pop.evaluate(seconds=walk_s, seed=seed, record_obs=record_obs, profile="walk")
+    rec = pop.evaluate(seconds=recover_s, seed=seed + 500_000, profile="recover")
+    for k, r in rec.items():
+        rows[k].update({"recovered_frac": r["recovered_frac"], "t_up_s": r["t_up_s"]})
+    return rows
+
+
 def load_menu(path: str | Path) -> dict[str, Any]:
     menu = yaml.safe_load(Path(path).read_text())
     for key in ("batch_id", "teacher", "arms", "rungs"):
@@ -72,6 +82,7 @@ def run_batch(menu_path: str | Path, out_root: str | Path = "records", device: s
     gates = menu.get("gates", {})
     ev = menu.get("eval", {})
     rung_eval_s = float(ev.get("rung_seconds", 20.0))
+    recover_s = float(ev.get("recover_seconds", 6.0))
     rung_eval_seed = int(ev.get("rung_seed", 1000))
     final_seeds = [int(s) for s in ev.get("final_seeds", [2001, 2002, 2003])]
     final_s = float(ev.get("final_seconds", 30.0))
@@ -121,7 +132,7 @@ def run_batch(menu_path: str | Path, out_root: str | Path = "records", device: s
                   start_iter=it, log=log)
         it += iters
         train_s = time.perf_counter() - t0
-        rows = pop.evaluate(seconds=rung_eval_s, seed=rung_eval_seed)
+        rows = evaluate_both(pop, rung_eval_s, recover_s, rung_eval_seed)
         meta = {a.arm_id: {"loss_trail": [h["loss"] for h in a.history],
                            "params": mlp_params(a.hidden)}
                 for a in pop.arms if a.kind == "student"}
@@ -138,7 +149,8 @@ def run_batch(menu_path: str | Path, out_root: str | Path = "records", device: s
                 d.reasons.append(f"outranked (quota {quota})")
         rung_rec = {
             "rung": r, "iters": iters, "train_seconds": round(train_s, 1),
-            "eval": {"seconds": rung_eval_s, "seed": rung_eval_seed, "rows": rows},
+            "eval": {"seconds": rung_eval_s, "recover_seconds": recover_s,
+                     "seed": rung_eval_seed, "profile": "walk+recover", "rows": rows},
             "decisions": [d.as_dict() for d in decisions],
             "advance": keep,
             "model_calls": {k: m.log[n_log[k]:] for k, m in models.items()},
@@ -180,7 +192,8 @@ def run_batch(menu_path: str | Path, out_root: str | Path = "records", device: s
     final = {}
     if finalists:
         for i, s in enumerate(final_seeds):
-            final[str(s)] = pop.evaluate(seconds=final_s, seed=s, record_obs=4096 if i == 0 else 0)
+            final[str(s)] = evaluate_both(pop, final_s, recover_s, s,
+                                          record_obs=4096 if i == 0 else 0)
             if i == 0:
                 import numpy as np
                 np.save(out / "obs_sample.npy", torch.cat(pop.recorded_obs).numpy())
@@ -216,7 +229,8 @@ def run_batch(menu_path: str | Path, out_root: str | Path = "records", device: s
         "gates": {**judgemod.DEFAULT_GATES, **gates},
         "rungs": rung_files,
         "arms": arm_rows,
-        "final_eval": {"seconds": final_s, "seeds": final_seeds, "by_seed": final},
+        "final_eval": {"seconds": final_s, "recover_seconds": recover_s, "seeds": final_seeds,
+                       "profile": "walk+recover", "by_seed": final},
         "model_calls_total": {k: len(m.log) for k, m in models.items()},
     }
     (out / "record.json").write_text(json.dumps(record, indent=1))

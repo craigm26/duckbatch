@@ -104,3 +104,14 @@ def test_onnx_mlp_weights_matches_ort(tmp_path):
 def test_teacher_size():
     assert mlp_params((512, 256, 128)) == 197_774
     assert mlp_flops((64, 64)) == 2 * (61 * 64 + 64 * 64 + 64 * 14)
+
+
+def test_recovery_gate():
+    g = judge.DEFAULT_GATES
+    t = {**T, "recovered_frac": 0.97}
+    assert judge.rule_verdict(row(recovered_frac=0.95), t, g)[0] == "keep"
+    assert judge.rule_verdict(row(recovered_frac=0.80), t, g)[0] == "uncertain"
+    v, why = judge.rule_verdict(row(recovered_frac=0.40), t, g)
+    assert v == "kill" and "gets up" in why[0]
+    # an arm that never got up has t_up_s = NaN: not a non-finite kill by itself
+    assert judge.rule_verdict(row(recovered_frac=0.95, t_up_s=float("nan")), t, g)[0] == "keep"

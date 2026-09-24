@@ -33,9 +33,12 @@ DEFAULT_GATES: dict[str, float] = {
     "lin_kill_ratio": 1.6,
     "ang_keep_ratio": 1.15,
     "ang_kill_ratio": 1.6,
-    # fraction of time spent tilted past 60 degrees
+    # fraction of time spent tilted past 60 degrees (walk profile)
     "down_keep": 0.02,
     "down_kill": 0.10,
+    # share of prone spawns back up within the window, in points BELOW the teacher's
+    "recover_keep_drop": 0.10,
+    "recover_kill_drop": 0.30,
     # Jev acts alone at or above this confidence; below it the case goes to a person
     "jev_act_alone": 0.90,
     # share of machine-closed decisions sampled for a person to audit (FNV-1a of the arm id)
@@ -48,6 +51,7 @@ LAB_CONVENTIONS = {
             "student networks distilled from it.",
     "falls_per_min": "upright to tilted-past-60-degrees transitions per env-minute; lower is better",
     "down_frac": "fraction of time tilted past 60 degrees; lower is better",
+    "recovered_frac": "share of prone spawns upright within 6 s; higher is better",
     "lin_err": "mean |commanded - actual| planar velocity, m/s; lower is better",
     "ang_err": "mean |commanded - actual| yaw rate, rad/s; lower is better",
     "teacher_mse": "mean squared action gap to the teacher on the student's own states",
@@ -83,7 +87,8 @@ def fnv1a(s: str) -> int:
 
 def rule_verdict(row: dict[str, float], teacher: dict[str, float], g: dict[str, float]):
     """`kill` if any kill line is crossed, `keep` if every keep line holds, else `uncertain`."""
-    if not all(math.isfinite(float(v)) for v in row.values()):
+    core = ("falls_per_min", "down_frac", "lin_err", "ang_err")
+    if not all(math.isfinite(float(row[k])) for k in core):
         return "kill", ["non-finite metric"]
     kill, keep_fail = [], []
     df = row["falls_per_min"] - teacher["falls_per_min"]
@@ -106,6 +111,14 @@ def rule_verdict(row: dict[str, float], teacher: dict[str, float], g: dict[str, 
         kill.append(f"down {down:.1%} > {g['down_kill']:.0%}")
     elif down > g["down_keep"]:
         keep_fail.append(f"down {down:.1%}")
+    if "recovered_frac" in row and "recovered_frac" in teacher:
+        drop = teacher["recovered_frac"] - row["recovered_frac"]
+        if drop > g["recover_kill_drop"]:
+            kill.append(f"gets up {row['recovered_frac']:.0%} vs teacher "
+                        f"{teacher['recovered_frac']:.0%}")
+        elif drop > g["recover_keep_drop"]:
+            keep_fail.append(f"gets up {row['recovered_frac']:.0%} vs teacher "
+                             f"{teacher['recovered_frac']:.0%}")
     if kill:
         return "kill", kill
     if keep_fail:
@@ -162,7 +175,9 @@ def render_case(arm_id: str, row: dict, teacher: dict, loss_trail: list[float], 
         f"{teacher['lin_err']:.3f} m/s ({lin_r:.2f}x the teacher).\n"
         f"Yaw rate error: attempt {row['ang_err']:.3f} rad/s, teacher {teacher['ang_err']:.3f} "
         f"rad/s ({ang_r:.2f}x the teacher).\n"
-        f"Action gap to the teacher (mean squared): {row['teacher_mse']:.4f}.\n"
+        + (f"Gets up from a prone spawn within 6 s: attempt {row['recovered_frac']:.0%}, "
+           f"teacher {teacher['recovered_frac']:.0%}.\n" if "recovered_frac" in row else "")
+        + f"Action gap to the teacher (mean squared): {row['teacher_mse']:.4f}.\n"
         f"Training loss, last checkpoints: {', '.join(str(x) for x in tr) or 'none yet'}.\n"
         f"Lab conventions: an attempt that falls about {gates['falls_keep_abs']} more times per "
         f"minute than the teacher, or tracks velocity more than "
@@ -269,7 +284,8 @@ def rank_score(row: dict, teacher: dict) -> float:
     return (row["lin_err"] / max(teacher["lin_err"], 1e-6)
             + row["ang_err"] / max(teacher["ang_err"], 1e-6)
             + max(0.0, row["falls_per_min"] - teacher["falls_per_min"])
-            + 10.0 * row["down_frac"])
+            + 10.0 * row["down_frac"]
+            + 3.0 * max(0.0, teacher.get("recovered_frac", 0.0) - row.get("recovered_frac", 0.0)))
 
 
 def survivors(decisions: list[Decision], rows: dict[str, dict], teacher_id: str,

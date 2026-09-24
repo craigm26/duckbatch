@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>duckbatch results</title>
+<meta name="description" content="How small can Pollen's Microduck walker get? Batched distillation on a 4 GB GPU, judged by pre-registered rules, with decision models measured as judges.">
+<style>
+:root {
+  color-scheme: light;
+  --surface-0: #f4f4f1;
+  --surface-1: #fcfcfb;
+  --border: #e2e1dc;
+  --grid: #ecebe6;
+  --text-primary: #0b0b0b;
+  --text-secondary: #52514e;
+  --text-muted: #7a7974;
+  --series-1: #2a78d6;   /* students */
+  --series-2: #eb6834;   /* teacher */
+  --band: rgba(82, 81, 78, 0.12);
+  --good: #0f7b3f;
+  --bad: #b3261e;
+  --pending: #8a6100;
+  --link: #1f63b8;
+}
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    color-scheme: dark;
+    --surface-0: #121211;
+    --surface-1: #1a1a19;
+    --border: #2e2e2c;
+    --grid: #262624;
+    --text-primary: #ffffff;
+    --text-secondary: #c3c2b7;
+    --text-muted: #8f8e86;
+    --series-1: #3987e5;
+    --series-2: #d95926;
+    --band: rgba(195, 194, 183, 0.14);
+    --good: #4cc27f;
+    --bad: #f07a72;
+    --pending: #e0b050;
+    --link: #7fb2f0;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --surface-0: #121211;
+  --surface-1: #1a1a19;
+  --border: #2e2e2c;
+  --grid: #262624;
+  --text-primary: #ffffff;
+  --text-secondary: #c3c2b7;
+  --text-muted: #8f8e86;
+  --series-1: #3987e5;
+  --series-2: #d95926;
+  --band: rgba(195, 194, 183, 0.14);
+  --good: #4cc27f;
+  --bad: #f07a72;
+  --pending: #e0b050;
+  --link: #7fb2f0;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--surface-0); color: var(--text-primary);
+  font: 15px/1.55 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+main { max-width: 980px; margin: 0 auto; padding: 32px 16px 64px; }
+h1 { font-size: 28px; line-height: 1.2; margin: 0 0 8px; letter-spacing: -0.01em; }
+h2 { font-size: 19px; margin: 40px 0 8px; }
+h3 { font-size: 15px; margin: 0 0 4px; }
+p { margin: 8px 0; color: var(--text-secondary); max-width: 72ch; }
+p.lead { font-size: 17px; color: var(--text-primary); }
+a { color: var(--link); }
+code { font: 13px ui-monospace, SFMono-Regular, Menlo, monospace; background: var(--surface-1);
+  border: 1px solid var(--border); border-radius: 4px; padding: 1px 4px; }
+pre { background: var(--surface-1); border: 1px solid var(--border); border-radius: 8px;
+  padding: 12px 14px; overflow-x: auto; font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; }
+.card { background: var(--surface-1); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin: 20px 0; }
+.tile .num { font-size: 30px; font-weight: 650; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.tile .lbl { color: var(--text-secondary); font-size: 13px; }
+.charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; }
+.legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; color: var(--text-secondary); margin: 4px 0 8px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.sw { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.sw.band { border-radius: 2px; background: var(--band); width: 14px; }
+svg text { fill: var(--text-secondary); font-size: 11px; }
+svg .lab { fill: var(--text-primary); font-size: 11px; }
+.tablewrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+th { color: var(--text-secondary); font-weight: 600; }
+td.r, th.r { text-align: right; }
+.pill { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 12px; border: 1px solid currentColor; }
+.keep { color: var(--good); } .kill { color: var(--bad); } .pending { color: var(--pending); }
+details summary { cursor: pointer; color: var(--text-secondary); font-size: 13px; margin-top: 8px; }
+#tip { position: fixed; pointer-events: none; background: var(--surface-1); color: var(--text-primary);
+  border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; font-size: 12px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.12); display: none; max-width: 260px; z-index: 10; }
+.muted { color: var(--text-muted); font-size: 13px; }
+.toggle { float: right; background: none; border: 1px solid var(--border); color: var(--text-secondary);
+  border-radius: 6px; padding: 4px 10px; cursor: pointer; font: inherit; font-size: 12px; }
+</style>
+</head>
+<body>
+<main>
+  <button class="toggle" id="theme" aria-label="Toggle light and dark">Theme</button>
+  <div class="muted">duckbatch · <span id="bid"></span></div>
+  <h1>How small can Microduck's walker get?</h1>
+  <p class="lead" id="lead">Loading results…</p>
+  <p>Pollen's default walker is a 197,774-parameter network. duckbatch distils it into much smaller
+    students on a single 4 GB laptop GPU. All the attempts share one simulator batch, and
+    pre-registered rules kill or advance them. Decision models (Jev,
+    <a href="https://huggingface.co/fastino/GLiNER2.5-Decide">GLiNER2.5-Decide</a>) are measured
+    against those rules as judges. <strong>Simulation only</strong>: nothing here has run on a real
+    robot.</p>
+
+  <div class="tiles" id="tiles"></div>
+
+  <h2>Size against walking quality</h2>
+  <p>Each dot is a student that reached the final evaluation: held-out seeds, pushes and domain
+    randomization on, with the teacher in the same run. The shaded band is the teacher's own spread
+    across seeds; inside it, a student is indistinguishable from the teacher.</p>
+  <div class="legend"><span><i class="sw" style="background:var(--series-1)"></i>Student</span>
+    <span><i class="sw" style="background:var(--series-2)"></i>Teacher (Pollen velstand)</span>
+    <span><i class="sw band"></i>Teacher spread across seeds</span></div>
+  <div class="charts">
+    <div class="card"><h3>Planar velocity error, relative to the teacher</h3><div id="c-lin"></div></div>
+    <div class="card"><h3>Falls per minute</h3><div id="c-falls"></div></div>
+  </div>
+  <details><summary>Table view</summary><div class="tablewrap card" style="margin-top:8px"><table id="t-final"></table></div></details>
+
+  <h2>Drive them</h2>
+  <p>Each finalist is a Hub repo in Pollen's policy format (<code>policy.onnx</code> +
+    <code>manifest.json</code>, schema 2). Pollen's browser simulator loads it directly:</p>
+  <div class="tablewrap card"><table id="t-play"></table></div>
+
+  <h2>The batch: who was cut, and by whom</h2>
+  <p>Successive halving. Every attempt trains in the same env batch, and after each rung the judge
+    decides: the rules first, then a decision model on cases the rules cannot call, then a person.
+    Closed attempts hand their envs to the survivors.</p>
+  <div class="tablewrap card"><table id="t-rungs"></table></div>
+
+  <h2>Decision models as judges</h2>
+  <p id="judge-lead">Every case is rendered to the same text (numbers, ratios to the teacher, lab
+    conventions; never which rule line was crossed) and every decision model answers every case. On
+    the cases the rules settle, their answers are graded against the rules.</p>
+  <div class="tablewrap card"><table id="t-judges"></table></div>
+
+  <h2>On-device cost</h2>
+  <p>onnxruntime, batch 1, one thread: the way the robot's <code>duck-control</code> runs a policy.
+    Measured on the x86 laptop that trained them, not on the robot's RK3566, so read the ratios, not
+    the microseconds. Int8 is dynamic quantization; drift is the largest action change on recorded
+    observations.</p>
+  <div class="tablewrap card"><table id="t-bench"></table></div>
+
+  <h2>Reproduce</h2>
+<pre>git clone https://github.com/craigm26/duckbatch && cd duckbatch
+uv sync --extra sim --extra decide      # Linux / WSL2, CUDA GPU (4 GB is enough)
+./scripts/fetch_teachers.sh             # Pollen's policies, pinned + sha256-checked
+uv run duckbatch probe                  # how many envs fit on your GPU
+uv run duckbatch batch menus/b001-student-size.yaml
+uv run duckbatch rejudge records/b001-student-size   # decision-model agreement</pre>
+  <p class="muted" id="foot"></p>
+</main>
+<div id="tip" role="tooltip"></div>
+<script>
+const $ = (s) => document.querySelector(s);
+const fmt = (x, d = 3) => (x == null || Number.isNaN(x)) ? "–" : Number(x).toFixed(d);
+const pct = (x) => (x == null) ? "–" : (100 * x).toFixed(1) + "%";
+const int = (x) => (x == null) ? "–" : Number(x).toLocaleString("en-US");
+const SIM = "https://pollen-robotics-microduck-simulator.hf.space/?move=";
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+try {
+  const t = localStorage.getItem("theme");
+  if (t) document.documentElement.dataset.theme = t;
+} catch (e) {}
+$("#theme").onclick = () => {
+  const cur = document.documentElement.dataset.theme
+    || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+  const next = cur === "dark" ? "light" : "dark";
+  document.documentElement.dataset.theme = next;
+  try { localStorage.setItem("theme", next); } catch (e) {}
+};
+
+const tip = $("#tip");
+function showTip(ev, html) {
+  tip.innerHTML = html; tip.style.display = "block";
+  const x = Math.min(ev.clientX + 14, innerWidth - tip.offsetWidth - 8);
+  const y = Math.min(ev.clientY + 14, innerHeight - tip.offsetHeight - 8);
+  tip.style.left = x + "px"; tip.style.top = y + "px";
+}
+const hideTip = () => { tip.style.display = "none"; };
+
+function label(a) { return a.hidden.join("-"); }
+
+function scatter(el, pts, yOf, band, yLabel, yFmt) {
+  // pts: [{x, y, name, kind, html}]; log-x params, linear y from 0.
+  const W = 440, H = 260, m = { l: 44, r: 16, t: 12, b: 36 };
+  const xs = pts.map((p) => p.x), ys = pts.map((p) => p.y).concat(band ? [band[1]] : []);
+  const x0 = Math.log10(Math.min(...xs) / 1.6), x1 = Math.log10(Math.max(...xs) * 1.6);
+  const y1 = Math.max(...ys) * 1.18 || 1;
+  const X = (v) => m.l + (Math.log10(v) - x0) / (x1 - x0) * (W - m.l - m.r);
+  const Y = (v) => H - m.b - v / y1 * (H - m.t - m.b);
+  let s = `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${esc(yLabel)} against parameter count">`;
+  for (let i = 0; i <= 4; i++) {
+    const v = y1 * i / 4;
+    s += `<line x1="${m.l}" x2="${W - m.r}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--grid)"/>`;
+    s += `<text x="${m.l - 6}" y="${Y(v) + 4}" text-anchor="end">${yFmt(v)}</text>`;
+  }
+  for (const v of [1e3, 3e3, 1e4, 3e4, 1e5, 3e5]) {
+    if (Math.log10(v) < x0 || Math.log10(v) > x1) continue;
+    s += `<text x="${X(v)}" y="${H - m.b + 16}" text-anchor="middle">${v >= 1e3 ? (v / 1e3) + "k" : v}</text>`;
+  }
+  s += `<text x="${(W + m.l) / 2}" y="${H - 4}" text-anchor="middle">parameters (log scale)</text>`;
+  if (band) {
+    s += `<rect x="${m.l}" width="${W - m.l - m.r}" y="${Y(band[1])}" height="${Math.max(1, Y(band[0]) - Y(band[1]))}" fill="var(--band)"/>`;
+  }
+  pts.forEach((p, i) => {
+    const c = p.kind === "teacher" ? "var(--series-2)" : "var(--series-1)";
+    s += `<g class="pt" data-i="${i}"><circle cx="${X(p.x)}" cy="${Y(p.y)}" r="14" fill="transparent"/>`
+      + `<circle cx="${X(p.x)}" cy="${Y(p.y)}" r="5" fill="${c}" stroke="var(--surface-1)" stroke-width="2"/>`
+      + `<text class="lab" x="${X(p.x)}" y="${Y(p.y) - 10}" text-anchor="middle">${esc(p.name)}</text></g>`;
+  });
+  s += "</svg>";
+  el.innerHTML = s;
+  el.querySelectorAll(".pt").forEach((g) => {
+    const p = pts[+g.dataset.i];
+    g.addEventListener("mousemove", (ev) => showTip(ev, p.html));
+    g.addEventListener("mouseleave", hideTip);
+  });
+}
+
+function pill(v) { return `<span class="pill ${v}">${v}</span>`; }
+
+fetch("data.json").then((r) => r.json()).then((d) => {
+  $("#bid").textContent = `${d.batch_id} · ${d.created.slice(0, 10)} · ${d.executed.gpu}`;
+  const T = d.teacher, tf = T.final;
+  const fin = d.arms.filter((a) => a.status === "finalist" && a.final);
+  const holds = (a) => a.final.lin_err.mean <= tf.lin_err.max * 1.0
+    && a.final.falls_per_min.mean <= tf.falls_per_min.max + 0.25;
+  const best = fin.slice().sort((a, b) => a.params - b.params).find(holds);
+  const smallest = fin.slice().sort((a, b) => a.params - b.params)[0];
+  const lead = best
+    ? `A ${int(best.params)}-parameter student (${label(best)}, ${(T.params / best.params).toFixed(0)}x smaller) walks within the teacher's own seed-to-seed spread in simulation.`
+    : smallest
+      ? `No student held the teacher's line within its seed-to-seed spread. The smallest finalist, ${label(smallest)} (${int(smallest.params)} params), shows the gap below.`
+      : "No attempt reached the final evaluation.";
+  $("#lead").textContent = lead;
+
+  const tiles = [];
+  if (best) {
+    tiles.push([`${(T.params / best.params).toFixed(0)}x`, `fewer parameters than Pollen's walker (${int(best.params)} vs ${int(T.params)})`]);
+    if (best.bench && T.bench) tiles.push([`${(T.bench.p50_us / best.bench.p50_us).toFixed(1)}x`, "faster per step, 1-thread onnxruntime (laptop)"]);
+  }
+  const nAttempts = d.arms.length;
+  tiles.push([`${nAttempts} → ${fin.length}`, `attempts in one 4 GB GPU batch → finalists`]);
+  tiles.push([`${(d.executed.wall_seconds / 60).toFixed(0)} min`, `wall time for the whole batch (${int(d.executed.num_envs)} envs)`]);
+  $("#tiles").innerHTML = tiles.map(([n, l]) => `<div class="card tile"><div class="num">${n}</div><div class="lbl">${esc(l)}</div></div>`).join("");
+
+  const rowHtml = (name, f, params) =>
+    `<strong>${esc(name)}</strong> · ${int(params)} params<br>`
+    + `planar err ${fmt(f.lin_err.mean)} ± ${fmt(f.lin_err.sd)} m/s<br>`
+    + `yaw err ${fmt(f.ang_err.mean)} ± ${fmt(f.ang_err.sd)} rad/s<br>`
+    + `falls ${fmt(f.falls_per_min.mean, 2)}/min · down ${pct(f.down_frac.mean)}`;
+  const pts = fin.map((a) => ({ x: a.params, name: label(a), kind: "student", f: a.final, html: rowHtml(label(a), a.final, a.params) }));
+  pts.push({ x: T.params, name: "teacher", kind: "teacher", f: tf, html: rowHtml("Pollen velstand (teacher)", tf, T.params) });
+  scatter($("#c-lin"), pts.map((p) => ({ ...p, y: p.f.lin_err.mean / tf.lin_err.mean })), null,
+    [tf.lin_err.min / tf.lin_err.mean, tf.lin_err.max / tf.lin_err.mean], "planar error ratio", (v) => v.toFixed(2) + "x");
+  scatter($("#c-falls"), pts.map((p) => ({ ...p, y: p.f.falls_per_min.mean })), null,
+    [tf.falls_per_min.min, tf.falls_per_min.max], "falls per minute", (v) => v.toFixed(1));
+
+  const hdr = "<tr><th>Policy</th><th class=r>Params</th><th class=r>Planar err (m/s)</th><th class=r>Yaw err (rad/s)</th><th class=r>Falls/min</th><th class=r>Down</th><th class=r>Action gap to teacher</th></tr>";
+  const tr = (n, p, f) => `<tr><td>${esc(n)}</td><td class=r>${int(p)}</td><td class=r>${fmt(f.lin_err.mean)} ± ${fmt(f.lin_err.sd)}</td><td class=r>${fmt(f.ang_err.mean)} ± ${fmt(f.ang_err.sd)}</td><td class=r>${fmt(f.falls_per_min.mean, 2)} ± ${fmt(f.falls_per_min.sd, 2)}</td><td class=r>${pct(f.down_frac.mean)}</td><td class=r>${fmt(f.teacher_mse.mean, 4)}</td></tr>`;
+  $("#t-final").innerHTML = hdr + tr("teacher (Pollen velstand)", T.params, tf) + fin.map((a) => tr(label(a), a.params, a.final)).join("");
+
+  $("#t-play").innerHTML = "<tr><th>Policy</th><th class=r>Params</th><th>Hub repo</th><th>Play</th></tr>"
+    + fin.filter((a) => a.repo).map((a) => `<tr><td>${esc(label(a))}</td><td class=r>${int(a.params)}</td><td><a href="https://huggingface.co/${esc(a.repo)}">${esc(a.repo)}</a></td><td><a href="${SIM}${encodeURIComponent(a.repo)}">Drive in simulator →</a></td></tr>`).join("")
+    + `<tr><td>teacher</td><td class=r>${int(T.params)}</td><td><a href="https://huggingface.co/pollen-robotics/microduck-policies">pollen-robotics/microduck-policies</a></td><td><a href="https://pollen-robotics-microduck-simulator.hf.space/">Pollen's simulator →</a></td></tr>`;
+
+  const rr = ["<tr><th>Rung</th><th>Attempt</th><th class=r>Params</th><th>Verdict</th><th>Decided by</th><th>Why</th><th>Decision models (shadow)</th></tr>"];
+  const byId = Object.fromEntries(d.arms.map((a) => [a.id, a]));
+  for (const r of d.rungs) {
+    for (const x of r.decisions) {
+      const adv = r.advance.includes(x.arm_id);
+      const sh = Object.entries(x.shadow || {}).map(([k, v]) => v.choice ? `${k}: ${v.choice} @ ${fmt(v.confidence, 2)}` : `${k}: error`).join("; ");
+      rr.push(`<tr><td>${r.rung} (${r.iters} it)</td><td>${esc(label(byId[x.arm_id]))}</td><td class=r>${int(byId[x.arm_id].params)}</td><td>${pill(x.verdict)}${adv ? " → next" : ""}</td><td>${esc(x.tier)}</td><td style="white-space:normal;min-width:220px">${esc(x.reasons.join("; "))}</td><td>${esc(sh)}</td></tr>`);
+    }
+  }
+  $("#t-rungs").innerHTML = rr.join("");
+
+  if (d.judges && Object.keys(d.judges.models).length) {
+    $("#t-judges").innerHTML = "<tr><th>Model</th><th class=r>Agrees with rules</th><th class=r>Rule: keep</th><th class=r>Rule: kill</th><th class=r>Confident and wrong</th><th class=r>Mean confidence</th></tr>"
+      + Object.entries(d.judges.models).map(([k, m]) => `<tr><td>${esc(k)}</td><td class=r>${m.agreement == null ? "–" : pct(m.agreement)} of ${m.rule_settled}</td><td class=r>${m.by_rule.keep.agree}/${m.by_rule.keep.n}</td><td class=r>${m.by_rule.kill.agree}/${m.by_rule.kill.n}</td><td class=r>${m.confident_and_wrong}</td><td class=r>${fmt(m.mean_confidence, 2)}</td></tr>`).join("");
+  } else {
+    $("#t-judges").innerHTML = "<tr><td>No decision-model report for this batch yet.</td></tr>";
+  }
+
+  const bRow = (n, p, b) => b ? `<tr><td>${esc(n)}</td><td class=r>${int(p)}</td><td class=r>${int(b.bytes)}</td><td class=r>${fmt(b.p50_us, 1)} µs</td><td class=r>${fmt(b.p99_us, 1)} µs</td><td class=r>${b.int8_p50_us ? fmt(b.int8_p50_us, 1) + " µs" : "–"}</td><td class=r>${b.int8_drift != null ? fmt(b.int8_drift, 3) : "–"}</td></tr>` : "";
+  $("#t-bench").innerHTML = "<tr><th>Policy</th><th class=r>Params</th><th class=r>Bytes</th><th class=r>p50</th><th class=r>p99</th><th class=r>Int8 p50</th><th class=r>Int8 drift (max |Δa|)</th></tr>"
+    + bRow("teacher", T.params, T.bench) + fin.map((a) => bRow(label(a), a.params, a.bench)).join("");
+
+  $("#foot").textContent = `Task ${d.task}; final eval ${d.final_eval.seconds} s × seeds ${d.final_eval.seeds.join(", ")}; judge ${d.executed.judge}; commit ${(d.executed.duckbatch_commit || "").slice(0, 7)}.`;
+}).catch((e) => { $("#lead").textContent = "Could not load data.json: " + e; });
+</script>
+</body>
+</html>

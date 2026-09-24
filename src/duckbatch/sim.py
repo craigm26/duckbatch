@@ -17,8 +17,10 @@ The teacher can itself be an arm (`kind="teacher"`): it is the reference row in 
 
 from __future__ import annotations
 
+import copy
 import math
 import time
+from contextlib import contextmanager
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -30,6 +32,37 @@ from .policy import build_mlp, load_teacher
 DEFAULT_TASK = "Mjlab-VelStand-Flat-MicroDuck"
 # Past every curriculum stage in microduck_rl (the last ones sit at 2000 * 24 steps).
 FINAL_CURRICULUM_STEP = 10**9
+
+# A zero range: push_by_setting_velocity ADDS the sampled velocity, so this is a no-op.
+_ZERO_PUSH = {"x": (0.0, 0.0), "y": (0.0, 0.0)}
+_NO_TOPPLE = {
+    "curriculum": {"topple_push_range": {"push_stages": [{"step": 0,
+                                                          "velocity_range": _ZERO_PUSH}]}},
+    "events": {"topple_push": {"velocity_range": _ZERO_PUSH}},
+}
+EVAL_PROFILES: dict[str, dict] = {
+    "train": {},
+    "walk": {
+        "curriculum": {
+            **_NO_TOPPLE["curriculum"],
+            "prone_init_prob": {"param_stages": [
+                {"step": 0, "params": {"prone_prob": 0.0, "crouch_prob": 0.0}}]},
+        },
+        "events": {**_NO_TOPPLE["events"],
+                   "random_prone_init": {"prone_prob": 0.0, "crouch_prob": 0.0}},
+    },
+    "recover": {
+        "curriculum": {
+            **_NO_TOPPLE["curriculum"],
+            "prone_init_prob": {"param_stages": [
+                {"step": 0, "params": {"prone_prob": 1.0, "face_down_prob": 0.5,
+                                       "side_prob": 0.5, "crouch_prob": 0.0}}]},
+        },
+        "events": {**_NO_TOPPLE["events"],
+                   "random_prone_init": {"prone_prob": 1.0, "face_down_prob": 0.5,
+                                         "side_prob": 0.5, "crouch_prob": 0.0}},
+    },
+}
 
 
 def make_env(task: str, num_envs: int, device: str = "cuda:0", seed: int = 0,
@@ -205,68 +238,147 @@ class Population:
 
     # -- evaluation ------------------------------------------------------------------------------
 
-    def evaluate(self, seconds: float = 20.0, seed: int = 12345,
-                 record_obs: int = 0) -> dict[str, dict[str, float]]:
+    @contextmanager
+    def profile(self, name: str):
+        """Temporarily set the env's spawn/push events to an eval profile, then restore them.
+
+        WHY. At its final curriculum stage VelStand deliberately spawns 45% of episodes prone and
+        20% crouched and adds "topple" pushes of up to 1.2 m/s, to TRAIN recovery. Scoring a
+        walk on that mix counts every prone spawn and every deliberate topple as a fall. So:
+          walk     HOME spawns, the ordinary +-0.3 m/s stumble pushes, no topples
+          recover  every episode spawns prone (half face-down, half on a side), no topples
+          train    whatever the task's curriculum says (no override)
+        The overrides patch the live curriculum stages too, or the next reset would re-apply them.
+        Terms a task does not have are skipped, so other tasks evaluate unmodified.
+        """
+        prof = EVAL_PROFILES[name]
+        cm, em = self.env.curriculum_manager, self.env.event_manager
+        saved: list[tuple[dict, dict]] = []
+
+        def patch(params: dict, new: dict):
+            saved.append((params, copy.deepcopy(params)))
+            params.update(copy.deepcopy(new))
+
+        for term, new in prof.get("curriculum", {}).items():
+            if term in cm.active_terms:
+                patch(cm.get_term_cfg(term).params, new)
+        for mode_terms in em.active_terms.values():
+            for term in mode_terms:
+                if term in prof.get("events", {}):
+                    patch(em.get_term_cfg(term).params, prof["events"][term])
+        try:
+            yield
+        finally:
+            for params, old in reversed(saved):
+                params.clear()
+                params.update(old)
+
+    def evaluate(self, seconds: float = 20.0, seed: int = 12345, record_obs: int = 0,
+                 profile: str = "walk") -> dict[str, dict[str, float]]:
         """Every live arm drives its own envs with no teacher help, from a fixed reset seed.
 
-        Metrics per arm (all on the arm's own state distribution):
-          falls_per_min     upright -> tilted-past-60-degrees transitions, per env-minute. Not
-                            terminations: at its final curriculum stage VelStand turns
-                            `fell_over` off (falls are recovery practice), so a fallen duck
-                            keeps its episode and only `fallen_too_long` ends it.
-          down_frac         fraction of env-steps spent tilted past 60 degrees
-          lin_err / ang_err mean |commanded - actual| planar / yaw velocity, m/s and rad/s
+        Walk metrics per arm (see `profile`), all on the arm's own state distribution:
+          falls_per_min     upright -> tilted-past-60-degrees transitions, per env-minute
+                            (a reset step never counts)
+          down_frac         fraction of env-steps tilted past 60 degrees
+          lin_err / ang_err mean |commanded - actual| planar / yaw velocity while upright
           teacher_mse       mean squared gap to the teacher's action on the same observation
           reward_per_s      the task's own reward, per simulated second
         """
+        if profile == "recover":
+            return self.evaluate_recovery(seconds, seed)
         env = self.env
         dt = env.step_dt
         steps = int(math.ceil(seconds / dt))
         robot = env.scene["robot"]
         parts = self.partition()
-        acc = {a.arm_id: dict(falls=0.0, down=0.0, lin=0.0, ang=0.0, mse=0.0, rew=0.0, n=0.0)
-               for a, _ in parts}
-        self.reset(seed=seed)
-        self.recorded_obs = []
-        was_down = torch.zeros(env.num_envs, dtype=torch.bool, device=self.device)
-        for i in range(steps):
-            if record_obs and i % max(1, steps // 32) == 0:
-                # Observations as the policies saw them, sampled across the whole eval.
-                self.recorded_obs.append(self.obs[:: max(1, self.env.num_envs * 32 // record_obs)]
-                                         .cpu())
-            act, teacher_act, rew, terminated, truncated = self.step(beta=0.0, record=False)
-            cmd = env.command_manager.get_command("twist")
-            v = robot.data.root_link_lin_vel_b
-            w = robot.data.root_link_ang_vel_b
-            lin = torch.linalg.norm(cmd[:, :2] - v[:, :2], dim=1)
-            ang = (cmd[:, 2] - w[:, 2]).abs()
-            mse = ((act - teacher_act) ** 2).mean(dim=1)
-            # Gravity in the body frame: z = -1 upright, -0.5 at 60 degrees of tilt.
-            down = robot.data.projected_gravity_b[:, 2] > -0.5
-            fell = down & ~was_down
-            was_down = down
-            for arm, sl in parts:
-                a = acc[arm.arm_id]
-                a["falls"] += float(fell[sl].sum())
-                a["down"] += float(down[sl].sum())
-                a["lin"] += float(lin[sl].sum())
-                a["ang"] += float(ang[sl].sum())
-                a["mse"] += float(mse[sl].sum())
-                a["rew"] += float(rew[sl].sum())
-                a["n"] += sl.stop - sl.start
+        acc = {a.arm_id: dict(falls=0.0, down=0.0, lin=0.0, ang=0.0, up=0.0, mse=0.0, rew=0.0,
+                              n=0.0) for a, _ in parts}
+        with self.profile(profile):
+            self.reset(seed=seed)
+            self.recorded_obs = []
+            was_down = robot.data.projected_gravity_b[:, 2] > -0.5
+            for i in range(steps):
+                if record_obs and i % max(1, steps // 32) == 0:
+                    # Observations as the policies saw them, sampled across the whole eval.
+                    self.recorded_obs.append(
+                        self.obs[:: max(1, self.env.num_envs * 32 // record_obs)].cpu())
+                act, teacher_act, rew, terminated, truncated = self.step(beta=0.0, record=False)
+                reset = (terminated | truncated).bool()
+                cmd = env.command_manager.get_command("twist")
+                v = robot.data.root_link_lin_vel_b
+                w = robot.data.root_link_ang_vel_b
+                lin = torch.linalg.norm(cmd[:, :2] - v[:, :2], dim=1)
+                ang = (cmd[:, 2] - w[:, 2]).abs()
+                mse = ((act - teacher_act) ** 2).mean(dim=1)
+                # Gravity in the body frame: z = -1 upright, -0.5 at 60 degrees of tilt.
+                down = robot.data.projected_gravity_b[:, 2] > -0.5
+                fell = down & ~was_down & ~reset
+                was_down = down
+                up = (~down).float()
+                for arm, sl in parts:
+                    a = acc[arm.arm_id]
+                    a["falls"] += float(fell[sl].sum())
+                    a["down"] += float(down[sl].sum())
+                    a["lin"] += float((lin[sl] * up[sl]).sum())
+                    a["ang"] += float((ang[sl] * up[sl]).sum())
+                    a["up"] += float(up[sl].sum())
+                    a["mse"] += float(mse[sl].sum())
+                    a["rew"] += float(rew[sl].sum())
+                    a["n"] += sl.stop - sl.start
         out = {}
         for arm, sl in parts:
             a = acc[arm.arm_id]
             n = max(a["n"], 1.0)
+            u = max(a["up"], 1.0)
             out[arm.arm_id] = {
                 "envs": sl.stop - sl.start,
                 "sim_seconds": seconds,
                 "falls_per_min": a["falls"] / (n * dt / 60.0),
                 "down_frac": a["down"] / n,
-                "lin_err": a["lin"] / n,
-                "ang_err": a["ang"] / n,
+                "lin_err": a["lin"] / u,
+                "ang_err": a["ang"] / u,
                 "teacher_mse": a["mse"] / n,
                 "reward_per_s": a["rew"] / (n * dt),
             }
         self.obs = None  # training resumes from a fresh reset
+        return out
+
+    def evaluate_recovery(self, seconds: float = 6.0, seed: int = 777) -> dict[str, dict]:
+        """Every env spawns prone; how many get up, and how fast.
+
+          recovered_frac  share of envs upright (tilt under 30 degrees) for 0.5 s within
+                          `seconds` of a prone spawn; an env the task resets first
+                          (`fallen_too_long`) counts as not recovered
+          t_up_s          mean seconds to get up, over the envs that did
+        """
+        env = self.env
+        dt = env.step_dt
+        steps = int(math.ceil(seconds / dt))
+        hold = max(1, int(round(0.5 / dt)))
+        robot = env.scene["robot"]
+        parts = self.partition()
+        n = env.num_envs
+        t_up = torch.full((n,), float("nan"), device=self.device)
+        streak = torch.zeros(n, device=self.device)
+        done = torch.zeros(n, dtype=torch.bool, device=self.device)
+        with self.profile("recover"):
+            self.reset(seed=seed)
+            for i in range(steps):
+                _, _, _, terminated, truncated = self.step(beta=0.0, record=False)
+                upright = robot.data.projected_gravity_b[:, 2] < -0.866
+                streak = torch.where(upright, streak + 1, torch.zeros_like(streak))
+                got_up = (streak >= hold) & ~done
+                t_up = torch.where(got_up, torch.full_like(t_up, (i + 1 - hold) * dt), t_up)
+                done |= got_up | (terminated | truncated).bool()
+        out = {}
+        for arm, sl in parts:
+            tu = t_up[sl]
+            ok = ~torch.isnan(tu)
+            out[arm.arm_id] = {
+                "envs": sl.stop - sl.start,
+                "recovered_frac": float(ok.float().mean()),
+                "t_up_s": float(tu[ok].mean()) if bool(ok.any()) else float("nan"),
+            }
+        self.obs = None
         return out
