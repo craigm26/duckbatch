@@ -1,0 +1,71 @@
+# r001: can a decision model turn a plain-language request into Microduck steps?
+# Pre-registered 2026-09-24: the requests and their gold labels were written BEFORE any
+# model was run on them. See notes/2026-09-24-r001-design.md.
+#
+# One gold step per clause. Heads:
+#   action  walk_forward walk_backward turn_left turn_right stop kick_left kick_right
+#           sit_or_stand roll peck_ground make_sound unsupported
+#   speed   slow normal fast            (movement only; `normal` when unstated)
+#   sound   greet alarm inquire peck chirp coo wheee   (make_sound only)
+#   head    straight look_left look_right look_up look_down   (`straight` when unstated)
+# Clause splitting is code, not a model: " then ", ", then", "; ", " and then ", " after that ".
+id: r001-router-requests
+requests:
+  # --- single, plain -------------------------------------------------------------------
+  - {text: "walk forward", steps: [{action: walk_forward, speed: normal, head: straight}]}
+  - {text: "go backwards", steps: [{action: walk_backward, speed: normal, head: straight}]}
+  - {text: "turn left", steps: [{action: turn_left, speed: normal, head: straight}]}
+  - {text: "turn right", steps: [{action: turn_right, speed: normal, head: straight}]}
+  - {text: "stop", steps: [{action: stop, speed: normal, head: straight}]}
+  - {text: "kick with your left foot", steps: [{action: kick_left, speed: normal, head: straight}]}
+  - {text: "kick right", steps: [{action: kick_right, speed: normal, head: straight}]}
+  - {text: "sit down", steps: [{action: sit_or_stand, speed: normal, head: straight}]}
+  - {text: "do a roll", steps: [{action: roll, speed: normal, head: straight}]}
+  - {text: "peck at the ground", steps: [{action: peck_ground, speed: normal, head: straight}]}
+  - {text: "say hello", steps: [{action: make_sound, sound: greet, speed: normal, head: straight}]}
+  - {text: "sound the alarm", steps: [{action: make_sound, sound: alarm, speed: normal, head: straight}]}
+  # --- paraphrase and colloquial ------------------------------------------------------
+  - {text: "waddle ahead slowly", steps: [{action: walk_forward, speed: slow, head: straight}]}
+  - {text: "hurry forward", steps: [{action: walk_forward, speed: fast, head: straight}]}
+  - {text: "back up a little", steps: [{action: walk_backward, speed: slow, head: straight}]}
+  - {text: "spin to your left quickly", steps: [{action: turn_left, speed: fast, head: straight}]}
+  - {text: "rotate clockwise", steps: [{action: turn_right, speed: normal, head: straight}]}
+  - {text: "freeze!", steps: [{action: stop, speed: normal, head: straight}]}
+  - {text: "stand still", steps: [{action: stop, speed: normal, head: straight}]}
+  - {text: "boot the ball with your right leg", steps: [{action: kick_right, speed: normal, head: straight}]}
+  - {text: "take a seat", steps: [{action: sit_or_stand, speed: normal, head: straight}]}
+  - {text: "get up", steps: [{action: sit_or_stand, speed: normal, head: straight}]}
+  - {text: "tumble forward", steps: [{action: roll, speed: normal, head: straight}]}
+  - {text: "look for food on the floor", steps: [{action: peck_ground, speed: normal, head: straight}]}
+  - {text: "quack happily", steps: [{action: make_sound, sound: chirp, speed: normal, head: straight}]}
+  - {text: "ask a question", steps: [{action: make_sound, sound: inquire, speed: normal, head: straight}]}
+  - {text: "make a soft cooing noise", steps: [{action: make_sound, sound: coo, speed: normal, head: straight}]}
+  - {text: "wheee!", steps: [{action: make_sound, sound: wheee, speed: normal, head: straight}]}
+  # --- movement with head -------------------------------------------------------------
+  - {text: "walk forward and look left", steps: [{action: walk_forward, speed: normal, head: look_left}]}
+  - {text: "walk slowly while looking to the right", steps: [{action: walk_forward, speed: slow, head: look_right}]}
+  - {text: "turn left and look up", steps: [{action: turn_left, speed: normal, head: look_up}]}
+  - {text: "stop and look down at your feet", steps: [{action: stop, speed: normal, head: look_down}]}
+  # --- multi-step (split by code) -----------------------------------------------------
+  - text: "walk forward then kick left"
+    steps: [{action: walk_forward, speed: normal, head: straight}, {action: kick_left, speed: normal, head: straight}]
+  - text: "turn right, then walk forward fast"
+    steps: [{action: turn_right, speed: normal, head: straight}, {action: walk_forward, speed: fast, head: straight}]
+  - text: "say hello then sit down"
+    steps: [{action: make_sound, sound: greet, speed: normal, head: straight}, {action: sit_or_stand, speed: normal, head: straight}]
+  - text: "back up slowly; turn left; stop"
+    steps: [{action: walk_backward, speed: slow, head: straight}, {action: turn_left, speed: normal, head: straight}, {action: stop, speed: normal, head: straight}]
+  - text: "peck the ground and then chirp"
+    steps: [{action: peck_ground, speed: normal, head: straight}, {action: make_sound, sound: chirp, speed: normal, head: straight}]
+  - text: "walk to the ball then kick it with your right foot"
+    steps: [{action: walk_forward, speed: normal, head: straight}, {action: kick_right, speed: normal, head: straight}]
+  - text: "stand up then do a roll after that stop"
+    steps: [{action: sit_or_stand, speed: normal, head: straight}, {action: roll, speed: normal, head: straight}, {action: stop, speed: normal, head: straight}]
+  # --- out of scope: must be `unsupported`, not forced onto a skill -------------------
+  - {text: "fly to the kitchen", steps: [{action: unsupported, speed: normal, head: straight}]}
+  - {text: "open the fridge", steps: [{action: unsupported, speed: normal, head: straight}]}
+  - {text: "climb the stairs", steps: [{action: unsupported, speed: normal, head: straight}]}
+  - {text: "do a backflip", steps: [{action: unsupported, speed: normal, head: straight}]}
+  - {text: "pick up the red cup", steps: [{action: unsupported, speed: normal, head: straight}]}
+  - {text: "what's the weather like", steps: [{action: unsupported, speed: normal, head: straight}]}
+  - {text: "swim across the pond", steps: [{action: unsupported, speed: normal, head: straight}]}
