@@ -1,0 +1,60 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "duckbatch"
+version = "0.1.0"
+description = "Batched, judged, efficiency-first RL for the Pollen Microduck: many small attempts on one small GPU, pruned by a pre-registered kill order."
+readme = "README.md"
+license = "Apache-2.0"
+# 3.12 only: the sim extra rides on mjlab-microduck, which pins <3.13 (bam).
+requires-python = ">=3.12,<3.13"
+# The core installs anywhere (native Windows, the HF Space, CI): scoring ONNX
+# policies, judging batches, writing records and publishing needs no simulator.
+dependencies = [
+    "numpy>=1.26",
+    "onnx>=1.20.1",
+    "onnxruntime>=1.24.4",
+    "pyyaml>=6",
+    "huggingface_hub>=0.27.0",
+]
+
+[project.optional-dependencies]
+# Training and sim eval: Pollen's microduck_rl, pinned to the commit this repo
+# was built and measured against. Linux / WSL2 with a CUDA GPU (4 GB is enough).
+sim = [
+    "mjlab-microduck @ git+https://github.com/pollen-robotics/microduck_rl@cb70b792312d559a4da09064d92009079671815f",
+    "torch==2.9.1",
+]
+# Local, open decision model for the judge (fastino/GLiNER2.5-Decide, 340M, Apache-2.0).
+decide = ["gliner2[local]==2.0.0"]
+dev = ["pytest>=8"]
+
+[project.scripts]
+duckbatch = "duckbatch.cli:main"
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/duckbatch"]
+
+[tool.uv]
+# Same overrides as microduck_rl, for the same reasons (see its pyproject):
+# bam pins protobuf<4 and drags onnx to a wheel-less version, and the PyPI
+# `zmq==0.0.0` stub has a broken wheel. Never override mujoco.
+override-dependencies = [
+    "protobuf>=4.0,<7.0",
+    "onnx>=1.20.1",
+    "zmq ; python_version < '3.0'",
+    # bam: the commit microduck_rl@cb70b79 locks. mjlab-microduck's metadata names the moving
+    # `mjlab_frictionloss` branch, whose head renamed FrictionDRBamActuatorCfg kwargs; the
+    # microduck tasks then fail to register (only a [WARN] at import). An override is the only
+    # way to pin a transitive git dep in uv.
+    "better-actuator-models @ git+https://github.com/Rhoban/bam.git@62bd8ce12154340be97e06f7f41a0ca8f116d967",
+]
+
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

@@ -1,0 +1,9 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+teachers/*.onnx
+logs/
+*.int8.onnx
+.pytest_cache/
+space/node_modules/
