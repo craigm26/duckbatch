@@ -44,11 +44,15 @@ so the shape rules belong in the kit.
 
 - duckkit **v1.36.0** (craigm26/duckkit#1, merged): loader and writer take students of the alpha
   graph; identity v2 carries the shape. 385 tests, 0 failures, Linux x86_64, Swift 6.4.
-- craigm26/duck-studio#1 (draft; the SwiftUI screens need Xcode): blend shape refusal, refusal
-  corpus updated, the "Against its teacher" card from the manifest's comparison and Jev
-  verdict, and `PolicyTiming` (on-device inference p50/p95/p99, same-device comparisons only).
-  StudioKit: 2,552 tests; the only failures are 2 pre-existing `WeightSearchTests` that read a
-  fixture from an absolute path on the Pi.
+- craigm26/duck-studio#1 **merged**: blend shape refusal, refusal corpus, the "Against its
+  teacher" card (manifest comparison + Jev verdict), `PolicyTiming`, the phone bench re-vendored
+  from craigm26/duckbench#1 (merged; policy parity 16/16), identity bytes to every bench, App
+  Review notes updated. Mac compile check (Craig, from the Pi): BUILD SUCCEEDED at 822bf6d.
+- craigm26/duck-studio#2 **merged**: the `duck-feedback/0` writer (StudioKit). Its records pass
+  duckbatch's reader. Mac build: BUILD SUCCEEDED at ef75809. StudioKit on main with both merged:
+  2,557 tests; the only failures are the 2 pre-existing `WeightSearchTests` absolute-path ones.
+- Plan steps 1-7 are done. Next: the plan-editor UI (router proposals in, `route_correction`
+  records out) and the A/B preference screen (`records/p001-pairs/trajectories.npz`).
 
 ## Future direction: a plan editor (Craig, 2026-09-24)
 
