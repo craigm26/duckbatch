@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Install: cp scripts/duck-planner.service ~/.config/systemd/user/ && systemctl --user enable --now duck-planner.service && loginctl enable-linger $USER
 # The planner model for Duck Studio, served on this machine's Tailscale address only.
 #
 #   scripts/serve_planner.sh            # E2B (p002: 28/30 in 8.5 s, thinking off)

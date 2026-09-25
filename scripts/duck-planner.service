@@ -1,0 +1,11 @@
+[Unit]
+Description=Gemma 4 planner for Duck Studio (llama.cpp, tailnet only)
+After=network-online.target
+
+[Service]
+ExecStart=%h/duckbatch/scripts/serve_planner.sh
+Restart=on-failure
+RestartSec=15
+
+[Install]
+WantedBy=default.target
