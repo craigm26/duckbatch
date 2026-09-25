@@ -24,6 +24,15 @@ behaviour features are (standardised distance between their per-command means). 
 from the front of that list. The features themselves are NOT exported: a rater shown "fell: 3%"
 is rating the number, not the duck.
 
+A SLOT WHERE NO POLICY GOT THE COMMAND IS DROPPED, BY A RULE FIXED BEFORE LOOKING AT RESULTS
+PER POLICY. p001 pins the twist command, but in some envs no policy steps at all under a moving
+command (env 3 under every command: knee spread 0.002-0.032 rad against 0.15-0.21 when walking),
+which says the command did not reach that env, not that four policies all chose to stand. A pair
+of two motionless ducks under "walk forward" asks a rater nothing. So for every command other
+than `stand`, a (command, env) slot is kept only if at least one policy's knees move with a
+standard deviation of at least GAIT_KNEE_SD after the first two seconds. Dropped slots are listed
+in the file with the rule, and the app draws only from `usable_envs`.
+
 FINGERPRINTS ARE duckkit's. `duckbatch.policy.fingerprint` equals `DuckPolicy.fingerprint`; the
 official alpha_walking value (da820b71...) is asserted below so a drift fails loudly here rather
 than as records the reader cannot match.
@@ -47,6 +56,9 @@ PAIRS = ROOT / "records" / "p001-pairs"
 OUT = PAIRS / "app-pairs.json"
 FORMAT = "duck-preference-pairs/0"
 DECIMATE = 2  # 50 Hz -> 25 Hz
+GAIT_KNEE_SD = 0.05  # rad; walking is 0.10-0.21, standing 0.00-0.06 (p001, measured 2026-09-24)
+SETTLE_STEPS = 100  # 2 s at 50 Hz
+KNEES = (3, 12)  # left_knee, right_knee in the 14-column policy order
 ALPHA_OFFICIAL = "sha256:da820b718aa8bdb3317c018afba3ad3f461e0cf42256811c204dc005546ec4a3"
 
 DUCKKIT_JOINTS = [
@@ -123,6 +135,21 @@ def main() -> None:
             clips[key] = clip(traj[key])
             envs = len(clips[key])
 
+    usable, dropped = {}, []
+    for c in commands:
+        keep = []
+        for e in range(envs):
+            if c == "stand":
+                keep.append(e)
+                continue
+            gait = max(float(np.mean([traj[f"{p}__{c}"][SETTLE_STEPS:, e, 7 + k].std() for k in KNEES]))
+                       for p in policies)
+            if gait >= GAIT_KNEE_SD:
+                keep.append(e)
+            else:
+                dropped.append({"command": c, "env": e, "max_knee_sd": round(gait, 4)})
+        usable[c] = keep
+
     doc = {
         "format": FORMAT,
         "source": {"batch": "p001", "task": meta["task"], "seed": meta["seed"],
@@ -135,11 +162,15 @@ def main() -> None:
         "policies": {p: {**PUBLISHED[p], "fingerprint": prints[p]} for p in policies},
         "commands": meta["commands"],
         "close_first": closeness(feats, policies, commands),
+        "usable_envs": usable,
+        "dropped": {"rule": f"moving command and no policy's knee sd >= {GAIT_KNEE_SD} rad after "
+                            f"{SETTLE_STEPS / 50:.0f} s", "slots": dropped},
         "clips": clips,
     }
     OUT.write_text(json.dumps(doc, separators=(",", ":")))
     print(f"wrote {OUT.relative_to(ROOT)}: {OUT.stat().st_size / 1e6:.2f} MB, "
-          f"{len(clips)} clips x {envs} envs, {len(next(iter(clips.values()))[0])} frames each")
+          f"{len(clips)} clips x {envs} envs, {len(next(iter(clips.values()))[0])} frames each; "
+          f"dropped {len(dropped)} slots: {[(d['command'], d['env']) for d in dropped]}")
 
 
 if __name__ == "__main__":
