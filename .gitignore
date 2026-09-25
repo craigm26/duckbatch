@@ -8,3 +8,4 @@ logs/
 .pytest_cache/
 space/node_modules/
 records/*/hub/
+records/community-feedback/
