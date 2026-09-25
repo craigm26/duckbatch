@@ -9,3 +9,4 @@ logs/
 space/node_modules/
 records/*/hub/
 records/community-feedback/
+build/

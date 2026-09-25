@@ -1,0 +1,13 @@
+{
+  "note": "The default field. Revisions are pinned so the arena shows the networks duckbatch measured. Add more with ?move=org/repo[,org/repo] or the Add box.",
+  "policies": [
+    {"ref": "pollen-robotics/microduck-policies@1b56c396825c052a4e26e95cf2b8d8298af9e9b4:velstand.onnx",
+     "label": "velstand (teacher)", "role": "Pollen's default walker · 197,774 params"},
+    {"ref": "craigm26/microduck-duckbatch-b002-256x128x64",
+     "label": "student 256-128-64", "role": "duckbatch b002 · 57,934 params"},
+    {"ref": "craigm26/microduck-duckbatch-b002-128x128",
+     "label": "student 128-128", "role": "duckbatch b002 · 26,254 params"},
+    {"ref": "pollen-robotics/microduck-policies@1b56c396825c052a4e26e95cf2b8d8298af9e9b4:alpha_walking.onnx",
+     "label": "alpha_walking", "role": "Pollen's earlier walker · 197,774 params"}
+  ]
+}

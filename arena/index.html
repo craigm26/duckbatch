@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Microduck walker arena</title>
+<meta name="description" content="Drive every valid Microduck walking policy at once, with one set of controls: Pollen's teacher beside the smaller students distilled from it.">
+<style>
+:root {
+  color-scheme: light;
+  --bg: #f4f4f1; --panel: #fcfcfb; --border: #e2e1dc;
+  --text: #0b0b0b; --text-2: #52514e; --text-3: #7a7974;
+  --action: #1f63b8; --refused: #b3261e;
+}
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    color-scheme: dark;
+    --bg: #121211; --panel: #1a1a19; --border: #2e2e2c;
+    --text: #ffffff; --text-2: #c3c2b7; --text-3: #8f8e86;
+    --action: #7fb2f0; --refused: #f07a72;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #121211; --panel: #1a1a19; --border: #2e2e2c;
+  --text: #ffffff; --text-2: #c3c2b7; --text-3: #8f8e86;
+  --action: #7fb2f0; --refused: #f07a72;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text);
+  font: 14px/1.45 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+.wrap { display: grid; grid-template-columns: 1fr 360px; height: 100vh; }
+.stage { position: relative; min-height: 0; }
+canvas { width: 100%; height: 100%; display: block; background: #f4f4f1; }
+#status { position: absolute; left: 16px; top: 12px; color: #52514e; font-size: 13px; }
+#cmd, #clock { position: absolute; left: 16px; bottom: 12px; font: 12px ui-monospace, monospace; color: #52514e; }
+#clock { left: auto; right: 16px; }
+aside { background: var(--panel); border-left: 1px solid var(--border); overflow-y: auto; padding: 16px; }
+h1 { font-size: 17px; margin: 0 0 4px; }
+p { margin: 6px 0; color: var(--text-2); font-size: 13px; }
+.lane { border-top: 1px solid var(--border); padding: 10px 0; }
+.lane label { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.sw { width: 12px; height: 12px; border-radius: 3px; background: var(--text-3); flex: none; }
+.stats { font: 12px ui-monospace, monospace; color: var(--text-2); margin-top: 4px; }
+.note { font-size: 12px; color: var(--text-3); }
+.refused .stats { color: var(--refused); }
+.row { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0; }
+button { font: inherit; border: 1px solid var(--border); background: var(--panel); color: var(--text);
+  border-radius: 8px; padding: 6px 12px; cursor: pointer; }
+button.primary { background: var(--action); color: #fff; border-color: var(--action); }
+input[type=text] { font: inherit; flex: 1; min-width: 0; padding: 6px 8px; border: 1px solid var(--border);
+  border-radius: 8px; background: var(--bg); color: var(--text); }
+label.slider { display: grid; grid-template-columns: 70px 1fr; align-items: center; gap: 8px;
+  font-size: 13px; color: var(--text-2); margin: 6px 0; }
+.keys { font: 12px ui-monospace, monospace; color: var(--text-2); }
+.pad { position: absolute; right: 16px; bottom: 36px; display: grid; grid-template-columns: repeat(3, 52px);
+  gap: 6px; }
+.pad button { height: 52px; font-size: 18px; touch-action: none; user-select: none; opacity: .92; }
+.pad .sp { visibility: hidden; }
+a { color: var(--action); }
+@media (max-width: 820px) {
+  .wrap { grid-template-columns: 1fr; grid-template-rows: 58vh auto; height: auto; }
+  aside { border-left: 0; border-top: 1px solid var(--border); }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="stage">
+    <canvas id="view" aria-label="Every walker in its own lane, driven by the same controls"></canvas>
+    <div id="status">loading…</div>
+    <div id="cmd"></div>
+    <div id="clock"></div>
+    <div class="pad" aria-label="Touch controls">
+      <span class="sp"></span><button data-hold="up" aria-label="Forward">▲</button><span class="sp"></span>
+      <button data-hold="left" aria-label="Turn left">◀</button><button data-hold="down" aria-label="Back">▼</button><button data-hold="right" aria-label="Turn right">▶</button>
+    </div>
+  </div>
+  <aside>
+    <h1>Microduck walker arena</h1>
+    <p>Every valid walking policy, one set of controls. Pollen's teacher walks beside the smaller
+      students distilled from it by <a href="https://github.com/craigm26/duckbatch">duckbatch</a>.
+      Each duck has its own physics world, reset identically, so the only difference between
+      lanes is the network.</p>
+    <div class="row">
+      <button class="primary" id="push" title="P">Push them all</button>
+      <button id="reset" title="R">Reset</button>
+      <button id="pause" title="Space">Pause</button>
+    </div>
+    <label class="slider">Speed <input id="speed" type="range" min="0.2" max="1" step="0.05" value="0.8"></label>
+    <label class="slider">Zoom <input id="zoom" type="range" min="0.5" max="2.5" step="0.05" value="1"></label>
+    <label class="slider">Orbit <input id="orbit" type="range" min="-1.2" max="1.2" step="0.02" value="0.35"></label>
+    <p class="keys">↑↓ or W S: forward, back · ←→ or A D: turn · P: push · R: reset · Space: pause · gamepad: left stick, B push, X reset</p>
+
+    <div id="lanes"></div>
+
+    <form id="add" class="row">
+      <input type="text" id="addRef" placeholder="Add a walker: org/repo" aria-label="Hugging Face repo of a walking policy">
+      <button type="submit">Add</button>
+    </form>
+    <div class="row"><button id="discover">Find community walkers</button></div>
+
+    <p>Per lane, since the last reset: falls (tilted past 60°), velocity-tracking error while
+      upright, jitter (mean change in action per tick), and distance. The same definitions as
+      duckbatch's walk evaluation.</p>
+    <p><strong>What this is not.</strong> The scene is plain MuJoCo, not the mjlab training
+      environment, so it is a transfer test as much as a comparison. Every walker covers less
+      ground here than it is asked to — duckbench's own walk test measures Pollen's
+      <code>alpha_walking</code> at 0.11 m/s when commanded 0.2 — and the gap is the same scene
+      for every lane. The measured comparison is in
+      duckbatch's <a href="https://github.com/craigm26/duckbatch/blob/main/notes/2026-09-24-b002-close.md">b002</a>
+      and <a href="https://github.com/craigm26/duckbatch/blob/main/notes/2026-09-24-p001-close.md">p001</a>
+      notes. Nothing here is a real robot.</p>
+    <p class="note">Physics, loop and duck model from
+      <a href="https://github.com/craigm26/duckbench">craigm26/duckbench</a> (Apache-2.0). Robot model and
+      Pollen policies: <a href="https://github.com/pollen-robotics/microduck">Pollen Robotics</a>. MuJoCo
+      (Apache-2.0), onnxruntime-web (MIT). Not affiliated with Pollen Robotics.</p>
+  </aside>
+</div>
+<script type="module" src="./arena.js"></script>
+</body>
+</html>

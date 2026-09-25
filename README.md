@@ -23,6 +23,12 @@ pushes: once every ~2.2 minutes of walking, against once every ~7.
 | Gets up from prone within 6 s | 96.9% | 98.2% | 97.1% |
 | p50 latency, 1 thread (x86 laptop) | 29.0 µs | 14.5 µs | 10.8 µs |
 
+**Drive them all at once:** the [walker arena](https://huggingface.co/spaces/craigm26/microduck-arena)
+puts the teacher, both students and Pollen's earlier walker on one field under one set of
+controls (keyboard, gamepad or touch), each in its own identical physics world. Push them all
+and watch which one goes down. Source in `arena/`, built with `scripts/build_arena.sh` from
+duckbench's runtime.
+
 **Drive them in Pollen's simulator:**
 [128-128](https://pollen-robotics-microduck-simulator.hf.space/?move=craigm26/microduck-duckbatch-b002-128x128) ·
 [256-128-64](https://pollen-robotics-microduck-simulator.hf.space/?move=craigm26/microduck-duckbatch-b002-256x128x64) ·
