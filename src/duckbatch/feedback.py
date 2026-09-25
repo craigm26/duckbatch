@@ -232,9 +232,19 @@ def pull(out: str | Path, repo: str = COMMUNITY_DATASET, pr: int | None = None) 
     """Fetch `contributions/**` from the community dataset: merged main, or one open pull
     request (`refs/pr/<n>`, how Hugging Face exposes a PR's files), for a maintainer to
     validate before merging. Read-only; needs no token for a public dataset."""
+    import shutil
+
     from huggingface_hub import snapshot_download
 
-    path = snapshot_download(repo_id=repo, repo_type="dataset",
-                             revision=f"refs/pr/{pr}" if pr is not None else "main",
-                             allow_patterns=["contributions/**"], local_dir=str(out))
-    return Path(path)
+    # ONE FOLDER PER REVISION, EMPTIED FIRST. Pulling a PR and then main into one folder used to
+    # leave the PR's files behind, so main's check counted records main does not hold — the one
+    # answer a maintainer's check must never give. Each revision gets its own folder, and it is
+    # cleared before every pull so it holds exactly what that revision has.
+    dest = Path(out) / (f"pr-{pr}" if pr is not None else "main")
+    if dest.exists():
+        shutil.rmtree(dest)
+    dest.mkdir(parents=True)
+    snapshot_download(repo_id=repo, repo_type="dataset",
+                      revision=f"refs/pr/{pr}" if pr is not None else "main",
+                      allow_patterns=["contributions/**"], local_dir=str(dest))
+    return dest

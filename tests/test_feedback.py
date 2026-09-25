@@ -134,3 +134,30 @@ def test_contributions_are_found_in_dated_subdirectories(tmp_path):
     r["consent"]["share"] = "public"
     (day / "abc.jsonl").write_text(json.dumps(r) + "\n")
     assert len(feedback.read([tmp_path], require_share="public")) == 1
+
+
+def test_pulling_main_after_a_pr_counts_only_mains_records(tmp_path, monkeypatch):
+    """A PR's files must not be counted as main's. Reproduced 2026-09-24: `pull --pr 1` then
+    `pull` reported 1 record on a main that held none."""
+    import huggingface_hub
+
+    record = json.dumps({"stand-in": True})
+    revisions = {"refs/pr/1": {"contributions/2026-09-25/a.jsonl": record}, "main": {}}
+
+    def fake_snapshot(repo_id, repo_type, revision, allow_patterns, local_dir):
+        for rel, text in revisions[revision].items():
+            path = tmp_path.joinpath(local_dir, rel) if not local_dir.startswith("/") else \
+                __import__("pathlib").Path(local_dir, rel)
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(text)
+        return local_dir
+
+    monkeypatch.setattr(huggingface_hub, "snapshot_download", fake_snapshot)
+    out = tmp_path / "community"
+    pr = feedback.pull(out, pr=1)
+    assert len(list(pr.rglob("*.jsonl"))) == 1
+    main = feedback.pull(out)
+    assert list(main.rglob("*.jsonl")) == [], "main holds none of the PR's files"
+    assert pr != main
+    again = feedback.pull(out, pr=1)
+    assert len(list(again.rglob("*.jsonl"))) == 1, "a re-pull is a clean copy, not an accumulation"
