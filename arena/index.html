@@ -57,6 +57,7 @@ label.slider { display: grid; grid-template-columns: 70px 1fr; align-items: cent
   gap: 6px; }
 .pad button { height: 52px; font-size: 18px; touch-action: none; user-select: none; opacity: .92; }
 .pad .sp { visibility: hidden; }
+.pad button[aria-pressed="true"] { background: var(--action); color: #fff; border-color: var(--action); }
 a { color: var(--action); }
 @media (max-width: 820px) {
   .wrap { grid-template-columns: 1fr; grid-template-rows: 58vh auto; height: auto; }
@@ -71,9 +72,10 @@ a { color: var(--action); }
     <div id="status">loading…</div>
     <div id="cmd"></div>
     <div id="clock"></div>
-    <div class="pad" aria-label="Touch controls">
-      <span class="sp"></span><button data-hold="up" aria-label="Forward">▲</button><span class="sp"></span>
-      <button data-hold="left" aria-label="Turn left">◀</button><button data-hold="down" aria-label="Back">▼</button><button data-hold="right" aria-label="Turn right">▶</button>
+    <div class="pad" aria-label="Drive: tap to set a direction, tap again or Stop to clear it">
+      <span class="sp"></span><button data-latch="up" aria-label="Forward" aria-pressed="false">▲</button><span class="sp"></span>
+      <button data-latch="left" aria-label="Turn left" aria-pressed="false">◀</button><button data-latch="stop" aria-label="Stop">■</button><button data-latch="right" aria-label="Turn right" aria-pressed="false">▶</button>
+      <span class="sp"></span><button data-latch="down" aria-label="Back" aria-pressed="false">▼</button><span class="sp"></span>
     </div>
   </div>
   <aside>
@@ -87,10 +89,14 @@ a { color: var(--action); }
       <button id="reset" title="R">Reset</button>
       <button id="pause" title="Space">Pause</button>
     </div>
-    <label class="slider">Speed <input id="speed" type="range" min="0.2" max="1" step="0.05" value="0.8"></label>
+    <label class="slider">Speed <input id="speed" type="range" min="0.2" max="1" step="0.05" value="1"></label>
     <label class="slider">Zoom <input id="zoom" type="range" min="0.5" max="2.5" step="0.05" value="1"></label>
     <label class="slider">Orbit <input id="orbit" type="range" min="-1.2" max="1.2" step="0.02" value="0.35"></label>
-    <p class="keys">↑↓ or W S: forward, back · ←→ or A D: turn · P: push · R: reset · Space: pause · gamepad: left stick, B push, X reset</p>
+    <p class="keys">Buttons: tap to set a direction, tap again or ■ to stop · keys (hold): ↑↓ or W S forward, back · ←→ or A D turn · P push · R reset · Space pause · gamepad: left stick, B push, X reset</p>
+    <p><strong>Standing still is a result.</strong> Pollen's velstand and the students distilled
+      from it were trained to stand below a command threshold. In this scene velstand stands below
+      about 0.3 m/s and the 128-128 student below about 0.4, and neither turns on the spot, while
+      alpha_walking does. Full speed is 0.4 m/s, the top of their training range.</p>
 
     <div id="lanes"></div>
 

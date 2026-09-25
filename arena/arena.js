@@ -150,6 +150,10 @@ async function tickAll() {
     const s = l.stats, down = grav[2] > -0.5;
     if (down && !s.down) s.falls++;
     s.down = down;
+    {
+      const vx0 = d.qvel[DUCK.freeDof], vy0 = d.qvel[DUCK.freeDof + 1];
+      s.speedNow = 0.9 * (s.speedNow || 0) + 0.1 * Math.hypot(vx0, vy0);
+    }
     if (!down) {
       s.upTicks++;
       const vx = d.qvel[DUCK.freeDof], vy = d.qvel[DUCK.freeDof + 1], wz = d.qvel[DUCK.freeDof + 5];
@@ -180,23 +184,39 @@ addEventListener('keydown', e => {
   if (e.key.toLowerCase() === 'p') pushAll();
 });
 addEventListener('keyup', e => keys.delete(e.key.toLowerCase()));
-const held = new Set();
-for (const b of document.querySelectorAll('[data-hold]')) {
-  const k = b.dataset.hold;
-  const on = e => { e.preventDefault(); held.add(k); }, off = () => held.delete(k);
-  b.addEventListener('pointerdown', on); b.addEventListener('pointerup', off);
-  b.addEventListener('pointerleave', off); b.addEventListener('pointercancel', off);
+// ON-SCREEN BUTTONS LATCH; KEYS ARE HELD. A click or a tap is a tenth of a second, and a
+// tenth of a second of "forward" moves no duck — so a tap sets the direction and it stays
+// set until the same button is tapped again or Stop is. Keys and the stick stay hold-to-drive.
+const latch = { x: 0, t: 0 };
+function paintLatch() {
+  for (const b of document.querySelectorAll('[data-latch]')) {
+    const k = b.dataset.latch;
+    const on = (k === 'up' && latch.x > 0) || (k === 'down' && latch.x < 0) ||
+               (k === 'left' && latch.t > 0) || (k === 'right' && latch.t < 0);
+    b.setAttribute('aria-pressed', on ? 'true' : 'false');
+  }
+}
+for (const b of document.querySelectorAll('[data-latch]')) {
+  b.addEventListener('click', () => {
+    const k = b.dataset.latch;
+    if (k === 'stop') { latch.x = 0; latch.t = 0; }
+    if (k === 'up') latch.x = latch.x > 0 ? 0 : 1;
+    if (k === 'down') latch.x = latch.x < 0 ? 0 : -1;
+    if (k === 'left') latch.t = latch.t > 0 ? 0 : 1;
+    if (k === 'right') latch.t = latch.t < 0 ? 0 : -1;
+    paintLatch();
+  });
 }
 
 const padWas = { r: false, p: false };
 const AUTO = new URLSearchParams(location.search).get('auto') === '1';
 let autoPushed = 0;
 function readControls() {
-  const fwd = (keys.has('arrowup') || keys.has('w') || held.has('up')) ? 1 : 0;
-  const back = (keys.has('arrowdown') || keys.has('s') || held.has('down')) ? 1 : 0;
-  const left = (keys.has('arrowleft') || keys.has('a') || held.has('left')) ? 1 : 0;
-  const right = (keys.has('arrowright') || keys.has('d') || held.has('right')) ? 1 : 0;
-  let x = fwd - back, t = left - right;
+  const fwd = (keys.has('arrowup') || keys.has('w')) ? 1 : 0;
+  const back = (keys.has('arrowdown') || keys.has('s')) ? 1 : 0;
+  const left = (keys.has('arrowleft') || keys.has('a')) ? 1 : 0;
+  const right = (keys.has('arrowright') || keys.has('d')) ? 1 : 0;
+  let x = fwd - back || latch.x, t = left - right || latch.t;
   const pad = navigator.getGamepads ? [...navigator.getGamepads()].find(Boolean) : null;
   if (pad) {
     const dz = v => (Math.abs(v) < 0.15 ? 0 : v);
@@ -213,8 +233,11 @@ function readControls() {
     if (simTime - autoPushed >= 6) { autoPushed = simTime; pushAll(); }
   }
   const scale = +$('#speed').value;
-  // Pollen's command limits: forward 0.25, back 0.2, turn 1.0 (duckbench intents.js).
-  cmd.vx = x > 0 ? 0.25 * x * scale : 0.2 * x * scale;
+  // THE TRAINING RANGE, NOT POLLEN'S KEYBOARD LIMIT. VelStand was trained on vx in ±0.4 and
+  // wz in ±1.0, and it has a dead band: in duckbench's scene velstand stands still below about
+  // 0.3 m/s and the 128-128 student below about 0.4 (measured, 8 s runs). Pollen's 0.25 cap
+  // suits alpha_walking and leaves every VelStand walker standing, which looked like a bug.
+  cmd.vx = x > 0 ? 0.4 * x * scale : 0.3 * x * scale;
   cmd.vyaw = 1.0 * t * scale;
   $('#cmd').textContent = `command  vx ${cmd.vx.toFixed(2)} m/s   yaw ${cmd.vyaw.toFixed(2)} rad/s`;
 }
@@ -245,7 +268,7 @@ function paintStats() {
     // Planar displacement, not x alone: headings drift, and a duck that curved is not a slow one.
     const dist = Math.hypot(l.data.qpos[DUCK.freeQpos] - s.startX, l.data.qpos[DUCK.freeQpos + 1] - s.startY);
     l.row.querySelector('.stats').textContent =
-      `falls ${s.falls}${s.down ? ' (down)' : ''} · track err ${(s.linErr / up).toFixed(3)} m/s, ` +
+      `now ${(s.speedNow || 0).toFixed(2)} m/s · falls ${s.falls}${s.down ? ' (down)' : ''} · track err ${(s.linErr / up).toFixed(3)} m/s, ` +
       `${(s.angErr / up).toFixed(2)} rad/s · jitter ${(s.jitter / Math.max(s.ticks - 1, 1)).toFixed(4)} · ` +
       `${dist.toFixed(2)} m`;
   }
@@ -308,9 +331,12 @@ async function frame(now) {
     if (selftest) {
       // ?selftest=N: N control ticks walking forward, with one shared push halfway,
       // then every lane's numbers on the page. For headless checks; no animation.
-      cmd.vx = 0.2;
+      // ?press=up[,left]: click those on-screen buttons first, then drive through the same
+      // readControls() the live page uses — the path a person tapping actually takes.
+      for (const k of (params.get('press') || 'up').split(',')) document.querySelector(`[data-latch="${k}"]`)?.click();
       const t0 = performance.now();
       for (let i = 0; i < selftest; i++) {
+        readControls();
         if (i === Math.floor(selftest / 2)) pushAll();
         await tickAll();
       }
