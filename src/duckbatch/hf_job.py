@@ -35,7 +35,7 @@ git clone -q "$REPO" /work && cd /work && git checkout -q "$COMMIT"
 uv sync --no-progress --extra sim --extra decide
 ./scripts/fetch_teachers.sh
 set +e
-uv run python -u -m duckbatch.cli batch "$MENU" --out /work/job-records $JUDGE_FLAG
+uv run python -u -m duckbatch.cli $RUN "$MENU" --out /work/job-records $JUDGE_FLAG
 RC=$?
 set -e
 BATCH_DIR=$(ls -d /work/job-records/*/ | head -1)
@@ -67,7 +67,8 @@ def _head_commit() -> str:
 
 
 def launch(menu: str, dataset: str, flavor: str = FLAVOR, timeout: str = "4h",
-           commit: str | None = None, jev: bool = False, dry_run: bool = False) -> str | None:
+           commit: str | None = None, jev: bool = False, dry_run: bool = False,
+           run: str = "batch") -> str | None:
     from .batch.jev import load_dotenv
 
     load_dotenv()
@@ -77,11 +78,12 @@ def launch(menu: str, dataset: str, flavor: str = FLAVOR, timeout: str = "4h",
         raise SystemExit(f"no menu at {menu}")
     commit = commit or _head_commit()
     env = {"REPO": REPO, "COMMIT": commit, "MENU": menu, "DATASET": dataset,
-           "UV_VERSION": UV_VERSION, "JUDGE_FLAG": "" if jev else "--no-jev"}
+           "UV_VERSION": UV_VERSION, "RUN": run,
+           "JUDGE_FLAG": ("" if jev else "--no-jev") if run == "batch" else ""}
     secrets = {"HF_TOKEN": os.environ.get("HF_TOKEN", "")}
     if jev:
         secrets["TYPESAFE_API_KEY"] = os.environ.get("TYPESAFE_API_KEY", "")
-    print(f"[hf-job] {menu} @ {commit[:7]} on {flavor} (timeout {timeout}) -> datasets/{dataset}")
+    print(f"[hf-job] duckbatch {run} {menu} @ {commit[:7]} on {flavor} (timeout {timeout}) -> datasets/{dataset}")
     print(f"[hf-job] image {IMAGE}; secrets {sorted(k for k, v in secrets.items() if v)}")
     if dry_run:
         print("[hf-job] dry run: nothing submitted")

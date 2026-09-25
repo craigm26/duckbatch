@@ -169,3 +169,54 @@ def generate(out: str | Path, policies: dict[str, str] | None = None,
     env.close()
     log(f"[pairs] wrote {out}")
     return out
+
+
+def speed_curve(out: str | Path, policies: dict[str, str] | None = None,
+                vx_levels=(0.05, 0.1, 0.15, 0.2, 0.3, 0.4), wz_levels=(0.5, 1.0),
+                num_envs: int = 512, seconds: float = 8.0, seed: int = 4001,
+                device: str = "cuda:0", log=print) -> Path:
+    """What each walker DOES for a range of commands: mean forward speed and yaw rate while
+    upright, over the last half of the episode (after it has got going), plus the share of envs
+    that fell. The dead band shows up as a command the walker answers by standing still."""
+    from .policy import load_teacher
+    from .sim import DEFAULT_TASK, Population, make_env
+
+    policies = policies or {k: v for k, v in DEFAULT_POLICIES.items() if k != "alpha_walking"}
+    out = Path(out)
+    out.mkdir(parents=True, exist_ok=True)
+    env = make_env(DEFAULT_TASK, num_envs, device=device, seed=seed)
+    prof = Population(env, next(iter(policies.values())), [], device=device)
+    robot = env.scene["robot"]
+    dt = env.step_dt
+    steps = int(math.ceil(seconds / dt))
+    commands = [(v, 0.0, 0.0) for v in vx_levels] + [(0.0, 0.0, w) for w in wz_levels]
+    rows = []
+    for pname, path in policies.items():
+        net = load_teacher(path, device)
+        for twist in commands:
+            with prof.profile("walk"), fixed_command(env, twist):
+                obs, _ = env.reset(seed=seed)
+                obs = obs["actor"]
+                vx_sum = wz_sum = n_up = 0.0
+                fell = torch.zeros(num_envs, device=obs.device)
+                for t in range(steps):
+                    with torch.no_grad():
+                        obs = env.step(net(obs))[0]["actor"]
+                    down = robot.data.projected_gravity_b[:, 2] > -0.5
+                    fell = torch.maximum(fell, down.float())
+                    if t >= steps // 2:
+                        up = (~down).float()
+                        vx_sum += float((robot.data.root_link_lin_vel_b[:, 0] * up).sum())
+                        wz_sum += float((robot.data.root_link_ang_vel_b[:, 2] * up).sum())
+                        n_up += float(up.sum())
+            row = {"policy": pname, "command": list(twist),
+                   "vx": vx_sum / max(n_up, 1), "wz": wz_sum / max(n_up, 1),
+                   "fell_share": float(fell.mean())}
+            rows.append(row)
+            log(f"[speed] {pname:>20} cmd vx {twist[0]:.2f} wz {twist[2]:.2f} -> "
+                f"vx {row['vx']:+.3f} wz {row['wz']:+.3f} fell {row['fell_share']:.1%}")
+    (out / "speed_curve.json").write_text(json.dumps(
+        {"task": DEFAULT_TASK, "profile": "walk", "seconds": seconds, "seed": seed,
+         "measured_over": "last half of each episode, upright envs", "rows": rows}, indent=1))
+    env.close()
+    return out

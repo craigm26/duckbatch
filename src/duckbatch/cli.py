@@ -41,8 +41,10 @@ def main(argv: list[str] | None = None) -> int:
     pu.add_argument("--bench", default=None, help="bench.json (default: <batch>/bench.json)")
     pu.add_argument("--space", default=None, help="also upload space/ to this Space repo id")
 
-    hj = sub.add_parser("hf-job", help="re-run a menu on Hugging Face Jobs (billed to you)")
+    hj = sub.add_parser("hf-job", help="run a menu on Hugging Face Jobs (billed to you)")
     hj.add_argument("menu")
+    hj.add_argument("--run", default="batch", choices=["batch", "finetune", "skills"],
+                    help="which duckbatch command runs the menu in the job")
     hj.add_argument("--dataset", required=True, help="dataset repo that receives the records")
     hj.add_argument("--flavor", default="l4x1")
     hj.add_argument("--timeout", default="4h")
@@ -72,6 +74,18 @@ def main(argv: list[str] | None = None) -> int:
     pa.add_argument("--envs", type=int, default=512)
     pa.add_argument("--seconds", type=float, default=8.0)
 
+    sk = sub.add_parser("skills", help="distil several of Pollen's skills into one student")
+    sk.add_argument("menu")
+    sk.add_argument("--out", default="records")
+
+    fi = sub.add_parser("finetune", help="PPO fine-tune a distilled student, anchored to its teacher")
+    fi.add_argument("menu")
+    fi.add_argument("--out", default="records")
+
+    sc = sub.add_parser("speed-curve", help="achieved speed vs commanded speed, per walker (mjlab)")
+    sc.add_argument("--out", default="records/s000-speed-curve")
+    sc.add_argument("--policy", action="append", default=None, help="name=path.onnx (repeatable)")
+
     pf = sub.add_parser("prefer", help="preference model: size it with simulated raters, or fit real records")
     pf.add_argument("action", choices=["sizing", "fit"])
     pf.add_argument("pairs", help="a `duckbatch pairs` output directory")
@@ -98,7 +112,7 @@ def main(argv: list[str] | None = None) -> int:
     elif a.cmd == "hf-job":
         from .hf_job import launch
 
-        launch(a.menu, a.dataset, a.flavor, a.timeout, a.commit, a.jev, a.dry_run)
+        launch(a.menu, a.dataset, a.flavor, a.timeout, a.commit, a.jev, a.dry_run, run=a.run)
     elif a.cmd in ("route", "route-eval"):
         import json
 
@@ -147,6 +161,19 @@ def main(argv: list[str] | None = None) -> int:
         from .pairs import generate
 
         generate(a.out, num_envs=a.envs, seconds=a.seconds)
+    elif a.cmd == "skills":
+        from .skills import run_skills
+
+        run_skills(a.menu, a.out)
+    elif a.cmd == "finetune":
+        from .finetune import run_finetune
+
+        run_finetune(a.menu, a.out)
+    elif a.cmd == "speed-curve":
+        from .pairs import speed_curve
+
+        pols = dict(p.split("=", 1) for p in a.policy) if a.policy else None
+        speed_curve(a.out, pols)
     elif a.cmd == "prefer":
         import json
 

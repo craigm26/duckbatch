@@ -87,7 +87,7 @@ class Arm:
     """One attempt in the population: a student being distilled, or the teacher as reference."""
 
     arm_id: str
-    kind: str  # "student" | "teacher"
+    kind: str  # "student" (trained here) | "teacher" (the reference) | "fixed" (a given net, evaluated only)
     hidden: tuple[int, ...] = ()
     lr: float = 1e-3
     activation: str = "Elu"
@@ -160,6 +160,9 @@ class Population:
                 continue
             with torch.no_grad():
                 student_act = arm.net(obs[sl])
+            if arm.kind == "fixed":
+                act[sl] = student_act
+                continue
             if beta > 0:
                 use_teacher = torch.rand(student_act.shape[0], 1, device=self.device,
                                          generator=self.gen) < beta
