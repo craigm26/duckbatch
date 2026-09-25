@@ -1,0 +1,916 @@
+{
+ "model": "gemma",
+ "sequence_exact": "30/30",
+ "fully_exact": "30/30",
+ "sequence_exact_rate": 1.0,
+ "fully_exact_rate": 1.0,
+ "labels_given_sequence": {
+  "speed": "25/25",
+  "head": "25/25",
+  "sound": "13/13",
+  "seconds": "7/7"
+ },
+ "whole_out_of_scope_refused": "3/3",
+ "latency_s": {
+  "median": 27.76,
+  "max": 56.64
+ },
+ "rows": [
+  {
+   "request": "peck the ground three times",
+   "gold": [
+    {
+     "action": "peck_ground",
+     "repeat": 3
+    },
+    {
+     "action": "peck_ground",
+     "repeat": 3
+    },
+    {
+     "action": "peck_ground",
+     "repeat": 3
+    }
+   ],
+   "got": [
+    {
+     "action": "peck_ground",
+     "speed": "normal",
+     "head": "straight",
+     "seconds": 1.0
+    },
+    {
+     "action": "peck_ground",
+     "speed": "normal",
+     "head": "straight",
+     "seconds": 1.0
+    },
+    {
+     "action": "peck_ground",
+     "speed": "normal",
+     "head": "straight",
+     "seconds": 1.0
+    }
+   ],
+   "sequence_exact": true,
+   "fully_exact": true,
+   "seconds": 56.64,
+   "error": null
+  },
+  {
+   "request": "kick with your right foot twice",
+   "gold": [
+    {
+     "action": "kick_right",
+     "repeat": 2
+    },
+    {
+     "action": "kick_right",
+     "repeat": 2
+    }
+   ],
+   "got": [
+    {
+     "action": "kick_right",
+     "speed": "normal",
+     "head": "straight",
+     "seconds": 1.0
+    },
+    {
+     "action": "kick_right",
+     "speed": "normal",
+     "head": "straight",
+     "seconds": 1.0
+    }
+   ],
+   "sequence_exact": true,
+   "fully_exact": true,
+   "seconds": 18.41,
+   "error": null
+  },
+  {
+   "request": "chirp twice then walk forward",
+   "gold": [
+    {
+     "action": "make_sound",
+     "sound": "chirp",
+     "repeat": 2
+    },
+    {
+     "action": "make_sound",
+     "sound": "chirp",
+     "repeat": 2
+    },
+    {
+     "action": "walk_forward"
+    }
+   ],
+   "got": [
+    {
+     "action": "make_sound",
+     "speed": "normal",
+     "head": "straight",
+     "sound": "chirp",
+     "seconds": 1.0
+    },
+    {
+     "action": "make_sound",
+     "speed": "normal",
+     "head": "straight",
+     "sound": "chirp",
+     "seconds": 1.0
+    },
+    {
+     "action": "walk_forward",
+     "speed": "normal",
+     "head": "straight",
+     "seconds": 2.0
+    }
+   ],
+   "sequence_exact": true,
+   "fully_exact": true,
+   "seconds": 33.05,
+   "error": null
+  },
+  {
+   "request": "turn left, then turn left again",
+   "gold": [
+    {
+     "action": "turn_left"
+    },
+    {
+     "action": "turn_left"
+    }
+   ],
+   "got": [
+    {
+     "action": "turn_left",
+     "speed": "normal",
+     "head": "straight",
+     "seconds": 2.0
+    },
+    {
+     "action": "turn_left",
+     "speed": "normal",
+     "head": "straight",
+     "seconds": 2.0
+    }
+   ],
+   "sequence_exact": true,
+   "fully_exact": true,
+   "seconds": 27.76,
+   "error": null
+  },
+  {
+   "request": "quack three times",
+   "gold": [
+    {
+     "action": "make_sound",
+     "sound": "chirp",
+     "repeat": 3
+    },
+    {
+     "action": "make_sound",
+     "sound": "chirp",
+     "repeat": 3
+    },
+    {
+     "action": "make_sound",
+     "sound": "chirp",
+     "repeat": 3
+    }
+   ],
+   "got": [
+    {
+     "action": "make_sound",
+     "speed": "normal",
+     "head": "straight",
+     "sound": "chirp",
+     "seconds": 1.0
+    },
+    {
+     "action": "make_sound",
+     "speed": "normal",
+     "head": "straight",
+     "sound": "chirp",
+     "seconds": 1.0
+    },
+    {
+     "action": "make_sound",
+     "speed": "normal",
+     "head": "straight",
+     "sound": "chirp",
+     "seconds": 1.0
+    }
+   ],
+   "sequence_exact": true,
+   "fully_exact": true,
+   "seconds": 15.5,
+   "error": null
+  },
+  {
+   "request": "walk forward for five seconds",
+   "gold": [
+    {
+     "action": "walk_forward",
+     "seconds": 5
+    }
+   ],
+   "got": [
+    {
+     "action": "walk_forward",
+     "speed": "normal",
+     "head": "straight",
+     "seconds": 5.0
+    }
+   ],
+   "sequence_exact": true,
+   "fully_exact": true,
+   "seconds": 20.87,
+   "error": null
+  },
+  {
+   "request": "back up slowly for two seconds then stop",
+   "gold": [
+    {
+     "action": "walk_backward",
+     "speed": "slow",
+     "seconds": 2
+    },
+    {
+     "action": "stop"
+    }
+   ],
+   "got": [
+    {
+     "action": "walk_backward",
+     "speed": "slow",
+     "head": "straight",
+     "seconds": 2.0
+    },
+    {
+     "action": "stop",
+     "speed": "normal",
+     "head": "straight",
+     "seconds": 2.0
+    }
+   ],
+   "sequence_exact": true,
+   "fully_exact": true,
+   "seconds": 36.36,
+   "error": null
+  },
+  {
+   "request": "spin right quickly for four seconds",
+   "gold": [
+    {
+     "action": "turn_right",
+     "speed": "fast",
+     "seconds": 4
+    }
+   ],
+   "got": [
+    {
+     "action": "turn_right",
+     "speed": "fast",
+     "head": "straight",
+     "seconds": 4.0
+    }
+   ],
+   "sequence_exact": true,
+   "fully_exact": true,
+   "seconds": 13.71,
+   "error": null
+  },
+  {
+   "request": "stand still for three seconds, then peck the ground",
+   "gold": [
+    {
+     "action": "stop",
+     "seconds": 3
+    },
+    {
+     "action": "peck_ground"
+    }
+   ],
+   "got": [
+    {
+     "action": "stop",
+     "speed": "normal",
+     "head": "straight",
+     "seconds": 3.0
+    },
+    {
+     "action": "peck_ground",
+     "speed": "normal",
+     "head": "straight",
+     "seconds": 1.0
+    }
+   ],
+   "sequence_exact": true,
+   "fully_exact": true,
+   "seconds": 26.69,
+   "error": null
+  },
+  {
+   "request": "walk forward for one second, turn right for one second, then walk forward for one second",
+   "gold": [
+    {
+     "action": "walk_forward",
+     "seconds": 1
+    },
+    {
+     "action": "turn_right",
+     "seconds": 1
+    },
+    {
+     "action": "walk_forward",
+     "seconds": 1
+    }
+   ],
+   "got": [
+    {
+     "action": "walk_forward",
+     "speed": "normal",
+     "head": "straight",
+     "seconds": 1.0
+    },
+    {
+     "action": "turn_right",
+     "speed": "normal",
+     "head": "straight",
+     "seconds": 1.0
+    },
+    {
+     "action": "walk_forward",
+     "speed": "normal",
+     "head": "straight",
+     "seconds": 1.0
+    }
+   ],
+   "sequence_exact": true,
+   "fully_exact": true,
+   "seconds": 34.59,
+   "error": null
+  },
+  {
+   "request": "sit down and say hello",
+   "gold": [
+    {
+     "action": "sit_or_stand"
+    },
+    {
+     "action": "make_sound",
+     "sound": "greet"
+    }
+   ],
+   "got": [
+    {
+     "action": "sit_or_stand",
+     "speed": "normal",
+     "head": "straight",
+     "seconds": 1.0
+    },
+    {
+     "action": "make_sound",
+     "speed": "normal",
+     "head": "straight",
+     "sound": "greet",
+     "seconds": 1.0
+    }
+   ],
+   "sequence_exact": true,
+   "fully_exact": true,
+   "seconds": 31.47,
+   "error": null
+  },
+  {
+   "request": "peck the ground and chirp",
+   "gold": [
+    {
+     "action": "peck_ground"
+    },
+    {
+     "action": "make_sound",
+     "sound": "chirp"
+    }
+   ],
+   "got": [
+    {
+     "action": "peck_ground",
+     "speed": "normal",
+     "head": "straight",
+     "seconds": 1.0
+    },
+    {
+     "action": "make_sound",
+     "speed": "normal",
+     "head": "straight",
+     "sound": "chirp",
+     "seconds": 1.0
+    }
+   ],
+   "sequence_exact": true,
+   "fully_exact": true,
+   "seconds": 28.38,
+   "error": null
+  },
+  {
+   "request": "turn right and kick with your right foot",
+   "gold": [
+    {
+     "action": "turn_right"
+    },
+    {
+     "action": "kick_right"
+    }
+   ],
+   "got": [
+    {
+     "action": "turn_right",
+     "speed": "normal",
+     "head": "straight",
+     "seconds": 2.0
+    },
+    {
+     "action": "kick_right",
+     "speed": "normal",
+     "head": "straight",
+     "seconds": 1.0
+    }
+   ],
+   "sequence_exact": true,
+   "fully_exact": true,
+   "seconds": 23.52,
+   "error": null
+  },
+  {
+   "request": "walk forward while looking left",
+   "gold": [
+    {
+     "action": "walk_forward",
+     "head": "look_left"
+    }
+   ],
+   "got": [
+    {
+     "action": "walk_forward",
+     "speed": "normal",
+     "head": "look_left",
+     "seconds": 2.0
+    }
+   ],
+   "sequence_exact": true,
+   "fully_exact": true,
+   "seconds": 24.78,
+   "error": null
+  },
+  {
+   "request": "turn left slowly while looking up",
+   "gold": [
+    {
+     "action": "turn_left",
+     "speed": "slow",
+     "head": "look_up"
+    }
+   ],
+   "got": [
+    {
+     "action": "turn_left",
+     "speed": "slow",
+     "head": "look_up",
+     "seconds": 2.0
+    }
+   ],
+   "sequence_exact": true,
+   "fully_exact": true,
+   "seconds": 24.62,
+   "error": null
+  },
+  {
+   "request": "creep forward, looking down at the floor",
+   "gold": [
+    {
+     "action": "walk_forward",
+     "speed": "slow",
+     "head": "look_down"
+    }
+   ],
+   "got": [
+    {
+     "action": "walk_forward",
+     "speed": "slow",
+     "head": "look_down",
+     "seconds": 2.0
+    }
+   ],
+   "sequence_exact": true,
+   "fully_exact": true,
+   "seconds": 27.35,
+   "error": null
+  },
+  {
+   "request": "walk forward, then turn right, then walk forward, then stop",
+   "gold": [
+    {
+     "action": "walk_forward"
+    },
+    {
+     "action": "turn_right"
+    },
+    {
+     "action": "walk_forward"
+    },
+    {
+     "action": "stop"
+    }
+   ],
+   "got": [
+    {
+     "action": "walk_forward",
+     "speed": "normal",
+     "head": "straight",
+     "seconds": 2.0
+    },
+    {
+     "action": "turn_right",
+     "speed": "normal",
+     "head": "straight",
+     "seconds": 2.0
+    },
+    {
+     "action": "walk_forward",
+     "speed": "normal",
+     "head": "straight",
+     "seconds": 2.0
+    },
+    {
+     "action": "stop",
+     "speed": "normal",
+     "head": "straight",
+     "seconds": 2.0
+    }
+   ],
+   "sequence_exact": true,
+   "fully_exact": true,
+   "seconds": 40.86,
+   "error": null
+  },
+  {
+   "request": "say hello, sit down, then stand back up",
+   "gold": [
+    {
+     "action": "make_sound",
+     "sound": "greet"
+    },
+    {
+     "action": "sit_or_stand"
+    },
+    {
+     "action": "sit_or_stand"
+    }
+   ],
+   "got": [
+    {
+     "action": "make_sound",
+     "speed": "normal",
+     "head": "straight",
+     "sound": "greet",
+     "seconds": 1.0
+    },
+    {
+     "action": "sit_or_stand",
+     "speed": "normal",
+     "head": "straight",
+     "seconds": 2.0
+    },
+    {
+     "action": "sit_or_stand",
+     "speed": "normal",
+     "head": "straight",
+     "seconds": 2.0
+    }
+   ],
+   "sequence_exact": true,
+   "fully_exact": true,
+   "seconds": 37.31,
+   "error": null
+  },
+  {
+   "request": "do a roll, then make an excited noise",
+   "gold": [
+    {
+     "action": "roll"
+    },
+    {
+     "action": "make_sound",
+     "sound": "wheee"
+    }
+   ],
+   "got": [
+    {
+     "action": "roll",
+     "speed": "normal",
+     "head": "straight",
+     "seconds": 1.0
+    },
+    {
+     "action": "make_sound",
+     "speed": "normal",
+     "head": "straight",
+     "sound": "wheee",
+     "seconds": 1.0
+    }
+   ],
+   "sequence_exact": true,
+   "fully_exact": true,
+   "seconds": 44.63,
+   "error": null
+  },
+  {
+   "request": "walk backward quickly, stop, then sound the alarm",
+   "gold": [
+    {
+     "action": "walk_backward",
+     "speed": "fast"
+    },
+    {
+     "action": "stop"
+    },
+    {
+     "action": "make_sound",
+     "sound": "alarm"
+    }
+   ],
+   "got": [
+    {
+     "action": "walk_backward",
+     "speed": "fast",
+     "head": "straight",
+     "seconds": 2.0
+    },
+    {
+     "action": "stop",
+     "speed": "normal",
+     "head": "straight",
+     "seconds": 2.0
+    },
+    {
+     "action": "make_sound",
+     "speed": "normal",
+     "head": "straight",
+     "sound": "alarm",
+     "seconds": 1.0
+    }
+   ],
+   "sequence_exact": true,
+   "fully_exact": true,
+   "seconds": 37.52,
+   "error": null
+  },
+  {
+   "request": "take a seat",
+   "gold": [
+    {
+     "action": "sit_or_stand"
+    }
+   ],
+   "got": [
+    {
+     "action": "sit_or_stand",
+     "speed": "normal",
+     "head": "straight",
+     "seconds": 2.0
+    }
+   ],
+   "sequence_exact": true,
+   "fully_exact": true,
+   "seconds": 14.49,
+   "error": null
+  },
+  {
+   "request": "go forward fast, then spin to the left",
+   "gold": [
+    {
+     "action": "walk_forward",
+     "speed": "fast"
+    },
+    {
+     "action": "turn_left"
+    }
+   ],
+   "got": [
+    {
+     "action": "walk_forward",
+     "speed": "fast",
+     "head": "straight",
+     "seconds": 2.0
+    },
+    {
+     "action": "turn_left",
+     "speed": "normal",
+     "head": "straight",
+     "seconds": 2.0
+    }
+   ],
+   "sequence_exact": true,
+   "fully_exact": true,
+   "seconds": 30.88,
+   "error": null
+  },
+  {
+   "request": "have a snack off the floor",
+   "gold": [
+    {
+     "action": "peck_ground"
+    }
+   ],
+   "got": [
+    {
+     "action": "peck_ground",
+     "speed": "normal",
+     "head": "straight",
+     "seconds": 1.0
+    }
+   ],
+   "sequence_exact": true,
+   "fully_exact": true,
+   "seconds": 24.96,
+   "error": null
+  },
+  {
+   "request": "gently coo, then walk forward slowly",
+   "gold": [
+    {
+     "action": "make_sound",
+     "sound": "coo"
+    },
+    {
+     "action": "walk_forward",
+     "speed": "slow"
+    }
+   ],
+   "got": [
+    {
+     "action": "make_sound",
+     "speed": "normal",
+     "head": "straight",
+     "sound": "coo",
+     "seconds": 1.0
+    },
+    {
+     "action": "walk_forward",
+     "speed": "slow",
+     "head": "straight",
+     "seconds": 2.0
+    }
+   ],
+   "sequence_exact": true,
+   "fully_exact": true,
+   "seconds": 25.48,
+   "error": null
+  },
+  {
+   "request": "make a curious questioning noise",
+   "gold": [
+    {
+     "action": "make_sound",
+     "sound": "inquire"
+    }
+   ],
+   "got": [
+    {
+     "action": "make_sound",
+     "speed": "normal",
+     "head": "straight",
+     "sound": "inquire",
+     "seconds": 1.0
+    }
+   ],
+   "sequence_exact": true,
+   "fully_exact": true,
+   "seconds": 15.63,
+   "error": null
+  },
+  {
+   "request": "jump over the box",
+   "gold": [
+    {
+     "action": "unsupported"
+    }
+   ],
+   "got": [
+    {
+     "action": "unsupported",
+     "speed": "normal",
+     "head": "straight",
+     "seconds": 1.0
+    }
+   ],
+   "sequence_exact": true,
+   "fully_exact": true,
+   "seconds": 34.45,
+   "error": null
+  },
+  {
+   "request": "what time is it",
+   "gold": [
+    {
+     "action": "unsupported"
+    }
+   ],
+   "got": [
+    {
+     "action": "unsupported",
+     "speed": "normal",
+     "head": "straight",
+     "seconds": 1.0
+    }
+   ],
+   "sequence_exact": true,
+   "fully_exact": true,
+   "seconds": 11.78,
+   "error": null
+  },
+  {
+   "request": "open the door",
+   "gold": [
+    {
+     "action": "unsupported"
+    }
+   ],
+   "got": [
+    {
+     "action": "unsupported",
+     "speed": "normal",
+     "head": "straight",
+     "seconds": 1.0
+    }
+   ],
+   "sequence_exact": true,
+   "fully_exact": true,
+   "seconds": 19.77,
+   "error": null
+  },
+  {
+   "request": "walk forward then climb the stairs",
+   "gold": [
+    {
+     "action": "walk_forward"
+    },
+    {
+     "action": "unsupported"
+    }
+   ],
+   "got": [
+    {
+     "action": "walk_forward",
+     "speed": "normal",
+     "head": "straight",
+     "seconds": 2.0
+    },
+    {
+     "action": "unsupported",
+     "speed": "normal",
+     "head": "straight",
+     "seconds": 1.0
+    }
+   ],
+   "sequence_exact": true,
+   "fully_exact": true,
+   "seconds": 39.59,
+   "error": null
+  },
+  {
+   "request": "say hello then fly away",
+   "gold": [
+    {
+     "action": "make_sound",
+     "sound": "greet"
+    },
+    {
+     "action": "unsupported"
+    }
+   ],
+   "got": [
+    {
+     "action": "make_sound",
+     "speed": "normal",
+     "head": "straight",
+     "sound": "greet",
+     "seconds": 1.0
+    },
+    {
+     "action": "unsupported",
+     "speed": "normal",
+     "head": "straight",
+     "seconds": 1.0
+    }
+   ],
+   "sequence_exact": true,
+   "fully_exact": true,
+   "seconds": 29.61,
+   "error": null
+  }
+ ]
+}

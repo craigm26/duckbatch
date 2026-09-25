@@ -1,0 +1,48 @@
+# p002: can a small local LLM (Gemma 4 E4B, schema-constrained) turn a multi-step request into a
+# plan better than r001's clause-splitting router? Pre-registered 2026-09-25: the requests and
+# gold labels were written BEFORE either model was scored on them (the planner smoke test used
+# four other requests). See notes/2026-09-25-p002-design.md.
+#
+# Gold is one entry per step with optional `repeat` (unrolled for scoring) and `seconds` (scored
+# only where the request states a duration, within 0.25 s). Labels as in r001: speed and head are
+# scored on movement steps, sound on make_sound. Consecutive `unsupported` steps are collapsed to
+# one before comparison, in both gold and output.
+id: p002-plan-requests
+requests:
+  # --- repetition ------------------------------------------------------------------------
+  - {text: "peck the ground three times", steps: [{action: peck_ground, repeat: 3}]}
+  - {text: "kick with your right foot twice", steps: [{action: kick_right, repeat: 2}]}
+  - {text: "chirp twice then walk forward", steps: [{action: make_sound, sound: chirp, repeat: 2}, {action: walk_forward}]}
+  - {text: "turn left, then turn left again", steps: [{action: turn_left}, {action: turn_left}]}
+  - {text: "quack three times", steps: [{action: make_sound, sound: chirp, repeat: 3}]}
+  # --- durations -------------------------------------------------------------------------
+  - {text: "walk forward for five seconds", steps: [{action: walk_forward, seconds: 5}]}
+  - {text: "back up slowly for two seconds then stop", steps: [{action: walk_backward, speed: slow, seconds: 2}, {action: stop}]}
+  - {text: "spin right quickly for four seconds", steps: [{action: turn_right, speed: fast, seconds: 4}]}
+  - {text: "stand still for three seconds, then peck the ground", steps: [{action: stop, seconds: 3}, {action: peck_ground}]}
+  - {text: "walk forward for one second, turn right for one second, then walk forward for one second", steps: [{action: walk_forward, seconds: 1}, {action: turn_right, seconds: 1}, {action: walk_forward, seconds: 1}]}
+  # --- joined by "and" (the router's splitter does not split these) ------------------------
+  - {text: "sit down and say hello", steps: [{action: sit_or_stand}, {action: make_sound, sound: greet}]}
+  - {text: "peck the ground and chirp", steps: [{action: peck_ground}, {action: make_sound, sound: chirp}]}
+  - {text: "turn right and kick with your right foot", steps: [{action: turn_right}, {action: kick_right}]}
+  # --- one step with modifiers (must NOT be split) ----------------------------------------
+  - {text: "walk forward while looking left", steps: [{action: walk_forward, head: look_left}]}
+  - {text: "turn left slowly while looking up", steps: [{action: turn_left, speed: slow, head: look_up}]}
+  - {text: "creep forward, looking down at the floor", steps: [{action: walk_forward, speed: slow, head: look_down}]}
+  # --- longer sequences ------------------------------------------------------------------
+  - {text: "walk forward, then turn right, then walk forward, then stop", steps: [{action: walk_forward}, {action: turn_right}, {action: walk_forward}, {action: stop}]}
+  - {text: "say hello, sit down, then stand back up", steps: [{action: make_sound, sound: greet}, {action: sit_or_stand}, {action: sit_or_stand}]}
+  - {text: "do a roll, then make an excited noise", steps: [{action: roll}, {action: make_sound, sound: wheee}]}
+  - {text: "walk backward quickly, stop, then sound the alarm", steps: [{action: walk_backward, speed: fast}, {action: stop}, {action: make_sound, sound: alarm}]}
+  # --- colloquial ------------------------------------------------------------------------
+  - {text: "take a seat", steps: [{action: sit_or_stand}]}
+  - {text: "go forward fast, then spin to the left", steps: [{action: walk_forward, speed: fast}, {action: turn_left}]}
+  - {text: "have a snack off the floor", steps: [{action: peck_ground}]}
+  - {text: "gently coo, then walk forward slowly", steps: [{action: make_sound, sound: coo}, {action: walk_forward, speed: slow}]}
+  - {text: "make a curious questioning noise", steps: [{action: make_sound, sound: inquire}]}
+  # --- out of scope, whole or in part -----------------------------------------------------
+  - {text: "jump over the box", steps: [{action: unsupported}]}
+  - {text: "what time is it", steps: [{action: unsupported}]}
+  - {text: "open the door", steps: [{action: unsupported}]}
+  - {text: "walk forward then climb the stairs", steps: [{action: walk_forward}, {action: unsupported}]}
+  - {text: "say hello then fly away", steps: [{action: make_sound, sound: greet}, {action: unsupported}]}

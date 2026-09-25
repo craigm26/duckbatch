@@ -101,3 +101,88 @@ def expand(steps: list[dict]) -> list[str]:
     for s in steps:
         out += [s["labels"]["action"] if "labels" in s else s["action"]] * int(s.get("repeat", 1))
     return out
+
+
+# ---- measurement (p002) ----------------------------------------------------------------------
+
+MOVEMENT = {"walk_forward", "walk_backward", "turn_left", "turn_right", "stop"}
+
+
+def _collapse(seq: list[dict]) -> list[dict]:
+    out = []
+    for s in seq:
+        if not (out and s["action"] == "unsupported" and out[-1]["action"] == "unsupported"):
+            out.append(s)
+    return out
+
+
+def _unroll_gold(steps: list[dict]) -> list[dict]:
+    out = []
+    for s in steps:
+        out += [s] * int(s.get("repeat", 1))
+    return _collapse(out)
+
+
+def _unroll_plan(p: dict) -> list[dict]:
+    """Planner or router output as one dict per executed step: action, labels, seconds."""
+    out = []
+    for s in p["steps"]:
+        step = {**s["labels"], "seconds": s.get("seconds")}
+        out += [step] * int(s.get("repeat", 1))
+    return _collapse(out)
+
+
+def evaluate(requests: list[dict], make_plan, name: str, log=print) -> dict[str, Any]:
+    import time
+
+    heads = {"speed": [0, 0], "head": [0, 0], "sound": [0, 0], "seconds": [0, 0]}
+    seq_ok = full_ok = refused = 0
+    whole_oos = [r for r in requests if all(s["action"] == "unsupported" for s in r["steps"])]
+    rows, lat = [], []
+    for r in requests:
+        t0 = time.perf_counter()
+        try:
+            p = make_plan(r["text"])
+            err = None
+        except Exception as e:  # a failed plan is a wrong plan, recorded
+            p, err = {"steps": []}, repr(e)
+        lat.append(time.perf_counter() - t0)
+        got, gold = _unroll_plan(p), _unroll_gold(r["steps"])
+        s_ok = [g["action"] for g in got] == [g["action"] for g in gold]
+        f_ok = s_ok
+        if s_ok:
+            for g, want in zip(got, gold):
+                checks = []
+                if want["action"] in MOVEMENT:
+                    checks += ["speed", "head"]
+                if want["action"] == "make_sound":
+                    checks += ["sound"]
+                for h in checks:
+                    ok = g.get(h) == want.get(h, "normal" if h == "speed" else "straight")
+                    heads[h][0] += ok
+                    heads[h][1] += 1
+                    f_ok &= ok
+                if "seconds" in want:
+                    ok = g.get("seconds") is not None and abs(float(g["seconds"]) - want["seconds"]) < 0.25
+                    heads["seconds"][0] += ok
+                    heads["seconds"][1] += 1
+                    f_ok &= ok
+        seq_ok += s_ok
+        full_ok += f_ok
+        if r in whole_oos and got and all(g["action"] == "unsupported" for g in got):
+            refused += 1
+        log(f"[{name}] {'OK ' if f_ok else ('seq' if s_ok else 'BAD')} {lat[-1]:5.1f}s  {r['text']}  ->  "
+            f"{[g['action'] for g in got]}{'  ERR ' + err if err else ''}")
+        rows.append({"request": r["text"], "gold": gold, "got": got, "sequence_exact": s_ok,
+                     "fully_exact": f_ok, "seconds": round(lat[-1], 2), "error": err})
+    n = len(requests)
+    lat_sorted = sorted(lat)
+    return {
+        "model": name,
+        "sequence_exact": f"{seq_ok}/{n}", "fully_exact": f"{full_ok}/{n}",
+        "sequence_exact_rate": round(seq_ok / n, 4), "fully_exact_rate": round(full_ok / n, 4),
+        "labels_given_sequence": {h: f"{c}/{t}" for h, (c, t) in heads.items()},
+        "whole_out_of_scope_refused": f"{refused}/{len(whole_oos)}",
+        "latency_s": {"median": round(lat_sorted[n // 2], 2), "max": round(lat_sorted[-1], 2)},
+        "rows": rows,
+    }

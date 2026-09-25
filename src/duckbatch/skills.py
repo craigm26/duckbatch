@@ -266,6 +266,7 @@ def run_skills(menu_path, out_root="records", device: str = "cuda:0", log=print)
                                  "policy": policies.get(a["id"])} for a in menu["arms"]},
               "train_seconds": round(train_s, 1), "eval": evals}
     (out / "record.json").write_text(json.dumps(record, indent=1))
+    log("[record] " + json.dumps(evals))  # a second copy in the log, in case the upload fails
     env.close()
     log(f"[skills] done in {train_s / 60:.1f} min -> {out}/record.json")
     return out

@@ -74,6 +74,14 @@ def main(argv: list[str] | None = None) -> int:
     pa.add_argument("--envs", type=int, default=512)
     pa.add_argument("--seconds", type=float, default=8.0)
 
+    pl = sub.add_parser("plan", help="plan a multi-step request with the local LLM planner")
+    pl.add_argument("text")
+    pl.add_argument("--url", default=None)
+    pe = sub.add_parser("plan-eval", help="score the LLM planner and the router on p002")
+    pe.add_argument("menu", nargs="?", default="menus/p002-plan-requests.yaml")
+    pe.add_argument("--models", default="gemma,decide")
+    pe.add_argument("--url", default=None)
+    pe.add_argument("--out", default="records/p002-plan-requests")
     sk = sub.add_parser("skills", help="distil several of Pollen's skills into one student")
     sk.add_argument("menu")
     sk.add_argument("--out", default="records")
@@ -161,6 +169,32 @@ def main(argv: list[str] | None = None) -> int:
         from .pairs import generate
 
         generate(a.out, num_envs=a.envs, seconds=a.seconds)
+    elif a.cmd == "plan":
+        import json
+
+        from . import planner
+
+        print(json.dumps(planner.plan(a.text, a.url or planner.DEFAULT_URL), indent=1))
+    elif a.cmd == "plan-eval":
+        import json
+        from pathlib import Path
+
+        import yaml
+
+        from . import planner, router
+
+        menu = yaml.safe_load(Path(a.menu).read_text())
+        out = Path(a.out)
+        out.mkdir(parents=True, exist_ok=True)
+        for name in a.models.split(","):
+            if name == "gemma":
+                res = planner.evaluate(menu["requests"],
+                                       lambda t: planner.plan(t, a.url or planner.DEFAULT_URL), "gemma")
+            else:
+                model = {"decide": router.DecideRouter, "jev": router.JevRouter}[name]()
+                res = planner.evaluate(menu["requests"], lambda t: router.route(t, model), name)
+            (out / f"{name}.json").write_text(json.dumps(res, indent=1))
+            print(json.dumps({k: v for k, v in res.items() if k != "rows"}, indent=1))
     elif a.cmd == "skills":
         from .skills import run_skills
 

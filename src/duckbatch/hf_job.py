@@ -38,7 +38,7 @@ set +e
 uv run python -u -m duckbatch.cli $RUN "$MENU" --out /work/job-records $JUDGE_FLAG
 RC=$?
 set -e
-BATCH_DIR=$(ls -d /work/job-records/*/ | head -1)
+export BATCH_DIR=$(ls -d /work/job-records/*/ | head -1)
 uv run python - <<'PY'
 import os
 from huggingface_hub import HfApi

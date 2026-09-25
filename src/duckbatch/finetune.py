@@ -254,5 +254,6 @@ def run_finetune(menu_path: str | Path, out_root: str | Path = "records", log=pr
               "final_eval": {"seconds": 30.0, "recover_seconds": 6.0, "by_seed": final},
               "speed_curve": json.loads((out / "speed" / "speed_curve.json").read_text())}
     (out / "record.json").write_text(json.dumps(record, indent=1))
+    log("[record] " + json.dumps(record))  # a second copy in the log, in case the upload fails
     log(f"[finetune] record -> {out}/record.json")
     return out
