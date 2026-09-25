@@ -1,0 +1,286 @@
+{
+ "schema": "duckbatch.skills.v1",
+ "batch_id": "b004-skills",
+ "skills": [
+  {
+   "name": "walk",
+   "teacher": "teachers/velstand.onnx",
+   "code": [
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "name": "stand",
+   "teacher": "teachers/alpha_stand.onnx",
+   "code": [
+    1,
+    0,
+    0
+   ]
+  },
+  {
+   "name": "sit",
+   "teacher": "teachers/alpha_sitstand.onnx",
+   "code": [
+    -1,
+    0,
+    0
+   ]
+  },
+  {
+   "name": "unsit",
+   "teacher": "teachers/alpha_sitstand.onnx",
+   "code": [
+    -1,
+    0,
+    0
+   ]
+  },
+  {
+   "name": "pick",
+   "teacher": "teachers/alpha_ground_pick.onnx",
+   "code": [
+    0,
+    1,
+    0
+   ]
+  },
+  {
+   "name": "kick_left",
+   "teacher": "teachers/ball_kick_left.onnx",
+   "code": [
+    0,
+    0,
+    1
+   ]
+  },
+  {
+   "name": "kick_right",
+   "teacher": "teachers/ball_kick_right.onnx",
+   "code": [
+    0,
+    0,
+    -1
+   ]
+  }
+ ],
+ "arms": {
+  "m01": {
+   "hidden": [
+    512,
+    256,
+    128
+   ],
+   "params": 197774,
+   "policy": "policies/m01/policy.onnx"
+  },
+  "m02": {
+   "hidden": [
+    256,
+    128,
+    64
+   ],
+   "params": 57934,
+   "policy": "policies/m02/policy.onnx"
+  },
+  "m03": {
+   "hidden": [
+    128,
+    128
+   ],
+   "params": 26254,
+   "policy": "policies/m03/policy.onnx"
+  }
+ },
+ "train_seconds": 1364.6,
+ "eval": {
+  "6001": {
+   "teacher": {
+    "envs": 128,
+    "falls_per_min": 0.3125,
+    "falls_after_switch_per_100": 1.0243277848911652,
+    "switches": 1562.0,
+    "gap_by_skill": {
+     "walk": 0.0,
+     "stand": 0.0,
+     "sit": 0.0,
+     "unsit": 0.0,
+     "pick": 0.0,
+     "kick_left": 0.0,
+     "kick_right": 0.0
+    }
+   },
+   "m01": {
+    "envs": 128,
+    "falls_per_min": 0.453125,
+    "falls_after_switch_per_100": 1.6434892541087232,
+    "switches": 1582.0,
+    "gap_by_skill": {
+     "walk": 0.0028882944025099277,
+     "stand": 0.0015765022253617644,
+     "sit": 0.001466095563955605,
+     "unsit": 0.001972430618479848,
+     "pick": 0.0011690993560478091,
+     "kick_left": 0.033727213740348816,
+     "kick_right": 0.1607850044965744
+    }
+   },
+   "m02": {
+    "envs": 128,
+    "falls_per_min": 0.59375,
+    "falls_after_switch_per_100": 2.1331609566903684,
+    "switches": 1547.0,
+    "gap_by_skill": {
+     "walk": 0.002790292026475072,
+     "stand": 0.0030421800911426544,
+     "sit": 0.002601343672722578,
+     "unsit": 0.0021434964146465063,
+     "pick": 0.0015654892195016146,
+     "kick_left": 0.019614167511463165,
+     "kick_right": 0.034503448754549026
+    }
+   },
+   "m03": {
+    "envs": 128,
+    "falls_per_min": 1.28125,
+    "falls_after_switch_per_100": 4.230769230769231,
+    "switches": 1560.0,
+    "gap_by_skill": {
+     "walk": 0.006216774228960276,
+     "stand": 0.0075655775144696236,
+     "sit": 0.005246725864708424,
+     "unsit": 0.00773678719997406,
+     "pick": 0.003506269073113799,
+     "kick_left": 0.07999897003173828,
+     "kick_right": 0.04083053767681122
+    }
+   }
+  },
+  "6002": {
+   "teacher": {
+    "envs": 128,
+    "falls_per_min": 0.375,
+    "falls_after_switch_per_100": 1.2140575079872205,
+    "switches": 1565.0,
+    "gap_by_skill": {
+     "walk": 0.0,
+     "stand": 0.0,
+     "sit": 0.0,
+     "unsit": 0.0,
+     "pick": 0.0,
+     "kick_left": 0.0,
+     "kick_right": 0.0
+    }
+   },
+   "m01": {
+    "envs": 128,
+    "falls_per_min": 0.53125,
+    "falls_after_switch_per_100": 1.599488163787588,
+    "switches": 1563.0,
+    "gap_by_skill": {
+     "walk": 0.0018929119687527418,
+     "stand": 0.0022583995014429092,
+     "sit": 0.0023885825648903847,
+     "unsit": 0.0013052619760856032,
+     "pick": 0.0010073687881231308,
+     "kick_left": 0.024249624460935593,
+     "kick_right": 0.16860857605934143
+    }
+   },
+   "m02": {
+    "envs": 128,
+    "falls_per_min": 0.6875,
+    "falls_after_switch_per_100": 2.337334175615919,
+    "switches": 1583.0,
+    "gap_by_skill": {
+     "walk": 0.003247248474508524,
+     "stand": 0.0023902966640889645,
+     "sit": 0.002160303760319948,
+     "unsit": 0.0023852575104683638,
+     "pick": 0.0012592501007020473,
+     "kick_left": 0.034437619149684906,
+     "kick_right": 0.014225070364773273
+    }
+   },
+   "m03": {
+    "envs": 128,
+    "falls_per_min": 1.3125,
+    "falls_after_switch_per_100": 4.430769230769231,
+    "switches": 1625.0,
+    "gap_by_skill": {
+     "walk": 0.006727725733071566,
+     "stand": 0.009576993994414806,
+     "sit": 0.004081509076058865,
+     "unsit": 0.0050372164696455,
+     "pick": 0.0026145344600081444,
+     "kick_left": 0.08318454772233963,
+     "kick_right": 0.057468075305223465
+    }
+   }
+  },
+  "6003": {
+   "teacher": {
+    "envs": 128,
+    "falls_per_min": 0.25,
+    "falls_after_switch_per_100": 0.7010834926704907,
+    "switches": 1569.0,
+    "gap_by_skill": {
+     "walk": 0.0,
+     "stand": 0.0,
+     "sit": 0.0,
+     "unsit": 0.0,
+     "pick": 0.0,
+     "kick_left": 0.0,
+     "kick_right": 0.0
+    }
+   },
+   "m01": {
+    "envs": 128,
+    "falls_per_min": 0.421875,
+    "falls_after_switch_per_100": 1.4193548387096775,
+    "switches": 1550.0,
+    "gap_by_skill": {
+     "walk": 0.0016076521715149283,
+     "stand": 0.0034502260386943817,
+     "sit": 0.0020177324768155813,
+     "unsit": 0.0012204765807837248,
+     "pick": 0.0014097176026552916,
+     "kick_left": 0.05034701153635979,
+     "kick_right": 0.22748315334320068
+    }
+   },
+   "m02": {
+    "envs": 128,
+    "falls_per_min": 0.53125,
+    "falls_after_switch_per_100": 1.6602809706257982,
+    "switches": 1566.0,
+    "gap_by_skill": {
+     "walk": 0.002414106158539653,
+     "stand": 0.002443174831569195,
+     "sit": 0.002785592805594206,
+     "unsit": 0.0016182110412046313,
+     "pick": 0.0013857337180525064,
+     "kick_left": 0.016238322481513023,
+     "kick_right": 0.015846310183405876
+    }
+   },
+   "m03": {
+    "envs": 128,
+    "falls_per_min": 1.234375,
+    "falls_after_switch_per_100": 4.876504116529449,
+    "switches": 1579.0,
+    "gap_by_skill": {
+     "walk": 0.005434092134237289,
+     "stand": 0.00896136648952961,
+     "sit": 0.0043766382150352,
+     "unsit": 0.00658076349645853,
+     "pick": 0.0035137550439685583,
+     "kick_left": 0.0867006853222847,
+     "kick_right": 0.07246814668178558
+    }
+   }
+  }
+ }
+}

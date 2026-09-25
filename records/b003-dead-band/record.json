@@ -1,0 +1,404 @@
+{
+ "schema": "duckbatch.finetune.v1",
+ "batch_id": "b003-dead-band",
+ "task": "Mjlab-VelStand-Flat-MicroDuck",
+ "student": "records/b002-student-size-longer/policies/a02/policy.onnx",
+ "teacher": "teachers/velstand.onnx",
+ "train_seconds": 3275.9,
+ "gpu": "NVIDIA L4",
+ "params": 26254,
+ "policy": "policies/finetuned/policy.onnx",
+ "final_eval": {
+  "seconds": 30.0,
+  "recover_seconds": 6.0,
+  "by_seed": {
+   "2001": {
+    "teacher": {
+     "envs": 171,
+     "sim_seconds": 30.0,
+     "falls_per_min": 0.10526315789473684,
+     "down_frac": 0.00250682261208577,
+     "lin_err": 0.17264121894444456,
+     "ang_err": 0.3781816748104318,
+     "teacher_mse": 0.0,
+     "reward_per_s": 7.2225433981674225,
+     "recovered_frac": 0.9766082167625427,
+     "t_up_s": 0.5983233451843262
+    },
+    "student": {
+     "envs": 170,
+     "sim_seconds": 30.0,
+     "falls_per_min": 0.4117647058823529,
+     "down_frac": 0.009619607843137255,
+     "lin_err": 0.1816209484958406,
+     "ang_err": 0.40948715981519246,
+     "teacher_mse": 0.0022990800863387536,
+     "reward_per_s": 6.940407390220493,
+     "recovered_frac": 0.9764705896377563,
+     "t_up_s": 0.6077107787132263
+    },
+    "finetuned": {
+     "envs": 171,
+     "sim_seconds": 30.0,
+     "falls_per_min": 0.4093567251461988,
+     "down_frac": 0.006994152046783626,
+     "lin_err": 0.17268551833089338,
+     "ang_err": 0.41303182984752346,
+     "teacher_mse": 0.00500277359978265,
+     "reward_per_s": 6.797937544140435,
+     "recovered_frac": 0.9941520690917969,
+     "t_up_s": 0.50458824634552
+    }
+   },
+   "2002": {
+    "teacher": {
+     "envs": 171,
+     "sim_seconds": 30.0,
+     "falls_per_min": 0.08187134502923976,
+     "down_frac": 0.0014580896686159845,
+     "lin_err": 0.1738656540052824,
+     "ang_err": 0.36689353474549485,
+     "teacher_mse": 0.0,
+     "reward_per_s": 7.23322091353567,
+     "recovered_frac": 0.9473684430122375,
+     "t_up_s": 0.5222222208976746
+    },
+    "student": {
+     "envs": 170,
+     "sim_seconds": 30.0,
+     "falls_per_min": 0.4823529411764706,
+     "down_frac": 0.01395686274509804,
+     "lin_err": 0.17511783528259955,
+     "ang_err": 0.39769328556266137,
+     "teacher_mse": 0.0023137658981715933,
+     "reward_per_s": 6.920003301583084,
+     "recovered_frac": 0.9764705896377563,
+     "t_up_s": 0.5538554191589355
+    },
+    "finetuned": {
+     "envs": 171,
+     "sim_seconds": 30.0,
+     "falls_per_min": 0.49122807017543857,
+     "down_frac": 0.008857699805068226,
+     "lin_err": 0.17482151102047763,
+     "ang_err": 0.4318322818769968,
+     "teacher_mse": 0.005124139799476832,
+     "reward_per_s": 6.76392921462626,
+     "recovered_frac": 0.9707602262496948,
+     "t_up_s": 0.5249397158622742
+    }
+   },
+   "2003": {
+    "teacher": {
+     "envs": 171,
+     "sim_seconds": 30.0,
+     "falls_per_min": 0.14035087719298245,
+     "down_frac": 0.005578947368421052,
+     "lin_err": 0.17733291481745236,
+     "ang_err": 0.38255266174522434,
+     "teacher_mse": 0.0,
+     "reward_per_s": 7.198263080589488,
+     "recovered_frac": 0.9824561476707458,
+     "t_up_s": 0.5413094758987427
+    },
+    "student": {
+     "envs": 170,
+     "sim_seconds": 30.0,
+     "falls_per_min": 0.4117647058823529,
+     "down_frac": 0.015937254901960785,
+     "lin_err": 0.17966001190438263,
+     "ang_err": 0.40065367009690134,
+     "teacher_mse": 0.0023564028893031325,
+     "reward_per_s": 6.881319887497845,
+     "recovered_frac": 0.9647058844566345,
+     "t_up_s": 0.5732926726341248
+    },
+    "finetuned": {
+     "envs": 171,
+     "sim_seconds": 30.0,
+     "falls_per_min": 0.5614035087719298,
+     "down_frac": 0.015263157894736841,
+     "lin_err": 0.17574031243927535,
+     "ang_err": 0.44952697302337674,
+     "teacher_mse": 0.005285163353061118,
+     "reward_per_s": 6.661762990821407,
+     "recovered_frac": 1.0,
+     "t_up_s": 0.5298245549201965
+    }
+   }
+  }
+ },
+ "speed_curve": {
+  "task": "Mjlab-VelStand-Flat-MicroDuck",
+  "profile": "walk",
+  "seconds": 8.0,
+  "seed": 4001,
+  "measured_over": "last half of each episode, upright envs",
+  "rows": [
+   {
+    "policy": "velstand",
+    "command": [
+     0.05,
+     0.0,
+     0.0
+    ],
+    "vx": 0.0006687674765271368,
+    "wz": 0.005592881341872271,
+    "fell_share": 0.0
+   },
+   {
+    "policy": "velstand",
+    "command": [
+     0.1,
+     0.0,
+     0.0
+    ],
+    "vx": 0.0016541459567264132,
+    "wz": 0.0039562255900966676,
+    "fell_share": 0.001953125
+   },
+   {
+    "policy": "velstand",
+    "command": [
+     0.15,
+     0.0,
+     0.0
+    ],
+    "vx": 0.03923013770318069,
+    "wz": -0.02100332551463203,
+    "fell_share": 0.00390625
+   },
+   {
+    "policy": "velstand",
+    "command": [
+     0.2,
+     0.0,
+     0.0
+    ],
+    "vx": 0.06663969465522171,
+    "wz": -0.018511626029297658,
+    "fell_share": 0.00390625
+   },
+   {
+    "policy": "velstand",
+    "command": [
+     0.3,
+     0.0,
+     0.0
+    ],
+    "vx": 0.11941423927462944,
+    "wz": -0.020185864562337997,
+    "fell_share": 0.009765625
+   },
+   {
+    "policy": "velstand",
+    "command": [
+     0.4,
+     0.0,
+     0.0
+    ],
+    "vx": 0.16179616944739428,
+    "wz": -0.023418102587854452,
+    "fell_share": 0.01171875
+   },
+   {
+    "policy": "velstand",
+    "command": [
+     0.0,
+     0.0,
+     0.5
+    ],
+    "vx": 0.011234794086596053,
+    "wz": 0.07926838422895686,
+    "fell_share": 0.005859375
+   },
+   {
+    "policy": "velstand",
+    "command": [
+     0.0,
+     0.0,
+     1.0
+    ],
+    "vx": 0.01838317073962429,
+    "wz": 0.30693960222052896,
+    "fell_share": 0.025390625
+   },
+   {
+    "policy": "student",
+    "command": [
+     0.05,
+     0.0,
+     0.0
+    ],
+    "vx": 0.00055399932010882,
+    "wz": -0.003804241510334146,
+    "fell_share": 0.015625
+   },
+   {
+    "policy": "student",
+    "command": [
+     0.1,
+     0.0,
+     0.0
+    ],
+    "vx": 0.007461201177830404,
+    "wz": -0.010422518160714437,
+    "fell_share": 0.009765625
+   },
+   {
+    "policy": "student",
+    "command": [
+     0.15,
+     0.0,
+     0.0
+    ],
+    "vx": 0.022629013690760313,
+    "wz": -0.0301265575969859,
+    "fell_share": 0.0078125
+   },
+   {
+    "policy": "student",
+    "command": [
+     0.2,
+     0.0,
+     0.0
+    ],
+    "vx": 0.03957631341935064,
+    "wz": -0.03830005052492046,
+    "fell_share": 0.017578125
+   },
+   {
+    "policy": "student",
+    "command": [
+     0.3,
+     0.0,
+     0.0
+    ],
+    "vx": 0.10810141249885166,
+    "wz": -0.05277044727427302,
+    "fell_share": 0.015625
+   },
+   {
+    "policy": "student",
+    "command": [
+     0.4,
+     0.0,
+     0.0
+    ],
+    "vx": 0.1573050667114438,
+    "wz": -0.05797997024139245,
+    "fell_share": 0.021484375
+   },
+   {
+    "policy": "student",
+    "command": [
+     0.0,
+     0.0,
+     0.5
+    ],
+    "vx": 0.002480026667297641,
+    "wz": 0.046336576317632897,
+    "fell_share": 0.013671875
+   },
+   {
+    "policy": "student",
+    "command": [
+     0.0,
+     0.0,
+     1.0
+    ],
+    "vx": 0.010269336959048662,
+    "wz": 0.21133741729870303,
+    "fell_share": 0.01953125
+   },
+   {
+    "policy": "finetuned",
+    "command": [
+     0.05,
+     0.0,
+     0.0
+    ],
+    "vx": -0.001327378303497466,
+    "wz": -0.0005754463771122173,
+    "fell_share": 0.009765625
+   },
+   {
+    "policy": "finetuned",
+    "command": [
+     0.1,
+     0.0,
+     0.0
+    ],
+    "vx": 0.0023809763888313308,
+    "wz": 0.002473781588687921,
+    "fell_share": 0.021484375
+   },
+   {
+    "policy": "finetuned",
+    "command": [
+     0.15,
+     0.0,
+     0.0
+    ],
+    "vx": 0.00551013464277706,
+    "wz": -0.000159491637756379,
+    "fell_share": 0.017578125
+   },
+   {
+    "policy": "finetuned",
+    "command": [
+     0.2,
+     0.0,
+     0.0
+    ],
+    "vx": 0.011076294474507316,
+    "wz": -0.012044463531550566,
+    "fell_share": 0.01171875
+   },
+   {
+    "policy": "finetuned",
+    "command": [
+     0.3,
+     0.0,
+     0.0
+    ],
+    "vx": 0.06035817755473536,
+    "wz": -0.021936567482569096,
+    "fell_share": 0.01171875
+   },
+   {
+    "policy": "finetuned",
+    "command": [
+     0.4,
+     0.0,
+     0.0
+    ],
+    "vx": 0.12413230692565518,
+    "wz": -0.011691228911732006,
+    "fell_share": 0.02734375
+   },
+   {
+    "policy": "finetuned",
+    "command": [
+     0.0,
+     0.0,
+     0.5
+    ],
+    "vx": -0.002136764452020392,
+    "wz": 0.012079541633784207,
+    "fell_share": 0.02734375
+   },
+   {
+    "policy": "finetuned",
+    "command": [
+     0.0,
+     0.0,
+     1.0
+    ],
+    "vx": -0.0014062999152219494,
+    "wz": 0.01687237061151295,
+    "fell_share": 0.025390625
+   }
+  ]
+ }
+}

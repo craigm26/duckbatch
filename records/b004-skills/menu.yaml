@@ -1,0 +1,20 @@
+# b004: one multi-skill student distilled from Pollen's skill teachers, with transitions.
+# Pre-registered 2026-09-25, before b004 ran. See notes/2026-09-25-b004-design.md.
+batch_id: b004-skills
+task: Mjlab-VelStand-Flat-MicroDuck
+teachers_source: pollen-robotics/microduck-policies@1b56c396825c052a4e26e95cf2b8d8298af9e9b4
+num_envs: 512
+seed: 0
+train:
+  iterations: 900
+  steps_per_iter: 24
+  grad_steps: 20
+  beta0: 1.0
+  beta_decay_iters: 120
+  buffer_size: 262144
+eval_seconds: 30
+eval_seeds: [6001, 6002, 6003]
+arms:
+  - {id: m01, hidden: [512, 256, 128]}
+  - {id: m02, hidden: [256, 128, 64]}
+  - {id: m03, hidden: [128, 128]}

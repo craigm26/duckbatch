@@ -82,6 +82,12 @@ def main(argv: list[str] | None = None) -> int:
     pe.add_argument("--models", default="gemma,decide")
     pe.add_argument("--url", default=None)
     pe.add_argument("--out", default="records/p002-plan-requests")
+    pe.add_argument("--label", default=None, help="record name for the gemma run (default: gemma)")
+    pe.add_argument("--model-name", default=None, help="what the served model is, for the record")
+    pe.add_argument("--no-think", action="store_true",
+                    help="turn Gemma 4's thinking off (Duck Studio's phone runtime does)")
+    pe.add_argument("--unconstrained", action="store_true",
+                    help="no grammar: how Apple's model and MLX run it on a phone")
     sk = sub.add_parser("skills", help="distil several of Pollen's skills into one student")
     sk.add_argument("menu")
     sk.add_argument("--out", default="records")
@@ -188,8 +194,14 @@ def main(argv: list[str] | None = None) -> int:
         out.mkdir(parents=True, exist_ok=True)
         for name in a.models.split(","):
             if name == "gemma":
+                name = a.label or "gemma"
+                kw = {"constrained": not a.unconstrained, "thinking": not a.no_think,
+                      "model": a.model_name or planner.MODEL}
                 res = planner.evaluate(menu["requests"],
-                                       lambda t: planner.plan(t, a.url or planner.DEFAULT_URL), "gemma")
+                                       lambda t: planner.plan(t, a.url or planner.DEFAULT_URL, **kw), name)
+                res["constrained"] = not a.unconstrained
+                res["thinking"] = not a.no_think
+                res["served_model"] = kw["model"]
             else:
                 model = {"decide": router.DecideRouter, "jev": router.JevRouter}[name]()
                 res = planner.evaluate(menu["requests"], lambda t: router.route(t, model), name)

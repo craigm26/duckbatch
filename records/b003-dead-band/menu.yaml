@@ -1,0 +1,30 @@
+# b003: PPO fine-tune of the 128-128 student to walk slowly and turn on the spot.
+# Pre-registered 2026-09-25, before any fine-tune ran. See notes/2026-09-25-b003-design.md.
+batch_id: b003-dead-band
+task: Mjlab-VelStand-Flat-MicroDuck
+teacher: teachers/velstand.onnx
+student: records/b002-student-size-longer/policies/a02/policy.onnx   # 61-128-128-14, 26,254 params
+seed: 0
+eval_envs: 512
+final_seeds: [2001, 2002, 2003]
+finetune:
+  num_envs: 2048            # HF Jobs l4x1 (24 GB): VelStand is ~6 MB of contact buffers per env; the laptop tops out at 512
+  iterations: 1500
+  save_interval: 250
+  init_std: 0.25            # small: the student already walks
+  learning_rate: 3.0e-4
+  entropy_coef: 0.002
+  command:
+    rel_turn_in_place_envs: 0.25   # VelStand's own switch; it trains with 0.15
+    rel_standing_envs: 0.05
+  rewards:                  # the lever: standing still at 0.1 m/s should no longer pay ~90%
+    track_linear_velocity: {std: 0.1}     # was sqrt(0.1) = 0.316
+    track_angular_velocity: {std: 0.3}    # was sqrt(0.5) = 0.707
+  anchor:
+    gate_tilt_deg: 35.0     # fallen frames: the teacher's recovery, fully
+    coef_fallen: 1.0
+    walk_min_speed: 0.35    # upright at or above this, or standing still: a light pull
+    coef_walk: 0.2
+    learning_rate: 3.0e-4
+    epochs: 1
+    mini_batches: 4
