@@ -117,3 +117,20 @@ def test_the_decide_export_is_accepted_by_gliner2s_own_validator(tmp_path):
     assert res["examples"] == len(train)
     from gliner2.training.data import TrainingDataset
     assert len(TrainingDataset.load(str(tmp_path / "train.jsonl"))) == len(train)
+
+
+def test_the_public_dataset_accepts_only_public_consent():
+    r = route()  # share: research
+    with pytest.raises(feedback.FeedbackError, match="accepts only 'public'"):
+        feedback.validate(r, require_share="public")
+    r["consent"]["share"] = "public"
+    assert feedback.validate(r, require_share="public")
+
+
+def test_contributions_are_found_in_dated_subdirectories(tmp_path):
+    day = tmp_path / "contributions" / "2026-09-25"
+    day.mkdir(parents=True)
+    r = route()
+    r["consent"]["share"] = "public"
+    (day / "abc.jsonl").write_text(json.dumps(r) + "\n")
+    assert len(feedback.read([tmp_path], require_share="public")) == 1

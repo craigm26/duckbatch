@@ -100,3 +100,15 @@ Common fields:
 
 `duckbatch feedback` splits by a hash of `id`: 80% train and 20% held out, deterministic, and never
 re-drawn. Any threshold, fine-tune or reward model is reported on the held-out part only.
+
+## The community dataset
+
+[craigm26/microduck-feedback](https://huggingface.co/datasets/craigm26/microduck-feedback)
+(CC0-1.0) receives records only as **pull requests from a contributor's own Hugging Face
+account**, opened from Duck Studio, so the project runs no server (duck-studio GATES.md). It
+accepts only `consent.share = "public"`. Before merging a contribution:
+
+    duckbatch feedback pull --pr <n>        # fetch refs/pr/<n>; validate with share=public required
+
+`duckbatch feedback pull` (no `--pr`) fetches everything merged, for `report` and
+`export-decide`.

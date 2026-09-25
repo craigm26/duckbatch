@@ -60,9 +60,12 @@ def main(argv: list[str] | None = None) -> int:
     re_.add_argument("--out", default="records")
 
     fb = sub.add_parser("feedback", help="duck-feedback/0: validate, report, export")
-    fb.add_argument("action", choices=["validate", "report", "export-decide"])
-    fb.add_argument("paths", nargs="+", help=".jsonl files or directories of them")
-    fb.add_argument("--out", default=None, help="export-decide: where to write the JSONL")
+    fb.add_argument("action", choices=["validate", "report", "export-decide", "pull"])
+    fb.add_argument("paths", nargs="*", help=".jsonl files or directories of them (not for pull)")
+    fb.add_argument("--out", default=None, help="export-decide: the JSONL; pull: the directory")
+    fb.add_argument("--require-share", default=None, choices=["research", "public"],
+                    help="refuse records whose consent.share is not this (public dataset: public)")
+    fb.add_argument("--pr", type=int, default=None, help="pull: one open pull request instead of main")
 
     pa = sub.add_parser("pairs", help="paired rollouts of several policies under identical conditions")
     pa.add_argument("--out", default="records/p001-pairs")
@@ -124,7 +127,13 @@ def main(argv: list[str] | None = None) -> int:
 
         from . import feedback
 
-        records = feedback.read(a.paths)
+        if a.action == "pull":
+            out = feedback.pull(a.out or "records/community-feedback", pr=a.pr)
+            a.paths = [str(out)]
+            a.require_share = a.require_share or "public"
+            print(f"[feedback] pulled {feedback.COMMUNITY_DATASET}"
+                  f"{f' PR #{a.pr}' if a.pr is not None else ' main'} -> {out}")
+        records = feedback.read(a.paths, a.require_share)
         kinds = {k: sum(r["kind"] == k for r in records) for k in feedback.KINDS}
         held = sum(feedback.is_held_out(r["id"]) for r in records)
         print(f"[feedback] {len(records)} valid records {kinds}; {held} held out")

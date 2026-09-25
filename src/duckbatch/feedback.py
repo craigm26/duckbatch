@@ -3,6 +3,9 @@
     duckbatch feedback validate  <file-or-dir>...      every record, or the first reason one is refused
     duckbatch feedback report    <file-or-dir>...      router calibration on the HELD-OUT split
     duckbatch feedback export-decide <in>... --out f   GLiNER2 fine-tuning set from the TRAIN split
+    duckbatch feedback pull [--pr N]                   fetch craigm26/microduck-feedback (main, or
+                                                       one open pull request) and validate it,
+                                                       public consent only
 
 REFUSED, NOT SKIPPED. A record without consent, with an unknown kind, or with a label outside the
 vocabulary it names is an error with a sentence, the same rule duckkit applies to a policy file.
@@ -56,8 +59,10 @@ def _need(cond: bool, why: str) -> None:
         raise FeedbackError(why)
 
 
-def validate(rec: dict[str, Any]) -> dict[str, Any]:
-    """Return the record unchanged, or raise FeedbackError with the first reason it is refused."""
+def validate(rec: dict[str, Any], require_share: str | None = None) -> dict[str, Any]:
+    """Return the record unchanged, or raise FeedbackError with the first reason it is refused.
+    `require_share="public"` is the rule for craigm26/microduck-feedback: a public dataset
+    accepts only records whose consent says public."""
     _need(isinstance(rec, dict), "not a JSON object")
     _need(rec.get("format") == FORMAT, f"format is {rec.get('format')!r}, not {FORMAT!r}")
     _need(isinstance(rec.get("id"), str) and len(rec["id"]) >= 8, "id missing or shorter than 8")
@@ -67,6 +72,9 @@ def validate(rec: dict[str, Any]) -> dict[str, Any]:
     _need(consent.get("opt_in") is True, "no opt-in: a record without consent is refused")
     _need(consent.get("share") in SHARES, f"consent.share must be one of {SHARES}")
     _need(consent["share"] != "local", "consent.share is 'local': it may not leave the device")
+    if require_share:
+        _need(consent["share"] == require_share,
+              f"consent.share is {consent['share']!r}; this destination accepts only {require_share!r}")
     kind = rec.get("kind")
     _need(kind in KINDS, f"kind {kind!r} is not one of {KINDS}")
     body = rec.get(kind)
@@ -124,19 +132,19 @@ def _validate_preference(b: dict[str, Any]) -> None:
           f"reasons must come from {REASONS}")
 
 
-def read(paths: Iterable[str | Path]) -> list[dict[str, Any]]:
+def read(paths: Iterable[str | Path], require_share: str | None = None) -> list[dict[str, Any]]:
     """Every record in the given .jsonl files or directories; raises on the first bad one,
     naming the file and line."""
     files: list[Path] = []
     for p in map(Path, paths):
-        files += sorted(p.glob("*.jsonl")) if p.is_dir() else [p]
+        files += sorted(p.rglob("*.jsonl")) if p.is_dir() else [p]
     out, seen = [], set()
     for f in files:
         for n, line in enumerate(f.read_text().splitlines(), 1):
             if not line.strip():
                 continue
             try:
-                rec = validate(json.loads(line))
+                rec = validate(json.loads(line), require_share)
             except (json.JSONDecodeError, FeedbackError) as e:
                 raise FeedbackError(f"{f}:{n}: {e}") from None
             if rec["id"] in seen:
@@ -215,3 +223,18 @@ def export_decide(records: list[dict], out: str | Path) -> dict[str, Any]:
     ds.validate()
     ds.save(str(out))
     return {"examples": len(examples), "out": str(out)}
+
+
+COMMUNITY_DATASET = "craigm26/microduck-feedback"
+
+
+def pull(out: str | Path, repo: str = COMMUNITY_DATASET, pr: int | None = None) -> Path:
+    """Fetch `contributions/**` from the community dataset: merged main, or one open pull
+    request (`refs/pr/<n>`, how Hugging Face exposes a PR's files), for a maintainer to
+    validate before merging. Read-only; needs no token for a public dataset."""
+    from huggingface_hub import snapshot_download
+
+    path = snapshot_download(repo_id=repo, repo_type="dataset",
+                             revision=f"refs/pr/{pr}" if pr is not None else "main",
+                             allow_patterns=["contributions/**"], local_dir=str(out))
+    return Path(path)
