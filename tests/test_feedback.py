@@ -179,7 +179,7 @@ def general(choice="a", a_digest="sha256:aa", b_digest="sha256:bb", kind="motion
 
 
 def test_a_compare_preference_is_accepted_for_every_kind():
-    for kind in ("policy", "motion", "sequence"):
+    for kind in ("policy", "motion", "sequence", "shooter"):
         assert feedback.validate(general(kind=kind))["kind"] == "preference"
 
 

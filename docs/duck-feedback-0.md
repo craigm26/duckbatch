@@ -111,7 +111,7 @@ Microduck Studio's Compare (2026-09-28): any two things the duck can do, not onl
 }
 ```
 
-- `kind` is `policy`, `motion` or `sequence`, and both sides are the same kind (a recorded motion
+- `kind` is `policy`, `motion`, `sequence` or `shooter` (a shooting controller's numbers, from "Train a duck to shoot"), and both sides are the same kind (a recorded motion
   and an authored draft are both `motion`).
 - `digest` identifies the thing, not its name: a network's `DuckPolicy.fingerprint`; a motion's
   digest over its frames (or a draft's over its keyframe track); a sequence's over its steps.
