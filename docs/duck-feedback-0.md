@@ -5,7 +5,7 @@ policy over another. The format is one JSON object per line (JSONL), one record 
 duckbatch reads it strictly: `duckbatch feedback validate` refuses a record it does not
 understand rather than guessing.
 
-## Why these two kinds
+## Why these kinds
 
 In b001 and b002 every judge was graded against rules I wrote, and in r001 the router was graded
 against labels I wrote, one of which turned out to be ambiguous (the head during a turn). People
@@ -95,6 +95,30 @@ Common fields:
   command`, `fell`, `jittery`, `other`) so they can be counted. There is no free text.
 - `fingerprint` is duckkit's `DuckPolicy.fingerprint`, over `canonicalIdentityBytes`, so a
   preference is about a network, not a filename.
+
+### `preference`
+
+Microduck Studio's Compare (2026-09-28): any two things the duck can do, not only two networks.
+
+```json
+"preference": {
+  "a": {"kind": "motion", "name": "Bow", "digest": "sha256:…", "source": "yours"},
+  "b": {"kind": "motion", "name": "Roulade", "digest": "sha256:…", "source": "pollen"},
+  "shown": {"where": "phone_bench", "order": "a_left", "context": "tournament",
+            "command": [0.3, 0.0, 0.0], "tournament": "…"},
+  "choice": "a",
+  "reasons": ["steadier"]
+}
+```
+
+- `kind` is `policy`, `motion` or `sequence`, and both sides are the same kind (a recorded motion
+  and an authored draft are both `motion`).
+- `digest` identifies the thing, not its name: a network's `DuckPolicy.fingerprint`; a motion's
+  digest over its frames (or a draft's over its keyframe track); a sequence's over its steps.
+- `source` is `pollen`, `community`, `yours` or `device`.
+- `shown.context` is `duel`, `tournament` or `improve`; `command` is present when the two were
+  networks run under one; `tournament` groups the picks of one bracket.
+- `duckbatch feedback rank <paths>` fits Bradley–Terry strengths per kind over every digest.
 
 ## Held out, from the start
 
