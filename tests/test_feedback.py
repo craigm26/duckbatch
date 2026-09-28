@@ -161,3 +161,46 @@ def test_pulling_main_after_a_pr_counts_only_mains_records(tmp_path, monkeypatch
     assert pr != main
     again = feedback.pull(out, pr=1)
     assert len(list(again.rglob("*.jsonl"))) == 1, "a re-pull is a clean copy, not an accumulation"
+
+
+def general(choice="a", a_digest="sha256:aa", b_digest="sha256:bb", kind="motion", **shown):
+    """A `preference` record in the exact shape Microduck Studio's Compare writes."""
+    return {
+        "format": "duck-feedback/0", "id": str(uuid.uuid4()), "created": "2026-09-28T17:00:00Z",
+        "kind": "preference", "consent": {"opt_in": True, "share": "public"},
+        "source": {"client": "Microduck Studio 1.1 (72)"},
+        "preference": {
+            "a": {"kind": kind, "name": "Bow", "digest": a_digest, "source": "yours"},
+            "b": {"kind": kind, "name": "Roulade", "digest": b_digest, "source": "pollen"},
+            "shown": {"where": "phone_bench", "order": "a_left", "context": "tournament", **shown},
+            "choice": choice, "reasons": ["steadier"],
+        },
+    }
+
+
+def test_a_compare_preference_is_accepted_for_every_kind():
+    for kind in ("policy", "motion", "sequence"):
+        assert feedback.validate(general(kind=kind))["kind"] == "preference"
+
+
+@pytest.mark.parametrize("mutate, why", [
+    (lambda r: r["preference"]["b"].update(digest="sha256:aa"), "same thing"),
+    (lambda r: r["preference"]["b"].update(kind="policy"), "different kinds"),
+    (lambda r: r["preference"]["a"].update(source="somewhere"), "source"),
+    (lambda r: r["preference"]["shown"].update(context="vibes"), "context"),
+    (lambda r: r["preference"]["a"].update(digest="aa"), "sha256"),
+])
+def test_a_compare_preference_is_refused_with_a_reason(mutate, why):
+    rec = general()
+    mutate(rec)
+    with pytest.raises(feedback.FeedbackError, match=why):
+        feedback.validate(rec)
+
+
+def test_rank_puts_the_one_that_always_wins_first_and_both_bad_moves_nothing():
+    recs = [general("a", "sha256:x", "sha256:y"), general("a", "sha256:x", "sha256:z"),
+            general("b", "sha256:y", "sha256:x"), general("both_bad", "sha256:y", "sha256:z")]
+    ranked = feedback.rank(recs)["motion"]
+    assert ranked[0]["digest"] == "sha256:x"
+    assert abs(sum(r["share"] for r in ranked) - 1) < 1e-3
+    assert {r["digest"]: r["picks"] for r in ranked}["sha256:y"] == 3

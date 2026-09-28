@@ -27,7 +27,11 @@ from typing import Any, Iterable
 from . import router
 
 FORMAT = "duck-feedback/0"
-KINDS = ("route_correction", "policy_preference")
+KINDS = ("route_correction", "policy_preference", "preference")
+# `preference` (Microduck Studio's Compare, 2026-09-28): any two things the duck can do.
+SIDE_KINDS = ("policy", "motion", "sequence")
+SOURCES = ("pollen", "community", "yours", "device")
+CONTEXTS = ("duel", "tournament", "improve")
 SHARES = ("local", "research", "public")
 OUTCOMES = ("accepted", "edited", "rejected")
 CHOICES = ("a", "b", "tie", "both_bad")
@@ -81,8 +85,10 @@ def validate(rec: dict[str, Any], require_share: str | None = None) -> dict[str,
     _need(isinstance(body, dict), f"missing the {kind} block")
     if kind == "route_correction":
         _validate_route(body)
-    else:
+    elif kind == "policy_preference":
         _validate_preference(body)
+    else:
+        _validate_general_preference(body)
     return rec
 
 
@@ -130,6 +136,68 @@ def _validate_preference(b: dict[str, Any]) -> None:
     reasons = b.get("reasons", [])
     _need(isinstance(reasons, list) and all(r in REASONS for r in reasons),
           f"reasons must come from {REASONS}")
+
+
+def _validate_general_preference(b: dict[str, Any]) -> None:
+    """`preference`: two networks, two motions or two sequences, identified by digest."""
+    for side in ("a", "b"):
+        s = b.get(side) or {}
+        _need(s.get("kind") in SIDE_KINDS, f"preference.{side}.kind must be one of {SIDE_KINDS}")
+        _need(isinstance(s.get("name"), str) and s["name"].strip(), f"preference.{side}.name missing")
+        _need(isinstance(s.get("digest"), str) and s["digest"].startswith("sha256:"),
+              f"preference.{side}.digest must be 'sha256:…'")
+        _need(s.get("source") in SOURCES, f"preference.{side}.source must be one of {SOURCES}")
+    _need(b["a"]["kind"] == b["b"]["kind"], "a and b are different kinds of thing")
+    _need(b["a"]["digest"] != b["b"]["digest"], "a and b are the same thing")
+    shown = b.get("shown") or {}
+    _need(shown.get("where") in WHERE, f"shown.where must be one of {WHERE}")
+    _need(shown.get("order") in ("a_left", "b_left"), "shown.order must be 'a_left' or 'b_left'")
+    _need(shown.get("context") in CONTEXTS, f"shown.context must be one of {CONTEXTS}")
+    _need(b.get("choice") in CHOICES, f"choice must be one of {CHOICES}")
+    reasons = b.get("reasons", [])
+    _need(isinstance(reasons, list) and all(r in REASONS for r in reasons),
+          f"reasons must come from {REASONS}")
+
+
+def rank(records: list[dict], iterations: int = 200) -> dict[str, list[dict[str, Any]]]:
+    """Bradley–Terry strengths per kind, over everything people compared, from `preference`
+    records. A tie is half a win each; `both_bad` moves nothing. Each item gets one virtual draw
+    against a strength-1 opponent so a single pick cannot send it to infinity (the same prior the
+    app's tournament uses). Returns, per kind, items strongest first with their share and count."""
+    by_kind: dict[str, dict[str, dict[str, Any]]] = {}
+    games: dict[str, list[tuple[str, str, float]]] = {}
+    for rec in records:
+        if rec["kind"] != "preference":
+            continue
+        b = rec["preference"]
+        kind = b["a"]["kind"]
+        items = by_kind.setdefault(kind, {})
+        for side in ("a", "b"):
+            d = b[side]["digest"]
+            item = items.setdefault(d, {"digest": d, "name": b[side]["name"],
+                                        "source": b[side]["source"], "picks": 0})
+            item["picks"] += 1
+        score = {"a": 1.0, "b": 0.0, "tie": 0.5}.get(b["choice"])
+        if score is not None:
+            games.setdefault(kind, []).append((b["a"]["digest"], b["b"]["digest"], score))
+    out: dict[str, list[dict[str, Any]]] = {}
+    for kind, items in by_kind.items():
+        s = {d: 1.0 for d in items}
+        for _ in range(iterations):
+            nxt = {}
+            for d in items:
+                wins, den = 0.5, 1 / (s[d] + 1)
+                for a, bb, score in games.get(kind, []):
+                    if a == d:
+                        wins += score; den += 1 / (s[d] + s[bb])
+                    elif bb == d:
+                        wins += 1 - score; den += 1 / (s[d] + s[a])
+                nxt[d] = wins / den
+            s = nxt
+        total = sum(s.values())
+        out[kind] = sorted(({**items[d], "share": round(s[d] / total, 4)} for d in items),
+                           key=lambda r: -r["share"])
+    return out
 
 
 def read(paths: Iterable[str | Path], require_share: str | None = None) -> list[dict[str, Any]]:

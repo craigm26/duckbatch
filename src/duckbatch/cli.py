@@ -62,7 +62,7 @@ def main(argv: list[str] | None = None) -> int:
     re_.add_argument("--out", default="records")
 
     fb = sub.add_parser("feedback", help="duck-feedback/0: validate, report, export")
-    fb.add_argument("action", choices=["validate", "report", "export-decide", "pull"])
+    fb.add_argument("action", choices=["validate", "report", "export-decide", "pull", "rank"])
     fb.add_argument("paths", nargs="*", help=".jsonl files or directories of them (not for pull)")
     fb.add_argument("--out", default=None, help="export-decide: the JSONL; pull: the directory")
     fb.add_argument("--require-share", default=None, choices=["research", "public"],
@@ -167,6 +167,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"[feedback] {len(records)} valid records {kinds}; {held} held out")
         if a.action == "report":
             print(json.dumps(feedback.calibration(records), indent=1))
+        elif a.action == "rank":
+            print(json.dumps(feedback.rank(records), indent=1))
         elif a.action == "export-decide":
             if not a.out:
                 raise SystemExit("export-decide needs --out")
