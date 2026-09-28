@@ -29,7 +29,7 @@ from . import router
 FORMAT = "duck-feedback/0"
 KINDS = ("route_correction", "policy_preference", "preference")
 # `preference` (Microduck Studio's Compare, 2026-09-28): any two things the duck can do.
-SIDE_KINDS = ("policy", "motion", "sequence")
+SIDE_KINDS = ("policy", "motion", "sequence", "shooter")
 SOURCES = ("pollen", "community", "yours", "device")
 CONTEXTS = ("duel", "tournament", "improve")
 SHARES = ("local", "research", "public")
