@@ -32,6 +32,10 @@ curl -LsSf https://astral.sh/uv/$UV_VERSION/install.sh | sh >/dev/null
 export PATH="/root/.local/bin:$PATH"
 export UV_LINK_MODE=copy
 git clone -q "$REPO" /work && cd /work && git checkout -q "$COMMIT"
+# A MENU CAN ARRIVE AS TEXT. The code always comes from the pinned commit; the menu may be
+# written somewhere that cannot push a commit (Microduck Studio on a Mac), so it travels in
+# MENU_YAML and is written here. The record still carries it: finetune copies the menu in.
+if [ -n "${MENU_YAML:-}" ]; then printf '%s\n' "$MENU_YAML" > /work/menu-inline.yaml; MENU=/work/menu-inline.yaml; fi
 uv sync --no-progress --extra sim --extra decide
 ./scripts/fetch_teachers.sh
 set +e
@@ -68,7 +72,7 @@ def _head_commit() -> str:
 
 def launch(menu: str, dataset: str, flavor: str = FLAVOR, timeout: str = "4h",
            commit: str | None = None, jev: bool = False, dry_run: bool = False,
-           run: str = "batch") -> str | None:
+           run: str = "batch", inline: bool = False) -> str | None:
     from .batch.jev import load_dotenv
 
     load_dotenv()
@@ -80,6 +84,8 @@ def launch(menu: str, dataset: str, flavor: str = FLAVOR, timeout: str = "4h",
     env = {"REPO": REPO, "COMMIT": commit, "MENU": menu, "DATASET": dataset,
            "UV_VERSION": UV_VERSION, "RUN": run,
            "JUDGE_FLAG": ("" if jev else "--no-jev") if run == "batch" else ""}
+    if inline:
+        env["MENU_YAML"] = Path(menu).read_text()
     secrets = {"HF_TOKEN": os.environ.get("HF_TOKEN", "")}
     if jev:
         secrets["TYPESAFE_API_KEY"] = os.environ.get("TYPESAFE_API_KEY", "")
@@ -96,3 +102,19 @@ def launch(menu: str, dataset: str, flavor: str = FLAVOR, timeout: str = "4h",
                           secrets=secrets, flavor=flavor, timeout=timeout)
     print(f"[hf-job] submitted {job.id}: {job.url}")
     return job.id
+
+
+BOOTSTRAP_FILE = Path(__file__).resolve().parents[2] / "scripts" / "hf_job_bootstrap.sh"
+
+
+def write_bootstrap_file() -> Path:
+    """`scripts/hf_job_bootstrap.sh`: the same script, for a launcher that is not this CLI.
+
+    Microduck Studio launches jobs over the HF Jobs HTTP API and fetches this file at the
+    commit it pins, so there is one recipe, not a copy in Swift that drifts. A test holds the
+    file and `BOOTSTRAP` equal.
+    """
+    BOOTSTRAP_FILE.write_text("#!/bin/bash\n# Generated from duckbatch.hf_job.BOOTSTRAP; do not edit.\n"
+                              + BOOTSTRAP.lstrip("\n"))
+    return BOOTSTRAP_FILE
+
