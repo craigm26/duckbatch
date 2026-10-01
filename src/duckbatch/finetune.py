@@ -188,6 +188,18 @@ def run_finetune(menu_path: str | Path, out_root: str | Path = "records", log=pr
                 env_cfg.rewards[term].weight = float(v)
             else:
                 env_cfg.rewards[term].params[k] = float(v)
+    # NEW TERMS, NOT JUST NEW WEIGHTS (b003b). `add_rewards` names a function by dotted path
+    # (`duckbatch.rewards.command_progress_linear`), a weight and its params. A name that is
+    # already a term is refused: changing an existing term is what `rewards` above is for.
+    from mjlab.managers import RewardTermCfg
+    import importlib
+    for term, spec in ft.get("add_rewards", {}).items():
+        if term in env_cfg.rewards:
+            raise ValueError(f"add_rewards.{term}: {task} already has a term by that name")
+        module, _, name = spec["func"].rpartition(".")
+        env_cfg.rewards[term] = RewardTermCfg(func=getattr(importlib.import_module(module), name),
+                                              weight=float(spec["weight"]),
+                                              params=dict(spec.get("params", {})))
 
     agent = load_rl_cfg(task)
     sw = onnx_mlp_weights(student)
