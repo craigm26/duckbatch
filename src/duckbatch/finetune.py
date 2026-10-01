@@ -176,6 +176,14 @@ def run_finetune(menu_path: str | Path, out_root: str | Path = "records", log=pr
     env_cfg = load_env_cfg(task)
     env_cfg.scene.num_envs = int(ft["num_envs"])
     env_cfg.seed = int(menu.get("seed", 0))
+    # A DIFFERENT SAMPLER, NOT JUST DIFFERENT RANGES (b003c). `dead_band` swaps Pollen's twist
+    # command for duckbatch's DeadBandCommandCfg, carrying every upstream field over.
+    if "dead_band" in ft:
+        from .commands import DeadBandCommandCfg
+        db = ft["dead_band"]
+        env_cfg.commands["twist"] = DeadBandCommandCfg.from_upstream(
+            env_cfg.commands["twist"], rel_slow_envs=float(db["rel_slow_envs"]),
+            slow_speed_range=tuple(float(x) for x in db["slow_speed_range"]))
     tw = env_cfg.commands["twist"]
     for k, v in ft.get("command", {}).items():
         if k in ("lin_vel_x", "lin_vel_y", "ang_vel_z"):
