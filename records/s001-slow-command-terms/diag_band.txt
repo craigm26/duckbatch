@@ -1,0 +1,20 @@
+[mix] live cfg rel_standing_envs=0.25 rel_turn_in_place_envs=0.15 rel_forward_envs=0.2
+[diag] teacher  cmd (0.1, 0.0, 0.0) vx +0.003 air 0.07 inwin 0.02 swing 0.130s landings/s/env 1.01 (90s)
+        head_pose_tracking=+1.953  upright=+1.934  track_linear_velocity=+1.793  track_angular_velocity=+1.780  pose=+0.934  head_pose_bias=-0.152  air_time=+0.102  action_rate_l2=-0.039  body_ang_vel=-0.006
+[diag] teacher  cmd (0.3, 0.0, 0.0) vx +0.088 air 0.39 inwin 0.20 swing 0.244s landings/s/env 3.28 (86s)
+        head_pose_tracking=+1.950  upright=+1.825  track_linear_velocity=+1.267  track_angular_velocity=+1.189  air_time=+1.165  pose=+0.723  head_pose_bias=-0.125  action_rate_l2=-0.110  body_ang_vel=-0.021
+[diag] teacher  cmd (0.0, 0.0, 0.0) vx -0.002 air 0.02 inwin 0.00 swing 0.126s landings/s/env 0.35 (91s)
+        track_linear_velocity=+1.979  upright=+1.958  head_pose_tracking=+1.950  track_angular_velocity=+1.929  pose=+0.924  head_pose_bias=-0.185  action_rate_l2=-0.019  body_ang_vel=-0.002  gentle_rise=-0.001
+[diag] student  cmd (0.1, 0.0, 0.0) vx -0.002 air 0.06 inwin 0.02 swing 0.156s landings/s/env 0.74 (92s)
+        head_pose_tracking=+1.940  upright=+1.925  track_angular_velocity=+1.794  track_linear_velocity=+1.780  pose=+0.925  head_pose_bias=-0.178  air_time=+0.096  action_rate_l2=-0.033  body_ang_vel=-0.005
+[diag] student  cmd (0.3, 0.0, 0.0) vx +0.063 air 0.32 inwin 0.16 swing 0.233s landings/s/env 2.79 (89s)
+        head_pose_tracking=+1.937  upright=+1.842  track_angular_velocity=+1.286  track_linear_velocity=+1.201  air_time=+0.903  pose=+0.745  head_pose_bias=-0.172  action_rate_l2=-0.087  body_ang_vel=-0.017
+[diag] student  cmd (0.0, 0.0, 0.0) vx -0.012 air 0.08 inwin 0.03 swing 0.156s landings/s/env 1.03 (90s)
+        head_pose_tracking=+1.950  upright=+1.912  track_linear_velocity=+1.907  track_angular_velocity=+1.772  pose=+0.823  head_pose_bias=-0.163  action_rate_l2=-0.043  body_ang_vel=-0.008  self_collisions=-0.006
+[diag] b003b    cmd (0.1, 0.0, 0.0) vx -0.004 air 0.12 inwin 0.04 swing 0.168s landings/s/env 1.49 (89s)
+        upright=+1.876  head_pose_tracking=+1.876  track_linear_velocity=+1.718  track_angular_velocity=+1.642  pose=+0.880  head_pose_bias=-0.279  air_time=+0.198  action_rate_l2=-0.053  body_ang_vel=-0.009
+[diag] b003b    cmd (0.3, 0.0, 0.0) vx +0.088 air 0.31 inwin 0.15 swing 0.240s landings/s/env 2.61 (85s)
+        head_pose_tracking=+1.913  upright=+1.842  track_angular_velocity=+1.323  track_linear_velocity=+1.280  air_time=+0.897  pose=+0.731  head_pose_bias=-0.221  action_rate_l2=-0.087  body_ang_vel=-0.017
+[diag] b003b    cmd (0.0, 0.0, 0.0) vx -0.008 air 0.05 inwin 0.02 swing 0.152s landings/s/env 0.68 (89s)
+        track_linear_velocity=+1.927  upright=+1.914  head_pose_tracking=+1.891  track_angular_velocity=+1.823  pose=+0.875  head_pose_bias=-0.288  action_rate_l2=-0.026  body_ang_vel=-0.004  gentle_rise=-0.001
+[diag] wrote diag_band.json
