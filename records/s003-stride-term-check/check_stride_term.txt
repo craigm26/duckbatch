@@ -1,0 +1,5 @@
+[check] stride term built as track_linear_velocity_stride window 25
+[check] student cmd (0.1, 0.0, 0.0): vx +0.003  mjlab 1.799/s  relative 0.413/s  stride 0.454/s
+[check] student cmd (0.4, 0.0, 0.0): vx +0.208  mjlab 1.037/s  relative 1.037/s  stride 1.269/s
+[check] student cmd (0.0, 0.0, 0.0): vx +0.010  mjlab 1.856/s  relative 1.856/s  stride 1.898/s
+[check] b003b cmd (0.3, 0.0, 0.0): vx +0.146  mjlab 1.179/s  relative 0.848/s  stride 1.213/s
