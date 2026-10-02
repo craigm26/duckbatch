@@ -131,3 +131,97 @@ def test_b003d_menu_is_b003b_but_for_the_tracking_term():
     up = load_env_cfg("Mjlab-VelStand-Flat-MicroDuck").rewards["track_linear_velocity"]
     assert rel["weight"] == up.weight and rel["params"]["std"] == pytest.approx(up.params["std"])
     assert rel["params"]["command_name"] == up.params["command_name"]
+
+
+# b003e: the same relative term on the planar velocity averaged over half a second.
+
+from duckbatch.rewards import track_linear_velocity_stride  # noqa: E402
+
+PARAMS = {"command_name": "twist", "std": STD, "full_width_speed": 0.4, "min_width_speed": 0.05,
+          "stand_below": 0.02, "window_s": 0.5}
+
+
+class _Walk:
+    """A stand-in env: set velocities, step, and call the stride term the way mjlab does."""
+
+    def __init__(self, cmds):
+        self.n = len(cmds)
+        self.command = torch.tensor(cmds, dtype=torch.float32)
+        self.data = SimpleNamespace(root_link_lin_vel_b=torch.zeros(self.n, 3),
+                                    root_link_ang_vel_b=torch.zeros(self.n, 3))
+        self.env = SimpleNamespace(num_envs=self.n, device="cpu", step_dt=0.02, common_step_counter=0,
+                                   scene={"robot": SimpleNamespace(data=self.data)},
+                                   command_manager=SimpleNamespace(get_command=lambda name: self.command))
+        self.term = track_linear_velocity_stride(SimpleNamespace(params=PARAMS), self.env)
+
+    def step(self, lin):
+        self.data.root_link_lin_vel_b = torch.tensor(lin, dtype=torch.float32)
+        self.env.common_step_counter += 1
+        return self.term(self.env, **PARAMS)
+
+
+def test_stride_window_is_half_a_second_of_steps():
+    assert _Walk([(0.1, 0.0, 0.0)]).term.window == 25
+
+
+def test_stride_at_a_steady_velocity_is_b003ds_term():
+    cmds = [(0.1, 0.0, 0.0), (0.3, 0.1, 0.5), (0.45, 0.0, 0.0), (0.0, 0.0, 0.0), (0.01, 0.0, 0.0)]
+    lins = [(0.05, 0.01, 0.02), (0.2, 0.0, 0.0), (0.3, -0.05, 0.01), (0.02, 0.0, 0.0), (0.0, 0.03, 0.0)]
+    w = _Walk(cmds)
+    for _ in range(30):
+        got = w.step(lins)
+    assert torch.allclose(got, _rel(cmds, lins), atol=1e-6)
+
+
+def test_stride_does_not_count_sway_that_averages_out():
+    # Walking 0.10 m/s exactly with 0.12 m/s of sideways sway, one sway period per window.
+    w = _Walk([(0.1, 0.0, 0.0)])
+    stride, instant = [], []
+    for k in range(50):
+        lin = [(0.1, 0.12 * math.sin(2 * math.pi * k / 25), 0.0)]
+        stride.append(w.step(lin).item())
+        instant.append(_rel([(0.1, 0.0, 0.0)], lin).item())
+    assert min(stride[25:]) > 0.99                   # the average is the command
+    assert sum(instant[25:]) / 25 < 0.6              # b003d's instantaneous term charges the sway
+
+
+def test_a_new_episode_starts_with_no_history():
+    w = _Walk([(0.1, 0.0, 0.0)])
+    for _ in range(30):
+        w.step([(0.3, 0.0, 0.0)])
+    w.term.reset(env_ids=torch.tensor([0]))
+    got = w.step([(0.0, 0.0, 0.0)]).item()
+    assert got == pytest.approx(math.exp(-1.6), rel=1e-5)   # standing, not a blend with the walk
+
+
+def test_other_envs_keep_their_history_while_one_resets_every_step():
+    # With thousands of envs some episode ends nearly every step; the rest must still update.
+    w = _Walk([(0.2, 0.0, 0.0), (0.2, 0.0, 0.0)])
+    w.step([(0.0, 0.0, 0.0), (0.0, 0.0, 0.0)])     # both windows start at a standstill
+    for _ in range(30):                              # then env 0 walks; env 1 restarts every step
+        w.term.reset(env_ids=torch.tensor([1]))
+        got = w.step([(0.2, 0.0, 0.0), (0.0, 0.0, 0.0)])
+    assert got[0].item() == pytest.approx(1.0, abs=1e-6)
+    assert got[1].item() == pytest.approx(math.exp(-1.6), rel=1e-5)
+
+
+def test_a_second_call_in_the_same_step_does_not_push_twice():
+    w = _Walk([(0.1, 0.0, 0.0)])
+    w.step([(0.0, 0.0, 0.0)])                        # first call fills the window with 0
+    once = w.step([(0.25, 0.0, 0.0)]).item()         # one push: the average is 0.25 / 25
+    again = w.term(w.env, **PARAMS).item()           # same step, called again
+    assert once == again == pytest.approx(_rel([(0.1, 0.0, 0.0)], [(0.01, 0.0, 0.0)]).item(), rel=1e-5)
+
+
+def test_b003e_menu_is_b003d_but_for_the_stride_average():
+    import yaml
+    d = yaml.safe_load(open("menus/b003d-relative-tracking.yaml"))
+    e = yaml.safe_load(open("menus/b003e-stride-average.yaml"))
+    rel = d["finetune"]["add_rewards"].pop("track_linear_velocity_relative")
+    stride = e["finetune"]["add_rewards"].pop("track_linear_velocity_stride")
+    assert stride["func"] == "duckbatch.rewards.track_linear_velocity_stride"
+    assert stride["weight"] == rel["weight"]
+    assert stride["params"] == {**rel["params"], "window_s": 0.5}
+    assert e["finetune"] == d["finetune"]
+    assert {k: v for k, v in e.items() if k not in ("batch_id", "finetune")} == \
+        {k: v for k, v in d.items() if k not in ("batch_id", "finetune")}
