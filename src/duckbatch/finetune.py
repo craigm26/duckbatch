@@ -176,6 +176,14 @@ def run_finetune(menu_path: str | Path, out_root: str | Path = "records", log=pr
     env_cfg = load_env_cfg(task)
     env_cfg.scene.num_envs = int(ft["num_envs"])
     env_cfg.seed = int(menu.get("seed", 0))
+    # A DIFFERENT SAMPLER, NOT JUST DIFFERENT RANGES (b003c). `dead_band` swaps Pollen's twist
+    # command for duckbatch's DeadBandCommandCfg, carrying every upstream field over.
+    if "dead_band" in ft:
+        from .commands import DeadBandCommandCfg
+        db = ft["dead_band"]
+        env_cfg.commands["twist"] = DeadBandCommandCfg.from_upstream(
+            env_cfg.commands["twist"], rel_slow_envs=float(db["rel_slow_envs"]),
+            slow_speed_range=tuple(float(x) for x in db["slow_speed_range"]))
     tw = env_cfg.commands["twist"]
     for k, v in ft.get("command", {}).items():
         if k in ("lin_vel_x", "lin_vel_y", "ang_vel_z"):
@@ -188,6 +196,18 @@ def run_finetune(menu_path: str | Path, out_root: str | Path = "records", log=pr
                 env_cfg.rewards[term].weight = float(v)
             else:
                 env_cfg.rewards[term].params[k] = float(v)
+    # NEW TERMS, NOT JUST NEW WEIGHTS (b003b). `add_rewards` names a function by dotted path
+    # (`duckbatch.rewards.command_progress_linear`), a weight and its params. A name that is
+    # already a term is refused: changing an existing term is what `rewards` above is for.
+    from mjlab.managers import RewardTermCfg
+    import importlib
+    for term, spec in ft.get("add_rewards", {}).items():
+        if term in env_cfg.rewards:
+            raise ValueError(f"add_rewards.{term}: {task} already has a term by that name")
+        module, _, name = spec["func"].rpartition(".")
+        env_cfg.rewards[term] = RewardTermCfg(func=getattr(importlib.import_module(module), name),
+                                              weight=float(spec["weight"]),
+                                              params=dict(spec.get("params", {})))
 
     agent = load_rl_cfg(task)
     sw = onnx_mlp_weights(student)

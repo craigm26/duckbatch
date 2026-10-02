@@ -51,6 +51,8 @@ def main(argv: list[str] | None = None) -> int:
     hj.add_argument("--commit", default=None, help="default: HEAD (must be pushed)")
     hj.add_argument("--jev", action="store_true", help="pass TYPESAFE_API_KEY to the job")
     hj.add_argument("--dry-run", action="store_true")
+    hj.add_argument("--inline", action="store_true",
+                    help="send the menu's text with the job (MENU_YAML) instead of its repo path")
 
     ro = sub.add_parser("route", help="plain language -> proposed duck steps")
     ro.add_argument("text")
@@ -126,7 +128,8 @@ def main(argv: list[str] | None = None) -> int:
     elif a.cmd == "hf-job":
         from .hf_job import launch
 
-        launch(a.menu, a.dataset, a.flavor, a.timeout, a.commit, a.jev, a.dry_run, run=a.run)
+        launch(a.menu, a.dataset, a.flavor, a.timeout, a.commit, a.jev, a.dry_run, run=a.run,
+               inline=a.inline)
     elif a.cmd in ("route", "route-eval"):
         import json
 
