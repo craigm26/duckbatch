@@ -185,6 +185,17 @@ def run_finetune(menu_path: str | Path, out_root: str | Path = "records", log=pr
             env_cfg.commands["twist"], rel_slow_envs=float(db["rel_slow_envs"]),
             slow_speed_range=tuple(float(x) for x in db["slow_speed_range"]))
     tw = env_cfg.commands["twist"]
+    # THE STANDING SHARE, FOR REAL (b003g). VelStand's `standing_envs` curriculum rewrites
+    # `rel_standing_envs` on every reset from its own stages, so the menu's `command:
+    # rel_standing_envs` was a no-op: b003-b003f all trained at 25%. `standing_envs` replaces
+    # the curriculum's stages with one stage at this value; the term still runs and still logs
+    # `Curriculum/standing_envs`, which is the evidence the value held.
+    if "standing_envs" in ft:
+        share = float(ft["standing_envs"])
+        if "standing_envs" in env_cfg.curriculum:
+            env_cfg.curriculum["standing_envs"].params["standing_stages"] = [
+                {"step": 0, "rel_standing_envs": share}]
+        tw.rel_standing_envs = share
     for k, v in ft.get("command", {}).items():
         if k in ("lin_vel_x", "lin_vel_y", "ang_vel_z"):
             setattr(tw.ranges, k, tuple(v))
