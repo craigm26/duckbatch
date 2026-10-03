@@ -97,3 +97,52 @@ def write(path: Path, result: dict[str, Any]) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(result, indent=1))
     return path
+
+
+def profile(task: str, policy: str, num_envs: int = 64, seed: int = 0,
+            device: str = "cuda:0") -> dict[str, Any]:
+    """Any skill, in its own task: what ended each episode and what each of Pollen's terms paid.
+
+    A FIRST LOOK, NOT A PASS LINE. The kick's weakness (aim) was not the one guessed (backlash);
+    this is the cheap instrument for finding the next one before anybody pays for a GPU. For every
+    env, until its first episode ends:
+      - which termination ended it (fell_over, time_out, …), or that it ran to the end;
+      - each reward term's weighted sum, divided by the time the env was read, so terms compare
+        as reward per second the way mjlab logs `Episode_Reward/<term>`.
+    The sums are read BEFORE each step, because mjlab zeroes them inside `step` for an env that
+    ends (`RewardManager.reset`); the last step of each episode is the one value lost.
+    """
+    from .policy import load_teacher
+    from .sim import make_env
+
+    env = make_env(task, num_envs, device=device, seed=seed)
+    net = load_teacher(policy, device)
+    obs = env.reset(seed=seed)[0]["actor"]
+    rm, tm = env.reward_manager, env.termination_manager
+    names = list(rm._episode_sums.keys())
+    final = {k: torch.zeros(num_envs, device=device) for k in names}
+    seconds = torch.zeros(num_envs, device=device)
+    ended_by: dict[str, torch.Tensor] = {t: torch.zeros(num_envs, dtype=torch.bool, device=device)
+                                          for t in tm.active_terms}
+    alive = torch.ones(num_envs, dtype=torch.bool, device=device)
+    steps = int(round(env.cfg.episode_length_s / env.step_dt))
+    for t in range(steps):
+        before = {k: v.clone() for k, v in rm._episode_sums.items()}
+        with torch.no_grad():
+            obs_d, _, terminated, truncated, _ = env.step(net(obs))
+        obs = obs_d["actor"]
+        ended = (terminated | truncated) & alive
+        still = alive & ~ended
+        for k in names:
+            final[k] = torch.where(still, rm._episode_sums[k], torch.where(ended, before[k], final[k]))
+        seconds = torch.where(alive, torch.full_like(seconds, (t + 1) * env.step_dt), seconds)
+        for term in ended_by:
+            ended_by[term] |= ended & tm._term_dones[term]
+        alive = still
+    env.close()
+    per_second = {k: float((final[k] / seconds.clamp(min=env.step_dt)).mean()) for k in names}
+    reasons = {t: float(v.float().mean()) for t, v in ended_by.items()}
+    reasons["ran_to_end"] = float(alive.float().mean())
+    return {"task": task, "policy": Path(policy).name, "envs": num_envs, "seed": seed,
+            "episode_s": float(env.cfg.episode_length_s), "ended_by": reasons,
+            "reward_per_s": per_second}
