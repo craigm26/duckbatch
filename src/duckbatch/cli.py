@@ -41,6 +41,9 @@ def main(argv: list[str] | None = None) -> int:
     pu.add_argument("--bench", default=None, help="bench.json (default: <batch>/bench.json)")
     pu.add_argument("--space", default=None, help="also upload space/ to this Space repo id")
 
+    ck = sub.add_parser("check", help="Pollen's own publish checks: would a real duck load this?")
+    ck.add_argument("onnx")
+    ck.add_argument("--manifest", default=None, help="manifest.json to validate as the daemon would")
     hj = sub.add_parser("hf-job", help="run a menu on Hugging Face Jobs (billed to you)")
     hj.add_argument("menu")
     hj.add_argument("--run", default="batch", choices=["batch", "finetune", "skills"],
@@ -117,6 +120,15 @@ def main(argv: list[str] | None = None) -> int:
         from .batch.runner import run_batch
 
         run_batch(a.menu, a.out, a.device, use_jev=False if a.no_jev else None)
+    elif a.cmd == "check":
+        import json as _json
+        from .robot_contract import check
+
+        manifest = _json.loads(open(a.manifest).read()) if a.manifest else None
+        rows = check(a.onnx, manifest)
+        for name, ok, detail in rows:
+            print(f"{'PASS' if ok else 'FAIL'}  {name}: {detail}")
+        sys.exit(0 if all(ok for _, ok, _ in rows) else 1)
     elif a.cmd == "bench":
         from .bench import main as bench_main
 

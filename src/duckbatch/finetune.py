@@ -256,6 +256,21 @@ def run_finetune(menu_path: str | Path, out_root: str | Path = "records", log=pr
     meta.update({"duckbatch_batch": menu["batch_id"], "duckbatch_from": Path(student).name,
                  "run_path": f"duckbatch/{menu['batch_id']}"})
     onnx_path = export_actor(runner.alg.actor, out / "policies" / "finetuned" / "policy.onnx", meta)
+    # INSTALLABLE ON A REAL DUCK, NOT JUST LOADABLE IN A SIM. Every walking fine-tune is a gait for
+    # the `walk` slot; Pollen's own builder writes the manifest `robotctl policy load walk <repo>`
+    # expects, and Pollen's own checks run on the file before the record is written.
+    if "Vel" in task:
+        from .robot_contract import check, gait_manifest, write_manifest
+        manifest = gait_manifest(
+            name=menu["batch_id"].replace("/", "-"),
+            description=f"duckbatch {menu['batch_id']}: PPO fine-tune of {Path(student).name} on {task}. "
+                        "Simulation-trained; not yet run on a robot.",
+            training={"task_id": task, "duckbatch_batch": menu["batch_id"],
+                      "warm_start": Path(student).name, "teacher": Path(menu["teacher"]).name,
+                      "iterations": int(ft["iterations"]), "num_envs": int(ft["num_envs"])})
+        write_manifest(onnx_path.parent / "manifest.json", manifest)
+        for name, ok, detail in check(onnx_path, manifest):
+            log(f"[contract] {'PASS' if ok else 'FAIL'} {name}: {detail}")
     env.close()
     del runner, wrapped, env
     torch.cuda.empty_cache()
