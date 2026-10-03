@@ -157,6 +157,9 @@ def export_actor(actor, path: Path, metadata: dict[str, str]) -> Path:
 def run_finetune(menu_path: str | Path, out_root: str | Path = "records", log=print) -> Path:
     import mjlab.tasks  # noqa: F401
     from mjlab.envs import ManagerBasedRlEnv
+
+    from .tasks import register
+    register()  # duckbatch's own tasks (the left kick) beside Pollen's
     from mjlab.rl import RslRlVecEnvWrapper
     from mjlab.tasks.registry import load_env_cfg, load_rl_cfg, load_runner_cls
     from mjlab.utils.torch import configure_torch_backends

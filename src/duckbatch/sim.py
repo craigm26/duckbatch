@@ -71,6 +71,9 @@ def make_env(task: str, num_envs: int, device: str = "cuda:0", seed: int = 0,
     final stage so an attempt is judged on the full problem rather than the warm-up."""
     import mjlab.tasks  # noqa: F401  registers the mjlab_microduck plugin tasks
     from mjlab.envs import ManagerBasedRlEnv
+
+    from .tasks import register
+    register()  # duckbatch's own tasks (the left kick) beside Pollen's
     from mjlab.tasks.registry import load_env_cfg
 
     cfg = load_env_cfg(task, play=play)
