@@ -1,0 +1,24 @@
+# k002: Pollen's LEFT kick, fine-tuned to go straighter. Pollen's reward plus one term against
+# the ball's sideways speed. Pre-registered 2026-10-03, before any run.
+# See notes/2026-10-03-k002-design.md.
+batch_id: k002-kick-left-straight
+task: Duckbatch-BallKick-Left-Flat-MicroDuck
+teacher: teachers/ball_kick_left.onnx
+student: teachers/ball_kick_left.onnx    # warm start from Pollen's own left kick
+seed: 0
+eval_envs: 256
+eval_tasks: [Duckbatch-BallKick-Left-Flat-MicroDuck, Duckbatch-BallKick-Left-Flat-Backlash-MicroDuck]
+final_seeds: [2001, 2002, 2003]
+finetune:
+  num_envs: 2048
+  iterations: 1000          # episodic tricks converge in ~1000 (microduck_rl AGENTS.md)
+  save_interval: 250
+  init_std: 0.2             # small: the kick already works
+  learning_rate: 3.0e-4
+  entropy_coef: 0.002
+  add_rewards:
+    ball_lateral_speed:
+      func: duckbatch.rewards.ball_lateral_speed
+      weight: -12.0         # equal and opposite to Pollen's ball_forward_velocity weight
+      params: {asset_name: ball}
+  # no anchor: plain PPO. A kick has no recovery to protect; a fall ends its episode.
