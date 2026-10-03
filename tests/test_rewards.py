@@ -225,3 +225,25 @@ def test_b003e_menu_is_b003d_but_for_the_stride_average():
     assert e["finetune"] == d["finetune"]
     assert {k: v for k, v in e.items() if k not in ("batch_id", "finetune")} == \
         {k: v for k, v in d.items() if k not in ("batch_id", "finetune")}
+
+
+def _ball_env(vel, direction=(1.0, 0.0)):
+    data = SimpleNamespace(root_link_lin_vel_w=torch.tensor([vel]))
+    env = SimpleNamespace(scene={"ball": SimpleNamespace(data=data)}, num_envs=1, device="cpu")
+    env._ball_kick_dir_w = torch.tensor([direction])
+    return env
+
+
+def test_a_ball_going_straight_is_not_charged():
+    pytest.importorskip("mjlab_microduck")
+    from duckbatch.rewards import ball_lateral_speed
+    assert ball_lateral_speed(_ball_env((1.3, 0.0, 0.0))).item() == pytest.approx(0.0)
+
+
+def test_the_sideways_speed_is_charged_either_side_and_along_any_line():
+    pytest.importorskip("mjlab_microduck")
+    from duckbatch.rewards import ball_lateral_speed
+    assert ball_lateral_speed(_ball_env((1.0, 0.2, 0.0))).item() == pytest.approx(0.2)
+    assert ball_lateral_speed(_ball_env((1.0, -0.2, 0.0))).item() == pytest.approx(0.2)
+    # Kick line along +y: speed along x is now the sideways part.
+    assert ball_lateral_speed(_ball_env((0.3, 1.0, 0.0), direction=(0.0, 1.0))).item() == pytest.approx(0.3)

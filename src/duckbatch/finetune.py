@@ -235,7 +235,9 @@ def run_finetune(menu_path: str | Path, out_root: str | Path = "records", log=pr
         "class_name": "duckbatch.finetune.PpoWithTeacherAnchor",
         "learning_rate": float(ft["learning_rate"]),
         "entropy_coef": float(ft.get("entropy_coef", 0.002)),
-        "anchor_cfg": {**ft["anchor"], "teacher_onnx": menu["teacher"]},
+        # NO ANCHOR IS PLAIN PPO. A kick has no recovery to protect and its episode ends on a
+        # fall, so a skill menu may leave `anchor` out entirely.
+        "anchor_cfg": ({**ft["anchor"], "teacher_onnx": menu["teacher"]} if ft.get("anchor") else None),
     })
 
     env = ManagerBasedRlEnv(cfg=env_cfg, device=device)
@@ -276,8 +278,24 @@ def run_finetune(menu_path: str | Path, out_root: str | Path = "records", log=pr
     torch.cuda.empty_cache()
     log(f"[finetune] trained in {train_s / 60:.1f} min -> {onnx_path}")
 
-    # The measurements the design pre-registers: speed curves for teacher, student and the
-    # fine-tuned student, then the b002 walk + recovery evaluation on held-out seeds.
+    base = {"schema": "duckbatch.finetune.v1", "batch_id": menu["batch_id"], "task": task,
+            "student": student, "teacher": menu["teacher"], "train_seconds": round(train_s, 1),
+            "gpu": torch.cuda.get_device_name(0) if torch.cuda.is_available() else None,
+            "params": mlp_params(sw.hidden), "policy": str(onnx_path.relative_to(out))}
+    if "BallKick" in task:
+        record = {**base, "kick_eval": _kick_record(menu, task, student, onnx_path, out, device, log)}
+    else:
+        record = {**base, **_walk_record(menu, task, student, onnx_path, out, device)}
+    (out / "record.json").write_text(json.dumps(record, indent=1))
+    log("[record] " + json.dumps(record))  # a second copy in the log, in case the upload fails
+    log(f"[finetune] record -> {out}/record.json")
+    return out
+
+
+def _walk_record(menu, task, student, onnx_path, out, device) -> dict[str, Any]:
+    """The measurements the b003 designs pre-register: speed curves for teacher, student and the
+    fine-tuned student, then the b002 walk + recovery evaluation on held-out seeds."""
+    from .batch.runner import evaluate_both
     from .pairs import speed_curve
     from .sim import Arm, Population, make_env
 
@@ -289,17 +307,36 @@ def run_finetune(menu_path: str | Path, out_root: str | Path = "records", log=pr
             Arm("finetuned", "fixed", net=load_teacher(str(onnx_path), device))]
     pop = Population(env, menu["teacher"], arms, device=device)
     final = {}
-    from .batch.runner import evaluate_both
     for s in menu.get("final_seeds", [2001, 2002, 2003]):
         final[str(s)] = evaluate_both(pop, 30.0, 6.0, int(s))
     env.close()
-    record = {"schema": "duckbatch.finetune.v1", "batch_id": menu["batch_id"], "task": task,
-              "student": student, "teacher": menu["teacher"], "train_seconds": round(train_s, 1),
-              "gpu": torch.cuda.get_device_name(0) if torch.cuda.is_available() else None,
-              "params": mlp_params(sw.hidden), "policy": str(onnx_path.relative_to(out)),
-              "final_eval": {"seconds": 30.0, "recover_seconds": 6.0, "by_seed": final},
-              "speed_curve": json.loads((out / "speed" / "speed_curve.json").read_text())}
-    (out / "record.json").write_text(json.dumps(record, indent=1))
-    log("[record] " + json.dumps(record))  # a second copy in the log, in case the upload fails
-    log(f"[finetune] record -> {out}/record.json")
-    return out
+    return {"final_eval": {"seconds": 30.0, "recover_seconds": 6.0, "by_seed": final},
+            "speed_curve": json.loads((out / "speed" / "speed_curve.json").read_text())}
+
+
+def _kick_record(menu, task, student, onnx_path, out, device, log) -> dict[str, Any]:
+    """A kick, judged on what a kick is for (`skill_eval.kick`), in every task the menu names —
+    the backlash twin it trained on and the plain task Pollen's kick was trained on — with Pollen's
+    kick and the fine-tune on the same seeds. Then Pollen's episodic manifest, checked."""
+    from .robot_contract import check, write_manifest
+    from .skill_eval import kick
+    from mjlab_microduck.publish import manifest as pollen
+
+    pols = {"pollen": student, "finetuned": str(onnx_path)}
+    results: dict[str, Any] = {}
+    for eval_task in menu.get("eval_tasks", [task]):
+        results[eval_task] = {str(seed): kick(eval_task, pols, num_envs=int(menu.get("eval_envs", 256)),
+                                             seed=int(seed), device=device)
+                              for seed in menu.get("final_seeds", [2001, 2002, 2003])}
+    side = "right" if "right" in Path(student).name else "left"
+    manifest = pollen.build_manifest(
+        name=f"kick_{side}_{menu['batch_id'].replace('/', '-')}", kind="episodic", duration_s=0.5,
+        slot=f"kick_{side}", description=f"duckbatch {menu['batch_id']}: PPO fine-tune of Pollen's "
+        f"{Path(student).name} on {task}. Simulation-trained; not yet run on a robot.",
+        training={"task_id": task, "duckbatch_batch": menu["batch_id"],
+                  "warm_start": Path(student).name, "iterations": int(menu["finetune"]["iterations"])})
+    write_manifest(onnx_path.parent / "manifest.json", manifest)
+    for name, ok, detail in check(onnx_path, manifest):
+        log(f"[contract] {'PASS' if ok else 'FAIL'} {name}: {detail}")
+    return results
+
