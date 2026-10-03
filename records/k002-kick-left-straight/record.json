@@ -1,0 +1,161 @@
+{
+ "schema": "duckbatch.finetune.v1",
+ "batch_id": "k002-kick-left-straight",
+ "task": "Duckbatch-BallKick-Left-Flat-MicroDuck",
+ "student": "teachers/ball_kick_left.onnx",
+ "teacher": "teachers/ball_kick_left.onnx",
+ "train_seconds": 1699.7,
+ "gpu": "NVIDIA L4",
+ "params": 197774,
+ "policy": "policies/finetuned/policy.onnx",
+ "kick_eval": {
+  "Duckbatch-BallKick-Left-Flat-MicroDuck": {
+   "2001": {
+    "pollen": {
+     "ball_travel_m": 5.080191612243652,
+     "ball_peak_mps": 1.3624587059020996,
+     "ball_off_line_m": 0.6239339709281921,
+     "ball_angle_deg": 7.014368057250977,
+     "fell_share": 0.0,
+     "support_foot_down": 0.9710090160369873,
+     "envs": 256,
+     "seed": 2001,
+     "steps": 250
+    },
+    "finetuned": {
+     "ball_travel_m": 5.131828784942627,
+     "ball_peak_mps": 1.368563175201416,
+     "ball_off_line_m": 0.4568479061126709,
+     "ball_angle_deg": 5.1199951171875,
+     "fell_share": 0.0,
+     "support_foot_down": 0.9569841623306274,
+     "envs": 256,
+     "seed": 2001,
+     "steps": 250
+    }
+   },
+   "2002": {
+    "pollen": {
+     "ball_travel_m": 5.0886712074279785,
+     "ball_peak_mps": 1.372593879699707,
+     "ball_off_line_m": 0.6615641117095947,
+     "ball_angle_deg": 7.433053970336914,
+     "fell_share": 0.0,
+     "support_foot_down": 0.9733622074127197,
+     "envs": 256,
+     "seed": 2002,
+     "steps": 250
+    },
+    "finetuned": {
+     "ball_travel_m": 5.150968551635742,
+     "ball_peak_mps": 1.3778468370437622,
+     "ball_off_line_m": 0.4396058917045593,
+     "ball_angle_deg": 4.925054550170898,
+     "fell_share": 0.0,
+     "support_foot_down": 0.9596197009086609,
+     "envs": 256,
+     "seed": 2002,
+     "steps": 250
+    }
+   },
+   "2003": {
+    "pollen": {
+     "ball_travel_m": 5.064842224121094,
+     "ball_peak_mps": 1.36468505859375,
+     "ball_off_line_m": 0.6501926183700562,
+     "ball_angle_deg": 7.343515396118164,
+     "fell_share": 0.0,
+     "support_foot_down": 0.9732366800308228,
+     "envs": 256,
+     "seed": 2003,
+     "steps": 250
+    },
+    "finetuned": {
+     "ball_travel_m": 5.1143670082092285,
+     "ball_peak_mps": 1.3692820072174072,
+     "ball_off_line_m": 0.45498955249786377,
+     "ball_angle_deg": 5.1146745681762695,
+     "fell_share": 0.0,
+     "support_foot_down": 0.9603727459907532,
+     "envs": 256,
+     "seed": 2003,
+     "steps": 250
+    }
+   }
+  },
+  "Duckbatch-BallKick-Left-Flat-Backlash-MicroDuck": {
+   "2001": {
+    "pollen": {
+     "ball_travel_m": 5.248854160308838,
+     "ball_peak_mps": 1.4366729259490967,
+     "ball_off_line_m": 0.6982215046882629,
+     "ball_angle_deg": 7.607387542724609,
+     "fell_share": 0.0,
+     "support_foot_down": 0.9719502925872803,
+     "envs": 256,
+     "seed": 2001,
+     "steps": 250
+    },
+    "finetuned": {
+     "ball_travel_m": 5.253567695617676,
+     "ball_peak_mps": 1.4415940046310425,
+     "ball_off_line_m": 0.524688184261322,
+     "ball_angle_deg": 5.7755937576293945,
+     "fell_share": 0.01171875,
+     "support_foot_down": 0.9590583443641663,
+     "envs": 256,
+     "seed": 2001,
+     "steps": 250
+    }
+   },
+   "2002": {
+    "pollen": {
+     "ball_travel_m": 5.271772384643555,
+     "ball_peak_mps": 1.4464157819747925,
+     "ball_off_line_m": 0.7149261236190796,
+     "ball_angle_deg": 7.747616767883301,
+     "fell_share": 0.0,
+     "support_foot_down": 0.9746329188346863,
+     "envs": 256,
+     "seed": 2002,
+     "steps": 250
+    },
+    "finetuned": {
+     "ball_travel_m": 5.285670280456543,
+     "ball_peak_mps": 1.4458225965499878,
+     "ball_off_line_m": 0.5350128412246704,
+     "ball_angle_deg": 5.842175006866455,
+     "fell_share": 0.00390625,
+     "support_foot_down": 0.9604135155677795,
+     "envs": 256,
+     "seed": 2002,
+     "steps": 250
+    }
+   },
+   "2003": {
+    "pollen": {
+     "ball_travel_m": 5.249199867248535,
+     "ball_peak_mps": 1.446979284286499,
+     "ball_off_line_m": 0.6892740726470947,
+     "ball_angle_deg": 7.521146297454834,
+     "fell_share": 0.0,
+     "support_foot_down": 0.973879873752594,
+     "envs": 256,
+     "seed": 2003,
+     "steps": 250
+    },
+    "finetuned": {
+     "ball_travel_m": 5.231103897094727,
+     "ball_peak_mps": 1.4465668201446533,
+     "ball_off_line_m": 0.5066533088684082,
+     "ball_angle_deg": 5.589395523071289,
+     "fell_share": 0.01171875,
+     "support_foot_down": 0.957305908203125,
+     "envs": 256,
+     "seed": 2003,
+     "steps": 250
+    }
+   }
+  }
+ }
+}

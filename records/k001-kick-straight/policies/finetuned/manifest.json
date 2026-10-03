@@ -1,0 +1,36 @@
+{
+  "schema_version": 2,
+  "model_api": 1,
+  "obs_len": 61,
+  "action_len": 14,
+  "robot": {
+    "model": "microduck",
+    "hw_rev": 1,
+    "servos": "xl330",
+    "control_hz": 50
+  },
+  "name": "kick_right_k001-kick-straight",
+  "kind": "episodic",
+  "entry_pose": "standing",
+  "description": "duckbatch k001-kick-straight: PPO fine-tune of Pollen's ball_kick_right.onnx on Mjlab-BallKick-Flat-MicroDuck. Simulation-trained; not yet run on a robot.",
+  "command": {
+    "encoding": "constant",
+    "idle": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "twist": "unused (zeros)",
+    "head": "unused (zeros)",
+    "body": "unused (zeros)"
+  },
+  "duration_s": 0.5,
+  "chain": false,
+  "slot": "kick_right",
+  "training": {
+    "task_id": "Mjlab-BallKick-Flat-MicroDuck",
+    "duckbatch_batch": "k001-kick-straight",
+    "warm_start": "ball_kick_right.onnx",
+    "iterations": 1000
+  }
+}

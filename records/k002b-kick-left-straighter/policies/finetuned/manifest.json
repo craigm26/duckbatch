@@ -1,0 +1,36 @@
+{
+  "schema_version": 2,
+  "model_api": 1,
+  "obs_len": 61,
+  "action_len": 14,
+  "robot": {
+    "model": "microduck",
+    "hw_rev": 1,
+    "servos": "xl330",
+    "control_hz": 50
+  },
+  "name": "kick_left_k002b-kick-left-straighter",
+  "kind": "episodic",
+  "entry_pose": "standing",
+  "description": "duckbatch k002b-kick-left-straighter: PPO fine-tune of Pollen's ball_kick_left.onnx on Duckbatch-BallKick-Left-Flat-MicroDuck. Simulation-trained; not yet run on a robot.",
+  "command": {
+    "encoding": "constant",
+    "idle": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "twist": "unused (zeros)",
+    "head": "unused (zeros)",
+    "body": "unused (zeros)"
+  },
+  "duration_s": 0.5,
+  "chain": false,
+  "slot": "kick_left",
+  "training": {
+    "task_id": "Duckbatch-BallKick-Left-Flat-MicroDuck",
+    "duckbatch_batch": "k002b-kick-left-straighter",
+    "warm_start": "ball_kick_left.onnx",
+    "iterations": 1000
+  }
+}
