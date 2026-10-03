@@ -79,6 +79,14 @@ def main(argv: list[str] | None = None) -> int:
     pa.add_argument("--envs", type=int, default=512)
     pa.add_argument("--seconds", type=float, default=8.0)
 
+    kp = sub.add_parser("kick-pairs", help="paired kick rollouts, ball and features, for per-skill RLHF")
+    kp.add_argument("foot", choices=["right", "left"])
+    kp.add_argument("--out", default=None, help="default records/kp001-<foot>")
+    kp.add_argument("--envs", type=int, default=32)
+    kp.add_argument("--keep", type=int, default=8, help="envs whose frames and ball are kept")
+    kp.add_argument("--seed", type=int, default=4001)
+    kp.add_argument("--device", default="cpu")
+
     pl = sub.add_parser("plan", help="plan a multi-step request with the local LLM planner")
     pl.add_argument("text")
     pl.add_argument("--url", default=None)
@@ -192,6 +200,11 @@ def main(argv: list[str] | None = None) -> int:
         from .pairs import generate
 
         generate(a.out, num_envs=a.envs, seconds=a.seconds)
+    elif a.cmd == "kick-pairs":
+        from .kick_pairs import generate as kick_pairs
+
+        kick_pairs(a.foot, a.out or f"records/kp001-{a.foot}", num_envs=a.envs, keep=a.keep,
+                   seed=a.seed, device=a.device)
     elif a.cmd == "plan":
         import json
 
