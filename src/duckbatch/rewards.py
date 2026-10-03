@@ -127,3 +127,20 @@ class track_linear_velocity_stride:
         self.fresh.zero_()
         return _relative_tracking(command[:, :2], self.history.mean(dim=1), actual[:, 2], std,
                                   full_width_speed, min_width_speed, stand_below)
+
+
+def ball_lateral_speed(env, asset_name: str = "ball") -> torch.Tensor:
+    """How fast the ball is going ACROSS the kick line, |v · perp(kick direction)|, in m/s.
+
+    k001 (notes/2026-10-02-k001-design.md). Pollen's kick pays for speed along the line the env
+    froze at reset (`ball_forward_velocity`) and says nothing about speed across it; Pollen's right
+    kick goes 7.3° off line on average. Weighted like the forward term, this charges a crooked kick
+    in proportion to how crooked it is, every step the ball keeps rolling — and slowing the kick
+    down does not escape it, because the sideways speed falls with the forward speed.
+    """
+    from mjlab_microduck.tasks import mdp as microduck_mdp
+
+    ball = env.scene[asset_name]
+    d = microduck_mdp._ball_kick_dir(env)
+    v = ball.data.root_link_lin_vel_w[:, :2]
+    return (v[:, 0] * -d[:, 1] + v[:, 1] * d[:, 0]).abs()
