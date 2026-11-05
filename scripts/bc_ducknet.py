@@ -178,48 +178,71 @@ def load_episodes(root: pathlib.Path, task: str) -> list[tuple[np.ndarray, np.nd
         if len(frames) != len(actions):
             sys.exit(f"episode {i}: {len(frames)} video frames but {len(actions)} rows")
         episodes.append((frames, actions))
+        if len(episodes) % 20 == 0:
+            print(f"read {len(episodes)} episodes", flush=True)
     if not episodes:
         sys.exit(f"no episode has the task {task!r} (tasks here: {sorted(set(tasks.values()))})")
     return episodes
 
 
-def samples(episodes, img_mean, img_std, act_mean, act_std):
-    xs, ys, masks = [], [], []
+def samples(episodes, act_mean, act_std, offset: int):
+    """Indices, not pictures: (now, then) rows into the stacked frames, plus targets and masks.
+
+    Stacking every two-picture input up front costs 340 KB a sample (6.5 GB for 19,314 rows,
+    twice during np.stack), more than a t4-small holds; batches are gathered from these instead."""
+    now, then, ys, masks = [], [], [], []
     for frames, actions in episodes:
-        norm = (frames - img_mean[None, :, None, None]) / img_std[None, :, None, None]
         n = len(actions)
         for t in range(n):
-            old = max(t + FRAME_OFFSETS[1], 0)
-            xs.append(np.concatenate([norm[t], norm[old]], axis=0))
+            now.append(offset + t)
+            then.append(offset + max(t + FRAME_OFFSETS[1], 0))
             idx = np.minimum(np.arange(t, t + CHUNK), n - 1)
             ys.append(((actions[idx] - act_mean) / act_std).reshape(-1))
             masks.append(np.repeat((np.arange(t, t + CHUNK) < n).astype(np.float32), 3))
-    return np.stack(xs), np.stack(ys), np.stack(masks)
+        offset += n
+    return (np.array(now), np.array(then), np.stack(ys).astype(np.float32),
+            np.stack(masks).astype(np.float32))
+
+
+def gather(frames: torch.Tensor, now, then) -> torch.Tensor:
+    """(B, 6, 88, 160): the newest picture's three channels first, as DriverPrep stacks them."""
+    return torch.cat([frames[torch.as_tensor(now)], frames[torch.as_tensor(then)]], dim=1)
 
 
 def train(args) -> None:
     from huggingface_hub import HfApi, snapshot_download
     root = pathlib.Path(snapshot_download(args.dataset, repo_type="dataset", revision=args.dataset_revision))
     episodes = load_episodes(root, args.task)
-    all_frames = np.concatenate([f for f, _ in episodes])
-    all_actions = np.concatenate([a for _, a in episodes])
-    img_mean = all_frames.mean(axis=(0, 2, 3)); img_std = all_frames.std(axis=(0, 2, 3)) + 1e-3
-    act_mean = all_actions.mean(axis=0); act_std = all_actions.std(axis=0) + 1e-3
     rng = np.random.default_rng(0)
     order = rng.permutation(len(episodes))
     n_val = max(1, len(episodes) // 10)
     val = [episodes[i] for i in order[:n_val]]; tr = [episodes[i] for i in order[n_val:]]
-    xt, yt, mt = samples(tr, img_mean, img_std, act_mean, act_std)
-    xv, yv, mv = samples(val, img_mean, img_std, act_mean, act_std)
+    all_actions = np.concatenate([a for _, a in episodes])
+    act_mean = all_actions.mean(axis=0); act_std = all_actions.std(axis=0) + 1e-3
+    # One stacked copy of the pictures, train episodes first, normalised in place.
+    frames = np.concatenate([f for f, _ in tr] + [f for f, _ in val])
+    n_train_rows = sum(len(a) for _, a in tr)
+    episodes = [(None, a) for _, a in episodes]
+    tr = [(None, a) for _, a in tr]; val = [(None, a) for _, a in val]
+    img_mean = frames.mean(axis=(0, 2, 3), dtype=np.float64).astype(np.float32)
+    img_std = (frames.std(axis=(0, 2, 3), dtype=np.float64) + 1e-3).astype(np.float32)
+    frames -= img_mean[None, :, None, None]; frames /= img_std[None, :, None, None]
+    nt, ot, yt, mt = samples(tr, act_mean, act_std, 0)
+    nv, ov, yv, mv = samples(val, act_mean, act_std, n_train_rows)
+    print(f"{len(tr)} train episodes ({len(nt)} rows), {len(val)} val episodes ({len(nv)} rows), "
+          f"pictures {frames.nbytes / 1e9:.2f} GB", flush=True)
     device = "cuda" if torch.cuda.is_available() else "cpu"
     torch.manual_seed(0)
     model = DuckNetS1().to(device)
     opt = torch.optim.AdamW(model.parameters(), lr=3e-4, weight_decay=1e-4)
     sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, args.steps)
-    xt_t, yt_t, mt_t = map(torch.from_numpy, (xt, yt, mt))
+    frames_t = torch.from_numpy(frames)
+    yt_t, mt_t = torch.from_numpy(yt), torch.from_numpy(mt)
     for step in range(args.steps):
-        b = torch.from_numpy(rng.integers(0, len(xt), args.batch))
-        x = xt_t[b].to(device); y = yt_t[b].to(device); m = mt_t[b].to(device)
+        b = rng.integers(0, len(nt), args.batch)
+        x = gather(frames_t, nt[b], ot[b]).to(device)
+        bt = torch.as_tensor(b)
+        y = yt_t[bt].to(device); m = mt_t[bt].to(device)
         # Augment: brightness/contrast +-10% and shifts of up to 4 px (2 px pooled); no flips.
         x = x * (1 + 0.1 * (2 * torch.rand(len(x), 1, 1, 1, device=device) - 1))
         x = torch.roll(x, shifts=(int(rng.integers(-2, 3)), int(rng.integers(-2, 3))), dims=(2, 3))
@@ -232,7 +255,9 @@ def train(args) -> None:
     def l1(pred: np.ndarray) -> float:
         return float((np.abs(pred - yv) * mv).sum() / mv.sum())
     with torch.no_grad():
-        val_l1 = l1(model(torch.from_numpy(xv)).numpy())
+        pred = np.concatenate([model(gather(frames_t, nv[i:i + 256], ov[i:i + 256])).numpy()
+                               for i in range(0, len(nv), 256)])
+    val_l1 = l1(pred)
     zero_l1 = l1(np.tile(((0 - act_mean) / act_std), CHUNK)[None, :].repeat(len(yv), 0))
     repeat_l1 = l1(np.repeat(yv[:, :3], CHUNK, axis=0).reshape(len(yv), -1))
     print(f"val L1 {val_l1:.4f}  zero baseline {zero_l1:.4f}  repeat-first baseline {repeat_l1:.4f}")
