@@ -142,10 +142,36 @@ def self_check(out: pathlib.Path) -> None:
 
 # --------------------------------------------------------------------------- training
 
+# THE COLOUR MATRIX IS NAMED, NEVER LEFT TO THE DECODER. The app's videos are H.264 4:2:0, video
+# range; the phone at run time decodes its JPEG straight to RGB. Decoding the video with a different
+# YCbCr matrix than the encoder used shifts strong colours (the red ball most) between training and
+# run time. Duck Studio's DreamTakeWriter tags BT.709 (duck-studio feat/driver-v2). Exports from before
+# that carry no tag at all (color_space unknown), and for those the encoder measurably used BT.601:
+# decoded frames match the app's own PNG renders at 1.1 to 1.4 mean abs error with BT.601 against
+# 1.6 to 1.9 with BT.709 (dataset-v2, episodes 0, 57, 140). So: the stream's tag when it has one,
+# BT.601 when it has none, and anything else refuses.
+_MATRIX_BY_TAG = {1: "ITU709", 5: "ITU601", 6: "ITU601"}   # AVCOL_SPC_BT709, _BT470BG, _SMPTE170M
+UNTAGGED = 2                                                 # AVCOL_SPC_UNSPECIFIED
+
+
+def video_matrix(tag: int) -> str:
+    if tag == UNTAGGED:
+        return "ITU601"
+    if tag not in _MATRIX_BY_TAG:
+        raise SystemExit(f"video colour matrix tag {tag} is not one this script decodes (BT.709 or BT.601)")
+    return _MATRIX_BY_TAG[tag]
+
+
 def decode_video(path: pathlib.Path) -> np.ndarray:
     import av
     with av.open(str(path)) as c:
-        frames = [f.to_ndarray(format="rgb24", width=320, height=176) for f in c.decode(video=0)]
+        stream = c.streams.video[0]
+        matrix = video_matrix(int(stream.codec_context.colorspace))
+        full = int(stream.codec_context.color_range) == 2           # AVCOL_RANGE_JPEG
+        frames = [f.to_ndarray(format="rgb24", width=320, height=176, src_colorspace=matrix,
+                               dst_colorspace=matrix, src_color_range="JPEG" if full else "MPEG",
+                               dst_color_range="JPEG")
+                  for f in c.decode(video=0)]
     return np.stack(frames)                                            # (T, 176, 320, 3) uint8
 
 
