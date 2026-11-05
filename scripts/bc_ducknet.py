@@ -181,7 +181,22 @@ def pool(pictures: np.ndarray) -> np.ndarray:
     return p.transpose(0, 3, 1, 2)
 
 
-def load_episodes(root: pathlib.Path, task: str) -> list[tuple[np.ndarray, np.ndarray]]:
+POOL_SCALE = 4 * 255             # a pooled sum over this is pool()'s value
+
+
+def pool_sums(pictures: np.ndarray) -> np.ndarray:
+    """(T, 176, 320, 3) uint8 -> (T, 3, 88, 160) uint16: the 2x2 SUMS, 0 to 1020.
+
+    HOW THE PICTURES ARE KEPT. pool()'s float32 is 169 KB a frame; this is 84 KB, and exact:
+    `sums.float() / POOL_SCALE` is pool()'s value bit for bit (the sum of four bytes is an integer a
+    float32 holds exactly, and the division is the same one). Rounding the average into a uint8 would
+    halve it again but put every training picture up to half a level off what DriverPrep feeds the
+    phone, so it is not done. Pictures are normalised per batch (`batch_frames`), never in place."""
+    return pictures.reshape(-1, 88, 2, 160, 2, 3).sum(axis=(2, 4), dtype=np.uint16).transpose(0, 3, 1, 2)
+
+
+def list_episodes(root: pathlib.Path, task: str) -> list[tuple[np.ndarray, pathlib.Path]]:
+    """The task's episodes as (actions, video path); no picture is decoded yet."""
     import pyarrow.parquet as pq
     info = json.loads((root / "meta/info.json").read_text())
     if info.get("codebase_version") != "v2.1":
@@ -200,15 +215,41 @@ def load_episodes(root: pathlib.Path, task: str) -> list[tuple[np.ndarray, np.nd
         actions = np.array(table.column("action").to_pylist(), dtype=np.float32)
         video = root / info["video_path"].format(episode_chunk=i // info["chunks_size"],
                                                  video_key="observation.images.head", episode_index=i)
-        frames = pool(decode_video(video))
-        if len(frames) != len(actions):
-            sys.exit(f"episode {i}: {len(frames)} video frames but {len(actions)} rows")
-        episodes.append((frames, actions))
-        if len(episodes) % 20 == 0:
-            print(f"read {len(episodes)} episodes", flush=True)
+        episodes.append((actions, video))
     if not episodes:
         sys.exit(f"no episode has the task {task!r} (tasks here: {sorted(set(tasks.values()))})")
     return episodes
+
+
+def load_frames(episodes) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Every episode's pooled pictures, in the given order, into ONE preallocated uint16 array, and
+    the per-channel mean and std of pool()'s values over all of them.
+
+    THE MEMORY, ROUND 2. Episodes pooled to float32 (5.7 GB for 33,937 frames), np.concatenate'd (a
+    second copy), then std'd with dtype float64 (a temporary twice the size): about 17 GB at peak, and
+    a t4-small ran out. Here the array is sized once from the actions' lengths and filled one
+    decoded video at a time, and the statistics are running float64 sums of x and x * x per
+    channel (population std, as np.std), so the peak is the uint16 array (84 KB a frame: 2.9 GB for
+    33,937 frames, 5 GB for 60,000) plus one decoded video."""
+    total = sum(len(a) for a, _ in episodes)
+    frames = np.empty((total, 3, H, W), dtype=np.uint16)
+    s1 = np.zeros(3, dtype=np.float64); s2 = np.zeros(3, dtype=np.float64)
+    at = 0
+    for k, (actions, video) in enumerate(episodes):
+        sums = pool_sums(decode_video(video))
+        if len(sums) != len(actions):
+            sys.exit(f"{video.name}: {len(sums)} video frames but {len(actions)} rows")
+        frames[at:at + len(sums)] = sums
+        x = sums.astype(np.float32) / POOL_SCALE                 # pool()'s values, this episode only
+        s1 += x.sum(axis=(0, 2, 3), dtype=np.float64)
+        s2 += np.square(x, dtype=np.float64).sum(axis=(0, 2, 3))
+        at += len(sums)
+        if (k + 1) % 20 == 0:
+            print(f"read {k + 1} episodes", flush=True)
+    count = total * H * W
+    mean = s1 / count
+    std = np.sqrt(np.maximum(s2 / count - mean * mean, 0.0))
+    return frames, mean.astype(np.float32), (std + 1e-3).astype(np.float32)
 
 
 def samples(episodes, act_mean, act_std, offset: int):
@@ -217,7 +258,7 @@ def samples(episodes, act_mean, act_std, offset: int):
     Stacking every two-picture input up front costs 340 KB a sample (6.5 GB for 19,314 rows,
     twice during np.stack), more than a t4-small holds; batches are gathered from these instead."""
     now, then, ys, masks = [], [], [], []
-    for frames, actions in episodes:
+    for actions in episodes:
         n = len(actions)
         for t in range(n):
             now.append(offset + t)
@@ -230,29 +271,30 @@ def samples(episodes, act_mean, act_std, offset: int):
             np.stack(masks).astype(np.float32))
 
 
-def gather(frames: torch.Tensor, now, then) -> torch.Tensor:
-    """(B, 6, 88, 160): the newest picture's three channels first, as DriverPrep stacks them."""
-    return torch.cat([frames[torch.as_tensor(now)], frames[torch.as_tensor(then)]], dim=1)
+def gather(frames: np.ndarray, now, then, img_mean: torch.Tensor, img_std: torch.Tensor) -> torch.Tensor:
+    """(B, 6, 88, 160) float32, normalised: the newest picture's three channels first, as DriverPrep
+    stacks them. `frames` are pool_sums()'s uint16, indexed in numpy (torch's uint16 is not indexable
+    on every version) and turned into floats one batch at a time; `img_mean`/`img_std` are (1, 3, 1, 1)."""
+    def one(rows):
+        x = torch.from_numpy(frames[np.asarray(rows)].astype(np.float32)) / POOL_SCALE
+        return (x - img_mean) / img_std
+    return torch.cat([one(now), one(then)], dim=1)
 
 
 def train(args) -> None:
     from huggingface_hub import HfApi, snapshot_download
     root = pathlib.Path(snapshot_download(args.dataset, repo_type="dataset", revision=args.dataset_revision))
-    episodes = load_episodes(root, args.task)
+    episodes = list_episodes(root, args.task)
     rng = np.random.default_rng(0)
     order = rng.permutation(len(episodes))
     n_val = max(1, len(episodes) // 10)
     val = [episodes[i] for i in order[:n_val]]; tr = [episodes[i] for i in order[n_val:]]
-    all_actions = np.concatenate([a for _, a in episodes])
+    all_actions = np.concatenate([a for a, _ in episodes])
     act_mean = all_actions.mean(axis=0); act_std = all_actions.std(axis=0) + 1e-3
-    # One stacked copy of the pictures, train episodes first, normalised in place.
-    frames = np.concatenate([f for f, _ in tr] + [f for f, _ in val])
-    n_train_rows = sum(len(a) for _, a in tr)
-    episodes = [(None, a) for _, a in episodes]
-    tr = [(None, a) for _, a in tr]; val = [(None, a) for _, a in val]
-    img_mean = frames.mean(axis=(0, 2, 3), dtype=np.float64).astype(np.float32)
-    img_std = (frames.std(axis=(0, 2, 3), dtype=np.float64) + 1e-3).astype(np.float32)
-    frames -= img_mean[None, :, None, None]; frames /= img_std[None, :, None, None]
+    # One array of the pictures, train episodes first, kept as exact uint16 pooled sums.
+    frames, img_mean, img_std = load_frames(tr + val)
+    n_train_rows = sum(len(a) for a, _ in tr)
+    tr = [a for a, _ in tr]; val = [a for a, _ in val]
     nt, ot, yt, mt = samples(tr, act_mean, act_std, 0)
     nv, ov, yv, mv = samples(val, act_mean, act_std, n_train_rows)
     print(f"{len(tr)} train episodes ({len(nt)} rows), {len(val)} val episodes ({len(nv)} rows), "
@@ -262,11 +304,11 @@ def train(args) -> None:
     model = DuckNetS1().to(device)
     opt = torch.optim.AdamW(model.parameters(), lr=3e-4, weight_decay=1e-4)
     sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, args.steps)
-    frames_t = torch.from_numpy(frames)
+    mean_t = torch.from_numpy(img_mean)[None, :, None, None]; std_t = torch.from_numpy(img_std)[None, :, None, None]
     yt_t, mt_t = torch.from_numpy(yt), torch.from_numpy(mt)
     for step in range(args.steps):
         b = rng.integers(0, len(nt), args.batch)
-        x = gather(frames_t, nt[b], ot[b]).to(device)
+        x = gather(frames, nt[b], ot[b], mean_t, std_t).to(device)
         bt = torch.as_tensor(b)
         y = yt_t[bt].to(device); m = mt_t[bt].to(device)
         # Augment: brightness/contrast +-10% and shifts of up to 4 px (2 px pooled); no flips.
@@ -281,7 +323,7 @@ def train(args) -> None:
     def l1(pred: np.ndarray) -> float:
         return float((np.abs(pred - yv) * mv).sum() / mv.sum())
     with torch.no_grad():
-        pred = np.concatenate([model(gather(frames_t, nv[i:i + 256], ov[i:i + 256])).numpy()
+        pred = np.concatenate([model(gather(frames, nv[i:i + 256], ov[i:i + 256], mean_t, std_t)).numpy()
                                for i in range(0, len(nv), 256)])
     val_l1 = l1(pred)
     zero_l1 = l1(np.tile(((0 - act_mean) / act_std), CHUNK)[None, :].repeat(len(yv), 0))
