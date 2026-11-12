@@ -146,6 +146,7 @@ uv run duckbatch publish records/b002-student-size-longer --namespace <you> \
 | `notes/` | `…-design.md` before a batch, `…-close.md` after |
 | `records/<batch>/` | the menu as run, `rung-N.json`, `record.json`, `judges.json`, `bench.json`, policies |
 | `space/` | the static results page |
+| `wander/` | [microduck wander](https://huggingface.co/spaces/craigm26/microduck-wander): a duck that wanders, keeps clear and greets, as a Hugging Face Space; `wander/arena/` is how the same brain choreographed the Got a Talent act |
 
 ## Built on
 
