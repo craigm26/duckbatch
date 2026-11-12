@@ -1,0 +1,9 @@
+# The UI, with the sign-in button's own dependencies (Pollen's vision-demo learned that bare
+# `gradio` fails at import on a Space with hf_oauth: true).
+gradio[oauth]>=5
+# FastAPI owns the server and Gradio is mounted into it, as in Pollen's Spaces.
+fastapi
+uvicorn[standard]
+# The rendezvous and whoami-v2 are plain HTTP.
+requests
+huggingface_hub
