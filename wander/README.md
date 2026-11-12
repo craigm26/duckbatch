@@ -78,6 +78,13 @@ works around.
   no falls, and greetings in half of them. `sim_check.py` reruns them.
 - Not yet on a physical duck at the time of writing.
 
+## Where this is going
+
+[ROADMAP.md](ROADMAP.md), in order: edge stop first (until then, **floor only, never a table**), stuck
+recovery, a session log, five rooms in a simulator, then real ducks. **If your duck is online, you
+can measure it for us:** the five-session protocol is in the roadmap, and the logs stay in your
+account unless you share them.
+
 ## Credits
 
 `control.py`, `rendezvous.py` and `wire.py` are Pollen Robotics' (`spaces/shared` in
