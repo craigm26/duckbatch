@@ -12,7 +12,7 @@ tags:
   - microduck
   - robotics
   - autonomy
-short_description: A duck that wanders, keeps clear, and greets who comes close.
+short_description: A Microduck that wanders, keeps clear and says hello.
 ---
 
 # microduck wander
