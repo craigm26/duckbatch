@@ -28,6 +28,7 @@ MAX_RANGE = 4.0
 DEADMAN_S = 0.5
 BUDGET = 400
 WINDOW_S = 60.0
+IDLE_S = 120.0                     # an unsubscribed duck stops simulating after this
 
 
 @dataclass
@@ -80,6 +81,7 @@ class PracticeDuck:
         self._lock = threading.Lock()
         self._last = clock()
         self._next_state = self._next_tof = self._last
+        self._closed = threading.Event()
         self._thread: threading.Thread | None = None
         if auto:
             self._thread = threading.Thread(target=self._run, daemon=True, name="practice-duck")
@@ -119,13 +121,24 @@ class PracticeDuck:
         return (got[0], got[1]) if got else (None, None)
 
     def close(self) -> None:
+        """Stop simulating. A page that starts again gets a new duck; this one's thread ends."""
         self.subscribed = self.streaming = False
+        self._closed.set()
 
     # -- the world --------------------------------------------------------------------------------
     def _run(self) -> None:
-        while self.subscribed or self.streaming or self.clock() - self._last < 600:
-            self.step(self.clock())
-            time.sleep(0.02)
+        # Ends on close(), or after IDLE_S with nobody subscribed: a tab that vanished without
+        # closing its session must not leave a room simulating forever.
+        idle_since = None
+        while not self._closed.wait(0.02):
+            now = self.clock()
+            if self.subscribed or self.streaming:
+                idle_since = None
+            elif idle_since is None:
+                idle_since = now
+            elif now - idle_since > IDLE_S:
+                return
+            self.step(now)
 
     def step(self, now: float) -> None:
         dt = min(0.1, max(0.0, now - self._last))

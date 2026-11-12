@@ -101,3 +101,30 @@ def test_the_practice_duck_keeps_the_lane_budget():
     for _ in range(int(59 / 0.02)):          # inside one 60 s window
         duck.step(t[0]); t[0] += 0.02
     assert duck._spent == 400 and duck.dropped > 0
+
+
+def test_stale_state_holds_the_duck_still():
+    """Codex, PR #23: a stale `fallen: true` must not read as fine once it goes stale."""
+    t = [0.0]
+    duck = PracticeDuck(budget=None, clock=lambda: t[0], auto=False)
+    r = Runner(duck, clock=lambda: t[0])
+    r._emote = lambda name: None
+    assert r.start(limit_s=1e6) == "running"
+    r._stop.set(); r._thread.join()
+    for _ in range(80):                      # walking, with fresh state and depth
+        duck.step(t[0]); r.tick(t[0]); t[0] += 0.25
+    duck.fallen = True                       # the robot reports a fall ...
+    duck.step(t[0]); r.tick(t[0])
+    duck.subscribed = False                  # ... and then its state stops arriving
+    for _ in range(60):                      # 15 s: state goes stale, depth stays fresh
+        t[0] += 0.25; duck.step(t[0]); r.tick(t[0])
+        assert duck.twist[0] == 0.0 and duck.twist[2] == 0.0
+
+
+def test_a_closed_practice_duck_stops_its_thread():
+    """Codex, PR #23: restarts must not leave rooms simulating."""
+    duck = PracticeDuck(budget=None)
+    duck.call("robot.subscribe", {})
+    duck.close()
+    duck._thread.join(timeout=1.0)
+    assert not duck._thread.is_alive()

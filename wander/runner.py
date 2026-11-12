@@ -190,11 +190,16 @@ class Runner:
                                     head_yaw, steady, pose)
         st.clear_ahead_m = senses.clear_ahead_m
 
-        if senses.fallen:
+        if senses.fallen or not state_ok:
+            # Not knowing is not the same as fine. A stale or missing `robot.state` gives the brain
+            # no safety flags at all, so it holds still exactly as if the robot had said "fallen",
+            # and the recovery clock starts again only from a fresh report that says otherwise.
             self._fine_since = None
-            if st.state != "resting":
-                st.note("fallen or picked up: holding still")
-            st.state = "resting"
+            label = "resting" if senses.fallen else "waiting for the robot's state"
+            if st.state != label:
+                st.note("fallen or picked up: holding still" if senses.fallen
+                        else "no fresh robot.state: holding still until it reports")
+            st.state = label
             self._send_twist((0.0, 0.0, 0.0))
             return
         if self._fine_since is None:
