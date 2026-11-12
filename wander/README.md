@@ -78,6 +78,21 @@ works around.
   no falls, and greetings in half of them. `sim_check.py` reruns them.
 - Not yet on a physical duck at the time of writing.
 
+## Where this is going
+
+Wander is on [Microduck Studio's roadmap](https://github.com/craigm26/duck-studio/blob/main/docs/plans/wander.md)
+as an Auto skill that runs on the phone over Studio's own link, where the 400-a-minute limit does
+not apply. In order:
+
+1. **Edge stop.** The senses set the floor aside but do not yet notice it missing. Until they do,
+   keep the duck on the floor, never on a table.
+2. **Measured on real ducks.** Five three-minute sessions on a real duck, logged, are what every
+   later change is tuned against. **If your duck is online, you can run them for us:** open floor,
+   two chairs, along a wall, someone walking up twice, a rug. Then tell us what you saw.
+3. **A Swift port in Studio**, checked against this code's own traces so the two never drift.
+4. **Presets:** explore, patrol, nap spot, companion.
+5. **Upstream:** a `hz` on `tof.stream`, proposed to Pollen with the session logs as evidence.
+
 ## Credits
 
 `control.py`, `rendezvous.py` and `wire.py` are Pollen Robotics' (`spaces/shared` in
