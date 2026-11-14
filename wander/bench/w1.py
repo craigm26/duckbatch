@@ -304,10 +304,10 @@ def duck_sim(cmd: str, scene: Path | None, out: Path, timeout: float = 300) -> s
     with out.open("a") as f:
         f.write(f"\n### duck-sim {cmd} {scene or ''} {dt.datetime.now().isoformat(timespec='seconds')}\n")
         f.flush()
-        # `duck-sim-v8` is duck-sim with one change: robotd's walk policy is the seeded v8 set's
-        # velstand, as a robot resolves it, instead of alpha_walking + alpha_stand (which take no
-        # steps below about 0.25 m/s). `down` is the same in both.
-        script = "scripts/duck-sim-v8" if cmd == "up" else "scripts/duck-sim"
+        # Pollen's own scripts/duck-sim, unchanged: it walks and stands on velstand.onnx, as a
+        # robot resolves it (microduck PR #500). The scene is ours (sim_rooms.py) and carries the
+        # backlash robot, as upstream's default `backlash` scene does.
+        script = "scripts/duck-sim"
         p = subprocess.run(["sh", script, cmd], cwd=MICRODUCK, env=env, stdout=subprocess.PIPE,
                            stderr=subprocess.STDOUT, text=True, timeout=timeout)
         f.write(p.stdout)

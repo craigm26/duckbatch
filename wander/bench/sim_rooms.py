@@ -126,6 +126,9 @@ def _floor_cells(room: Room) -> list[tuple[float, float, float, float, float]]:
     return cells
 
 
+ROBOT_XML = "robot_groundcontact_backlash.xml"   # what microduck_rl's scene_backlash.xml includes
+
+
 def scene_xml(start: Start, robot_xml: str, keyframes: str) -> str:
     room = room_of(start.room)
     low = lowest(room)
@@ -184,8 +187,9 @@ def write_scene(start: Start, out_dir: Path, model_dir: Path) -> Path:
         if not link.exists():
             link.symlink_to(item)
     path = out_dir / f"w1-{start.room}-{start.seed}.xml"
-    path.write_text(scene_xml(start, "robot_allcollisions.xml",
-                              keyframes_from(model_dir / "scene_apartment.xml")))
+    # The robot of upstream's default `backlash` scene: velstand was trained with joint backlash,
+    # and on a model without it the duck does not step at low speed (duck-sim's own note).
+    path.write_text(scene_xml(start, ROBOT_XML, keyframes_from(model_dir / "scene_backlash.xml")))
     return path
 
 
