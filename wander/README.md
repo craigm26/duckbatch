@@ -44,6 +44,34 @@ tof.frame  (15 Hz) ─┼─► senses ─► brain ─► runner ─► robot.h
   where it choreographed a four-duck Got a Talent act closed loop in the Arena's own simulator.
 - **`runner.py`** drives a live duck: twist every tick (robotd stops a twist older than 500 ms),
   the robot's own emotions for greetings, and nothing when it cannot see.
+- **`session_log.py`** is the session log's schema: one JSON line per tick, with what the duck read,
+  what the brain made of it, and what was sent. `replay.py` plays a log back and checks it.
+
+## Edges and getting stuck
+
+- **Edge.** The depth sensor's two bottom rows see the floor 0.59 and 0.84 m ahead from a level
+  head. A return there more than 5 cm below the floor, or no return, is a drop: a table edge or a
+  stair. With one in its path nearer than 0.6 m, the duck stands still for half a second, walks
+  backwards for a second, and turns away from the drop. It does not set off towards one nearer than
+  0.8 m. Edges are remembered for 8 s, like obstacles, so one it turned from still counts.
+- **Stuck.** A twist sent and odometry not moving (3 cm, or 0.15 rad) for 1.5 s: it backs off the
+  same way and turns the other way from its last turn.
+- These are tested on the practice duck only. The thresholds come from the sensor's geometry and
+  the floor test's 4 cm tolerance, not from a real duck. A dark or shiny floor that returns nothing
+  will read as an edge: the duck stops more, it does not walk on.
+
+## Session logs
+
+Each line is one tick: the depth frame packed losslessly (base64 of 64 uint16 distances and 64
+uint8 statuses), the pose and fall flags, the senses, the brain's state and command, the twist and
+head sent, and the envelope gate's verdict (`none` here, as no gate runs in this folder yet). The
+first line names the schema, its version, the venue (`practice`, `duck-sim`, `real`) and the brain's
+seed. Set `WANDER_LOG_DIR` and the Space writes one file per run. `tests/golden/` holds four short
+practice sessions (a visitor, a table, a stair, a door sill) that the brain must reproduce exactly,
+command for command: the conformance fixtures for a Swift port.
+
+    python3 replay.py tests/golden/*.jsonl
+    python3 sim_check.py --golden          # rewrite them after a deliberate brain change
 
 ## Why it stops now and then
 
@@ -72,10 +100,15 @@ works around.
 
 ## Tested
 
-- 9 unit tests (`tests/`): blind means still, the floor is not a wall, a corner beside the path
-  counts, a wall the duck turned to is not a visitor, the practice duck keeps the lane budget.
-- 16 three-minute sessions against the practice duck, half with the lane limit and half without:
-  no falls, and greetings in half of them. `sim_check.py` reruns them.
+- 45 tests (`tests/`): blind means still, the floor is not a wall, a corner beside the path
+  counts, a wall the duck turned to is not a visitor, the practice duck keeps the lane budget; and
+  for W0, a drop or a missing floor is an edge, the brain stops, backs off and turns away, no
+  practice session on the table or by the stair goes over (16 two-minute sessions), and with the
+  edge rule switched off the duck does walk off the table; a duck held by a sill backs off and
+  moves on; logs round-trip, and a practice run and the golden traces replay to the same commands.
+- `sim_check.py` runs three-minute sessions in every practice room (`living`, `table`, `stair`,
+  `threshold`), with the lane limit and without. In the living room the brain's choices are the
+  same as before the edge and stuck rules.
 - Not yet on a physical duck at the time of writing.
 
 ## Credits

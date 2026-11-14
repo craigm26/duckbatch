@@ -14,6 +14,10 @@ Two readings come out of the depth frame:
   but it was close a second ago as well; a hand, a cat or another duck arrives. Telling the two
   apart by change rather than by shape is crude, and it is the reading an 8x8 frame affords.
 
+A third reading, an **edge**, comes from the bottom rows. On a level floor their returns sit at a
+distance the head's height and the zone's angle fix. A return much farther than that, or none at
+all, means the floor drops away there: a table edge or a stair. The duck stops before it.
+
 Zones with a status other than 5 or 9 are "no measurement", per `tof/src/lib.rs`: not empty space
 and not an obstacle. A frame with too few valid zones in the strip reads as no room at all, so a
 duck whose sensor is covered or failing stops rather than walks blind.
@@ -37,6 +41,14 @@ HEAD_Z_M = 0.21               # the sensor's height standing, for telling the fl
 VISITOR_M = 0.6               # a visitor is this close or closer
 ARRIVAL_M = 0.25              # and came at least this much closer than it was
 ARRIVAL_WINDOW_S = 1.5        # within this long
+
+
+# Edges. Rows 6 and 7 see the floor 0.59 and 0.84 m ahead from a level head at HEAD_Z_M; row 5
+# sees it at 1.4 m, at a grazing 8 degrees, where a real sensor's floor returns are unreliable.
+EDGE_ROWS = (6, 7)
+EDGE_LOOK_M = 1.0             # a row whose floor would be farther than this is not used for edges
+EDGE_DROP_M = 0.05            # a return this much below the floor is a drop (the floor test allows 0.04)
+HEAD_SETTLE_S = 0.3           # edges only from frames that arrived this long after the head last moved
 
 
 def zone_bearing(col: int) -> float:
@@ -72,6 +84,45 @@ def obstacle_points(frame: dict, pitch: float = 0.0) -> list[tuple[float, float]
             b, e = zone_bearing(col), zone_elevation(row)
             out.append((x * math.cos(e) * math.cos(b), x * math.cos(e) * math.sin(b)))
     return out
+
+
+def edge_points(frame: dict, pitch: float = 0.0) -> list[tuple[float, float]]:
+    """Where the floor stops, as (ahead, left) metres on the ground in the head's frame.
+
+    A bottom-row zone whose return is more than EDGE_DROP_M below the floor, or that has no return
+    at all, looked past an edge. The edge is somewhere between the duck and that zone's floor
+    point, so the point kept is the nearest floor the zone could have seen: its lower boundary.
+
+    A frame that is not seeing (the strip check in `read_depth`) has no edges: a covered sensor
+    already reads as no room, and the duck stands still rather than backing off blind.
+    """
+    r = ranges(frame)
+    out: list[tuple[float, float]] = []
+    if len(r) != ROWS * COLS:
+        return out
+    if sum(r[row * COLS + col] is not None for row in MIDDLE_ROWS for col in MIDDLE_COLS) < MIN_VALID_IN_STRIP:
+        return out
+    half_row = math.radians(FOV_DEG) / ROWS / 2
+    for row in EDGE_ROWS:
+        elev = zone_elevation(row) - pitch
+        if elev >= -0.05 or HEAD_Z_M / math.tan(-elev) > EDGE_LOOK_M:
+            continue
+        near = HEAD_Z_M / math.tan(-(elev - half_row))
+        for col in range(COLS):
+            x = r[row * COLS + col]
+            if x is not None and x * math.sin(-elev) <= HEAD_Z_M + EDGE_DROP_M:
+                continue                      # the floor, or something standing on it
+            b = zone_bearing(col)
+            out.append((near * math.cos(b), near * math.sin(b)))
+    return out
+
+
+def edge_ahead(points: list[tuple[float, float]]) -> tuple[float, float]:
+    """The nearest edge point inside the duck's corridor, and the mean bearing of those in front."""
+    ahead = [a for a, l in points if a > -0.05 and abs(l) <= HALF_WIDTH_M]
+    front = [math.atan2(l, a) for a, l in points if a > 0]
+    return (max(0.0, min(ahead)) if ahead else math.inf,
+            sum(front) / len(front) if front else 0.0)
 
 
 @dataclass
@@ -130,8 +181,10 @@ class LiveSenses:
     visitors: int = 0
     pitch: float = 0.0            # the head's pitch, set by the caller, for the floor test
     memory: list[tuple[float, float, float]] = field(default_factory=list)   # (t, x, y) in odom
+    edges: list[tuple[float, float, float]] = field(default_factory=list)    # edge points, the same way
 
-    def remember(self, t: float, pose: tuple[float, float, float] | None, frame: dict, head_yaw: float) -> None:
+    def remember(self, t: float, pose: tuple[float, float, float] | None, frame: dict, head_yaw: float,
+                 settled: bool = True) -> None:
         """Keep the frame's obstacle points, in odometry coordinates, for MEMORY_S.
 
         The sensor sees 45 degrees. A table leg the duck walked past is out of view and still
@@ -146,6 +199,25 @@ class LiveSenses:
             self.memory.append((t, px + a * math.cos(h) - l * math.sin(h), py + a * math.sin(h) + l * math.cos(h)))
         self.memory = [m for m in self.memory if t - m[0] <= MEMORY_S
                        and math.hypot(m[1] - px, m[2] - py) <= MEMORY_M][-600:]
+        # Edges are kept the same way: once the duck turns from a table edge, it is out of view.
+        # A frame taken while the head was still moving is read at the wrong pitch, and a floor
+        # seen from a head tipped up looks like a drop, so those frames add no edges.
+        for a, l in (edge_points(frame, self.pitch) if settled else []):
+            self.edges.append((t, px + a * math.cos(h) - l * math.sin(h), py + a * math.sin(h) + l * math.cos(h)))
+        self.edges = [m for m in self.edges if t - m[0] <= MEMORY_S
+                      and math.hypot(m[1] - px, m[2] - py) <= MEMORY_M][-600:]
+
+    def edge_reading(self, frame: dict, head_yaw: float, pose: tuple[float, float, float] | None,
+                     settled: bool = True) -> tuple[float, float]:
+        """Edge ahead of the body and its side: from memory with a pose, from this frame without."""
+        if pose is None:
+            c, s_ = math.cos(head_yaw), math.sin(head_yaw)
+            pts = [(a * c - l * s_, a * s_ + l * c) for a, l in (edge_points(frame, self.pitch) if settled else [])]
+        else:
+            px, py, pyaw = pose
+            c, s_ = math.cos(pyaw), math.sin(pyaw)
+            pts = [((mx - px) * c + (my - py) * s_, -(mx - px) * s_ + (my - py) * c) for _, mx, my in self.edges]
+        return edge_ahead(pts)
 
     def remembered_clear(self, pose: tuple[float, float, float] | None) -> float:
         """Room ahead of the body (not the head) against every remembered point."""
@@ -162,18 +234,21 @@ class LiveSenses:
         return best
 
     def senses(self, t: float, state: dict | None, tof: dict | None, head_yaw: float,
-               steady: bool = True, pose: tuple[float, float, float] | None = None) -> Senses:
+               steady: bool = True, pose: tuple[float, float, float] | None = None,
+               sent: tuple[float, float, float] = (0.0, 0.0, 0.0), settled: bool = True) -> Senses:
         safety = (state or {}).get("safety") or {}
         fallen = bool(safety.get("fallen") or safety.get("picked_up") or safety.get("limp"))
         if tof is None:
-            return Senses(t=t, clear_ahead_m=0.0, fallen=fallen)
+            return Senses(t=t, clear_ahead_m=0.0, fallen=fallen, pose=pose, sent=sent)
         depth = read_depth(tof, pitch=self.pitch)
-        self.remember(t, pose, tof, head_yaw)
+        self.remember(t, pose, tof, head_yaw, settled)
         # The sensor turns with the head. Room ahead is only room ahead while the head looks ahead;
         # what the duck remembers of the room counts whichever way the head is turned.
         clear = depth.clear_ahead_m if abs(head_yaw) < 0.25 else 0.0
         clear = min(clear, self.remembered_clear(pose))
-        s = Senses(t=t, clear_ahead_m=clear, fallen=fallen)
+        edge_m, edge_b = self.edge_reading(tof, head_yaw, pose, settled)
+        s = Senses(t=t, clear_ahead_m=clear, fallen=fallen, edge_ahead_m=edge_m, edge_bearing=edge_b,
+                   pose=pose, sent=sent)
 
         self.history = [(ht, hm) for ht, hm in self.history if t - ht <= ARRIVAL_WINDOW_S]
         before = max((hm for _, hm in self.history), default=math.inf)

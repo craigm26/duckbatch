@@ -21,6 +21,7 @@ import gradio as gr
 from fastapi import FastAPI
 
 import rendezvous
+import session_log
 from lane import RpcLane, TimedRpc
 from practice import PracticeDuck
 from rendezvous import RendezvousError
@@ -35,6 +36,19 @@ ON_A_SPACE = bool(os.environ.get("SPACE_ID"))
 OAUTH_AVAILABLE = bool(os.environ.get("OAUTH_CLIENT_ID"))
 LABEL = f"microduck-wander/{os.environ.get('SPACE_ID', 'local')}"
 SESSION_LIMIT_S = float(os.environ.get("WANDER_LIMIT_S", "300"))
+# Set to a folder and every run writes its session log there, one JSON line per tick
+# (session_log.py). Unset, nothing is written.
+LOG_DIR = os.environ.get("WANDER_LOG_DIR")
+
+
+def session_writer(venue: str) -> tuple[session_log.Writer | None, dict]:
+    """A log file for one run, and the header fields that go with it, or (None, {})."""
+    if not LOG_DIR:
+        return None, {}
+    os.makedirs(LOG_DIR, exist_ok=True)
+    stamp = time.strftime("%Y%m%dT%H%M%SZ", time.gmtime())
+    out = open(os.path.join(LOG_DIR, f"{venue}-{stamp}.jsonl"), "w", encoding="utf-8")  # noqa: SIM115
+    return session_log.Writer(out), {"host": LABEL, "started_utc": stamp}
 
 
 class Visit:
@@ -50,6 +64,8 @@ class Visit:
     def end(self) -> None:
         if self.runner and self.runner.status.running:
             self.runner.stop("the page closed")
+        if self.runner and self.runner.log and self.runner.log.out:
+            self.runner.log.out.close()
         if self.practice:
             self.practice.close()
         if self.consumer:
@@ -75,8 +91,11 @@ def token_of(typed: str | None, oauth: gr.OAuthToken | None) -> str:
 # -- practice -------------------------------------------------------------------------------------
 def practice_start(visit: Visit, budget: bool, speed: float) -> tuple[Visit, str]:
     visit.end()
-    visit.practice = PracticeDuck(seed=int(time.time()) % 1000, budget=400 if budget else None)
-    visit.runner = Runner(visit.practice, max_speed=speed)
+    seed = int(time.time()) % 1000
+    visit.practice = PracticeDuck(seed=seed, budget=400 if budget else None)
+    log, meta = session_writer("practice")
+    visit.runner = Runner(visit.practice, max_speed=speed, log=log, venue="practice",
+                          room=visit.practice.room.name, world_seed=seed, **meta)
     said = visit.runner.start(limit_s=SESSION_LIMIT_S)
     return visit, f"**{said}.**"
 
@@ -135,7 +154,8 @@ def live_start(visit: Visit, speed: float, minutes: float) -> tuple[Visit, str]:
         return visit, "Connect to a duck first."
     if visit.runner and visit.runner.status.running:
         return visit, "Already running."
-    visit.runner = Runner(RpcLane(visit.rpc), max_speed=speed)
+    log, meta = session_writer("real")
+    visit.runner = Runner(RpcLane(visit.rpc), max_speed=speed, log=log, venue="real", **meta)
     said = visit.runner.start(limit_s=minutes * 60)
     return visit, f"**{said}.**"
 
