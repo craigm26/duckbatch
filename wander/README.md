@@ -125,6 +125,15 @@ works around.
   same as before the edge and stuck rules.
 - Not yet on a physical duck at the time of writing.
 
+## W1 on duck-sim
+
+`bench/` runs BrainBench task W1 against Pollen's duck-sim: the real robotd, `tofd --sim`, five
+rooms (the four practice rooms plus chair legs), training and holdout seeds, with do-nothing and a
+straight-line walker as baselines. `bench/w1-results.md` has the first run (2026-11-13): no edge
+crossings, but the duck barely walked, because 0.12 m/s is inside the sim walker's dead band and
+senses.py assumes a level sensor where robotd's kinematics put it 14 degrees down. The session logs
+stay out of git.
+
 ## Credits
 
 `control.py`, `rendezvous.py` and `wire.py` are Pollen Robotics' (`spaces/shared` in
