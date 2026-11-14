@@ -40,7 +40,7 @@ from typing import Any, Protocol
 
 import session_log
 from brain import Brain, Command
-from senses import HEAD_SETTLE_S, LiveSenses
+from senses import HEAD_SETTLE_S, LiveSenses, mount
 
 logger = logging.getLogger(__name__)
 
@@ -216,7 +216,10 @@ class Runner:
         state_ok = state_at is not None and now - state_at <= FRESH_STATE_S
 
         head_yaw = (self._last_head or (0, 0, 0, 0))[2]
-        self.senses.pitch = (self._last_head or (0, 0, 0, 0))[1]
+        # Where the depth sensor is: robotd's kinematics in robot.state, or the standing mount
+        # tipped by the head pitch last sent when there is no fresh state to say.
+        self.senses.pitch, self.senses.head_z = mount(state if state_ok else None,
+                                                      (self._last_head or (0, 0, 0, 0))[1])
         # Still body and a head that has held its target since the last tick: only then can a
         # change in the depth frame be something arriving rather than the duck's own turn.
         steady = abs(self._last_yaw) < 0.05 and self._head_held
@@ -234,7 +237,7 @@ class Runner:
         st.clear_ahead_m = senses.clear_ahead_m
         seen = dict(depth=frame, depth_age_s=tof_age, pose=pose,
                     safety=None if safety is None else {k: bool(safety.get(k)) for k in ("fallen", "picked_up", "limp")},
-                    head_yaw=head_yaw, pitch=self.senses.pitch, steady=steady, settled=settled, senses=senses)
+                    head_yaw=head_yaw, pitch=self.senses.pitch, head_z=self.senses.head_z, steady=steady, settled=settled, senses=senses)
 
         if senses.fallen or not state_ok:
             # Not knowing is not the same as fine. A stale or missing `robot.state` gives the brain

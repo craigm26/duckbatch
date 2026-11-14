@@ -52,6 +52,7 @@ def replay_full(header: dict, ticks: list[dict]) -> list[tuple]:
     for rec in ticks:
         got = rec["in"]
         senses.pitch = sl.num(got["pitch"])
+        senses.head_z = sl.num(got.get("head_z", sl.LEGACY_HEAD_Z_M))
         pose = None if got["pose"] is None else tuple(sl.num(v) for v in got["pose"])
         s = senses.senses(sl.num(rec["t"]), None if got["safety"] is None else {"safety": got["safety"]},
                           sl.unpack_depth(got["depth"]), sl.num(got["head_yaw"]), got["steady"], pose, sent,

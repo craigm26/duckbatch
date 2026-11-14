@@ -28,6 +28,7 @@ from typing import Any
 
 ROOM_X, ROOM_Y = 3.0, 2.4          # a living-room corner, metres
 HEAD_Z = 0.21                      # the sensor's height when standing
+TRUNK_Z = 0.12                     # the trunk's: the sensor sits HEAD_Z - TRUNK_Z above it, level
 FOV = math.radians(45.0)
 ROWS = COLS = 8
 MAX_RANGE = 4.0
@@ -311,7 +312,13 @@ class PracticeDuck:
                                                 "limited_by": []},
                 "head": list(self.head), "policy": "walk",
                 "safety": {"fallen": self.fallen, "limp": False, "picked_up": False, "gravity": [0, 0, -1]},
-                "odom": {"position": [self.x, self.y, 0.0], "yaw": self.yaw}}
+                "odom": {"position": [self.x, self.y, TRUNK_Z], "yaw": self.yaw},
+                # Where the sensor is, the way robotd reports it: in the trunk, from the head's
+                # pitch (this duck's head pitch tips the sensor, nose down positive), and the
+                # trunk level in the world.
+                "imu": {"gyro": [0.0, 0.0, self.w], "quat": [1.0, 0.0, 0.0, 0.0]},
+                "frames": {"tof": {"pos": [0.08, 0.0, HEAD_Z - TRUNK_Z],
+                                   "quat": [math.cos(self.head[1] / 2), 0.0, math.sin(self.head[1] / 2), 0.0]}}}
 
     def tof(self) -> dict:
         """One 8x8 frame from the head: walls, furniture and the cat in 2D, the floor by elevation."""

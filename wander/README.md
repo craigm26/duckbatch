@@ -49,11 +49,25 @@ tof.frame  (15 Hz) ─┼─► senses ─► brain ─► runner ─► robot.h
 
 ## Edges and getting stuck
 
-- **Edge.** The depth sensor's two bottom rows see the floor 0.59 and 0.84 m ahead from a level
-  head. A return there more than 5 cm below the floor, or no return, is a drop: a table edge or a
+- **Where the sensor is.** The floor test takes the depth sensor's height and pitch from
+  `robot.state`: `frames.tof` (robotd's kinematics, from the measured head joints) turned by the
+  trunk's `imu.quat`, on top of `odom.position[2]`. A duck standing on duck-sim holds it at 0.233 m,
+  10.6 degrees nose down. A state without `frames.tof` gets those standing values, tipped by the
+  head pitch last sent. (Before this, the floor test assumed a level sensor at 0.21 m, and read a
+  standing duck's own floor as obstacles 0.4 to 0.6 m ahead; BrainBench W1.)
+- **Edge.** The depth sensor's two bottom rows see the floor 0.40 and 0.51 m ahead from the standing
+  mount. A return there more than 5 cm below the floor, or no return, is a drop: a table edge or a
   stair. With one in its path nearer than 0.6 m, the duck stands still for half a second, walks
   backwards for a second, and turns away from the drop. It does not set off towards one nearer than
   0.8 m. Edges are remembered for 8 s, like obstacles, so one it turned from still counts.
+- **Which pitch a frame was taken at.** `robot.state` arrives at 2 Hz and depth at 15 Hz, and the
+  head bobs with the gait, so the state's pitch can be several degrees off the frame's (in W1, up
+  to 10 degrees, worst when it halts). A frame taken with the head higher than the state says reads
+  the floor as a drop: that is what W1's phantom edge stops in rooms with no drop were. So the edge
+  test reads each frame at its own pitch, taken from the floor in its two bottom rows, when both
+  rows agree on one within 1 degree (and it is within 12 of the state's). A tipped head moves both
+  rows' floors by the same angle; a drop does not (row 7 looks down more steeply and needs 1.5 to
+  3 degrees more to explain away), so a drop keeps the state's pitch and still stops the duck.
 - **Stuck.** A twist sent and odometry not moving (3 cm, or 0.15 rad) for 1.5 s: it backs off the
   same way and turns the other way from its last turn.
 - These are tested on the practice duck only. The thresholds come from the sensor's geometry and

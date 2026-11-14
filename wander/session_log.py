@@ -11,7 +11,9 @@ A log is a header line, then one line per tick:
      "command": {...}, "sent": {...}, "gate": {"verdict": "none", "rule": null}, "runner": "Wander"}
 
 - `in` is what the tick read: the depth frame it used (or null when it had none fresh), the pose
-  and fall flags from `robot.state` (null when stale), the head yaw and pitch, whether the duck
+  and fall flags from `robot.state` (null when stale), the head yaw, the depth sensor's pitch and
+  `head_z`, its height (`senses.mount`; logs written before it was read from robot.state have no
+  `head_z`, and their floor test used LEGACY_HEAD_Z_M with the head command's pitch), whether the duck
   was holding still (`steady`), and whether the frame came after the head stopped moving
   (`settled`). Feeding `in` to `LiveSenses` gives `senses` again.
 - `senses` is what the brain was given. Feeding it to a fresh brain gives `command` again.
@@ -50,6 +52,7 @@ VERSION = 1
 VENUES = ("practice", "duck-sim", "real")
 VERDICTS = ("none", "pass", "clamped", "slowed", "held", "cut", "invalid")
 ZONES = 64
+LEGACY_HEAD_Z_M = 0.21     # the sensor height every log without `head_z` was read at
 
 
 class LogError(ValueError):
@@ -132,6 +135,7 @@ def header(venue: str, brain_name: str, seed: int, tick_hz: float, max_speed: fl
 
 def tick(i: int, t: float, *, depth: dict | None, depth_age_s: float | None, pose, safety: dict | None,
          head_yaw: float, pitch: float, steady: bool, settled: bool, senses: Senses, brain: dict | None,
+         head_z: float | None = None,
          command: Command | None, twist: tuple, head: tuple | None, emote: str | None, wheee: bool,
          runner: str, verdict: str = "none", rule: str | None = None) -> dict:
     if verdict not in VERDICTS:
@@ -140,7 +144,8 @@ def tick(i: int, t: float, *, depth: dict | None, depth_age_s: float | None, pos
         "kind": "tick", "v": VERSION, "i": i, "t": t,
         "in": {"depth": pack_depth(depth), "depth_age_s": depth_age_s,
                "pose": None if pose is None else list(pose), "safety": safety,
-               "head_yaw": head_yaw, "pitch": pitch, "steady": steady, "settled": settled},
+               "head_yaw": head_yaw, "pitch": pitch, "steady": steady, "settled": settled,
+               **({} if head_z is None else {"head_z": head_z})},
         "senses": senses_json(senses),
         "brain": brain,
         "command": None if command is None else command_json(command),
