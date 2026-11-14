@@ -22,6 +22,12 @@ and this runs inside it rather than around it.
 
 The same rule covers falls and pickups: `safety.fallen`, `picked_up` or `limp` stop the brain
 until the robot has reported itself fine for RECOVER_S.
+
+## Every tick is logged
+
+Given a `session_log.Writer`, the runner writes one line per tick in the session log schema: what
+it read, the senses, the brain's state and command, and what it sent. `replay.py` checks that a log
+reproduces itself.
 """
 
 from __future__ import annotations
@@ -32,8 +38,9 @@ import time
 from dataclasses import dataclass, field
 from typing import Any, Protocol
 
+import session_log
 from brain import Brain, Command
-from senses import LiveSenses
+from senses import HEAD_SETTLE_S, LiveSenses, mount
 
 logger = logging.getLogger(__name__)
 
@@ -79,17 +86,38 @@ class Status:
 def scaled(cmd: Command, max_speed: float) -> tuple[float, float, float]:
     """The brain's twist in the Arena's units, as a live duck's m/s and rad/s, capped."""
     vx, vy, wz = cmd.twist
-    vx = max(0.0, min(1.0, vx / BRAIN_TOP_VX)) * max_speed
+    vx = max(-1.0, min(1.0, vx / BRAIN_TOP_VX)) * max_speed     # backwards only when backing off
     wz = max(-MAX_YAW_RATE, min(MAX_YAW_RATE, wz * MAX_YAW_RATE))
     return round(vx, 3), 0.0, round(wz, 3)
+
+
+def twist_for(cmd: Command, max_speed: float, fresh_tof: bool) -> tuple[float, float, float]:
+    """What the runner sends for a brain command: scaled, no creeping in a turn, still when blind."""
+    if not fresh_tof:
+        return (0.0, 0.0, 0.0)
+    twist = scaled(cmd, max_speed)
+    if cmd.state == "TurnInPlace":
+        # The Arena's walker needed forward speed to turn at all; a robot's walking policy
+        # turns on the spot, and creeping forward while turning is how corners get clipped.
+        twist = (0.0, 0.0, twist[2])
+    return twist
+
+
+def head_for(cmd: Command) -> tuple[float, ...]:
+    return tuple(round(h, 2) for h in cmd.head)
 
 
 class Runner:
     """Starts, ticks and stops one brain on one lane. Thread-safe to start and stop."""
 
     def __init__(self, lane: Lane, max_speed: float = DEFAULT_MAX_SPEED, seed: int = 7,
-                 emotions: dict | None = None, clock=time.monotonic):
+                 emotions: dict | None = None, clock=time.monotonic,
+                 log: session_log.Writer | None = None, venue: str = "practice", **log_meta: Any):
         self.lane = lane
+        self.seed = seed
+        self.log = log
+        self.venue = venue
+        self.log_meta = log_meta          # host, room, world_seed, started_utc: header fields
         self.max_speed = max_speed
         self.brain = Brain("duck", seed, emotions=emotions or {})
         self.senses = LiveSenses()
@@ -100,10 +128,16 @@ class Runner:
         self._last_head: tuple[float, ...] | None = None
         self._fine_since: float | None = None
         self._last_yaw = 0.0
+        self._last_twist = (0.0, 0.0, 0.0)
         self._head_held = False
+        self._head_at = -float("inf")     # when the head was last sent somewhere new
+        self.edge_stops = 0
+        self.stuck_events = 0
 
     # -- lifecycle --------------------------------------------------------------------------------
-    def start(self, limit_s: float = 300.0) -> str:
+    def start(self, limit_s: float = 300.0, thread: bool = True) -> str:
+        """Subscribe and start ticking. `thread=False` subscribes only, for a caller (a test, a
+        recording) that calls `tick` itself on its own clock, so no tick runs on another thread."""
         if self.status.running:
             return "already running"
         try:
@@ -116,7 +150,13 @@ class Runner:
                     f"({tof.get('unavailable') or 'none reported'}); autonomy needs one to walk.")
         self.status = Status(running=True, state="Chill", started=self.clock(), sensor=tof.get("sensor"))
         self.status.note(f"subscribed: policy {sub.get('policy', '?')}, depth {tof.get('sensor')}")
+        if self.log is not None:
+            self.log.write(session_log.header(self.venue, self.brain.name, self.seed, TICK_HZ,
+                                              self.max_speed, emotions=self.brain.emotions,
+                                              **self.log_meta))
         self._stop.clear()
+        if not thread:
+            return "running"
         self._thread = threading.Thread(target=self._loop, args=(limit_s,), name="autonomy", daemon=True)
         self._thread.start()
         return "running"
@@ -176,7 +216,10 @@ class Runner:
         state_ok = state_at is not None and now - state_at <= FRESH_STATE_S
 
         head_yaw = (self._last_head or (0, 0, 0, 0))[2]
-        self.senses.pitch = (self._last_head or (0, 0, 0, 0))[1]
+        # Where the depth sensor is: robotd's kinematics in robot.state, or the standing mount
+        # tipped by the head pitch last sent when there is no fresh state to say.
+        self.senses.pitch, self.senses.head_z = mount(state if state_ok else None,
+                                                      (self._last_head or (0, 0, 0, 0))[1])
         # Still body and a head that has held its target since the last tick: only then can a
         # change in the depth frame be something arriving rather than the duck's own turn.
         steady = abs(self._last_yaw) < 0.05 and self._head_held
@@ -186,9 +229,15 @@ class Runner:
             pos = odom.get("position")
             if pos and odom.get("yaw") is not None:
                 pose = (float(pos[0]), float(pos[1]), float(odom["yaw"]))
-        senses = self.senses.senses(t, state if state_ok else None, tof if fresh_tof else None,
-                                    head_yaw, steady, pose)
+        safety = ((state or {}).get("safety") or {}) if state_ok else None
+        frame = tof if fresh_tof else None
+        settled = tof_at is not None and tof_at - self._head_at >= HEAD_SETTLE_S
+        senses = self.senses.senses(t, {"safety": safety} if state_ok else None, frame,
+                                    head_yaw, steady, pose, self._last_twist, settled)
         st.clear_ahead_m = senses.clear_ahead_m
+        seen = dict(depth=frame, depth_age_s=tof_age, pose=pose,
+                    safety=None if safety is None else {k: bool(safety.get(k)) for k in ("fallen", "picked_up", "limp")},
+                    head_yaw=head_yaw, pitch=self.senses.pitch, head_z=self.senses.head_z, steady=steady, settled=settled, senses=senses)
 
         if senses.fallen or not state_ok:
             # Not knowing is not the same as fine. A stale or missing `robot.state` gives the brain
@@ -201,47 +250,66 @@ class Runner:
                         else "no fresh robot.state: holding still until it reports")
             st.state = label
             self._send_twist((0.0, 0.0, 0.0))
+            self._write(seen, None, None, label)
             return
         if self._fine_since is None:
             self._fine_since = now
         if now - self._fine_since < RECOVER_S and st.ticks > 1:
             self._send_twist((0.0, 0.0, 0.0))
+            self._write(seen, None, None, "recovering")
             return
 
         before = self.brain.state
         cmd = self.brain.tick(senses, 1.0 / TICK_HZ)
         if cmd.state != before:
             st.note(f"{before} -> {cmd.state}" + (f" ({senses.near_id} at {senses.near_m:.2f} m)"
-                                                    if cmd.state == "Greet" and senses.near_id else ""))
+                                                    if cmd.state == "Greet" and senses.near_id else "")
+                    + (f" ({self.brain.reason})" if cmd.state == "BackOff" else ""))
+            if cmd.state == "BackOff":
+                if self.brain.reason == "edge":
+                    self.edge_stops += 1
+                else:
+                    self.stuck_events += 1
         st.state = cmd.state
 
-        twist = scaled(cmd, self.max_speed)
-        if cmd.state == "TurnInPlace":
-            # The Arena's walker needed forward speed to turn at all; a robot's walking policy
-            # turns on the spot, and creeping forward while turning is how corners get clipped.
-            twist = (0.0, 0.0, twist[2])
+        twist = twist_for(cmd, self.max_speed, fresh_tof)
         if not fresh_tof:
             if st.blind_ticks == 1 or st.blind_ticks % 40 == 0:
                 st.note("no fresh depth frames: standing still until they come back")
-            twist = (0.0, 0.0, 0.0)
         elif twist[0] > 0:
             st.walking_ticks += 1
         self._send_twist(twist)
 
-        head = tuple(round(h, 2) for h in cmd.head)
+        head = head_for(cmd)
         self._head_held = head == self._last_head
+        head_sent = None
         if head != self._last_head:
             self.lane.notify("robot.head", dict(zip(("neck_pitch", "head_pitch", "head_yaw", "head_roll"), head)))
             self._last_head = head
+            self._head_at = now
+            head_sent = head
         if cmd.emote:
             self._emote(cmd.emote)
             if cmd.state == "Greet":
                 st.greetings += 1
         if cmd.wheee:
             self.lane.notify("robot.sound", {"tag": "wheee", "hold": True})
+        b = self.brain
+        self._write(seen, {"state": b.state, "since": b.since, "energy": b.energy, "turn_dir": b.turn_dir,
+                           "reason": b.reason, "target": b.target}, cmd, cmd.state,
+                    head_sent=head_sent, emote=cmd.emote, wheee=cmd.wheee)
+
+    def _write(self, seen: dict, brain: dict | None, cmd: Command | None, label: str,
+               head_sent: tuple | None = None, emote: str | None = None, wheee: bool = False) -> None:
+        if self.log is None:
+            return
+        self.log.write(session_log.tick(self.status.ticks - 1, seen["senses"].t, brain=brain, command=cmd,
+                                        twist=self._last_twist, head=head_sent, emote=emote, wheee=wheee,
+                                        runner=label, **seen))
 
     def _send_twist(self, twist: tuple[float, float, float]) -> None:
         self._last_yaw = twist[2]
+        self._last_twist = twist
         self.lane.notify("robot.move", {"vx": twist[0], "vy": twist[1], "vyaw": twist[2]})
 
     def _emote(self, name: str) -> None:

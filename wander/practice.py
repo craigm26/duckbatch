@@ -9,6 +9,12 @@ column 0 the left, out to 4 m, with the floor in the bottom rows as a real one s
 **It keeps the lane's budget.** Notifications past 400 in a fixed 60 s window are dropped, as
 `mediad`'s control lane drops them, so the practice duck goes blind for part of each minute exactly
 as a real one reached through the rendezvous does. Set `budget=None` for a duck on a LAN.
+
+**Rooms.** `living` is the room it has always been. `table` puts the duck on a dining table with
+the floor 0.72 m below every side. `stair` is the living room with a stairwell one step (0.17 m)
+down. `threshold` is the living room with a 3 cm door sill across the duck's way: too low for the
+depth sensor to tell from the floor, and enough to stop a small duck's feet. A duck whose centre
+goes over a drop falls, and the crossing is counted in `edge_crossings`.
 """
 
 from __future__ import annotations
@@ -17,11 +23,12 @@ import math
 import random
 import threading
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 
 ROOM_X, ROOM_Y = 3.0, 2.4          # a living-room corner, metres
 HEAD_Z = 0.21                      # the sensor's height when standing
+TRUNK_Z = 0.12                     # the trunk's: the sensor sits HEAD_Z - TRUNK_Z above it, level
 FOV = math.radians(45.0)
 ROWS = COLS = 8
 MAX_RANGE = 4.0
@@ -41,6 +48,55 @@ class Box:
     name: str
 
 
+@dataclass
+class Room:
+    """What the practice duck stands in. Drops are measured down from the surface it starts on."""
+    name: str
+    boxes: list[Box]
+    start: tuple[float, float, float] = (0.6, 1.2, 0.0)
+    cat: bool = True
+    surface: Box | None = None          # if set, the duck stands on this and every side drops away
+    pits: list[Box] = field(default_factory=list)   # lower floor, `height` is how far down
+    snags: list[Box] = field(default_factory=list)  # low sills: the duck cannot walk onto them
+
+    def drop_at(self, x: float, y: float) -> float:
+        """How far below the duck's surface the floor is at (x, y). 0 on the surface itself."""
+        if self.surface is not None:
+            b = self.surface
+            if not (b.x0 <= x <= b.x1 and b.y0 <= y <= b.y1):
+                return b.height
+        for p in self.pits:
+            if p.x0 <= x <= p.x1 and p.y0 <= y <= p.y1:
+                return p.height
+        return 0.0
+
+    def edge_margin(self, x: float, y: float) -> float:
+        """Distance from (x, y) to the nearest drop; negative over one."""
+        best = math.inf
+        if self.surface is not None:
+            b = self.surface
+            inside = min(x - b.x0, b.x1 - x, y - b.y0, b.y1 - y)
+            best = inside if inside < 0 else min(best, inside)
+        for p in self.pits:
+            dx, dy = max(p.x0 - x, 0.0, x - p.x1), max(p.y0 - y, 0.0, y - p.y1)
+            out = math.hypot(dx, dy)
+            best = min(best, out if out > 0 else -min(x - p.x0, p.x1 - x, y - p.y0, p.y1 - y))
+        return best
+
+
+def _living() -> list[Box]:
+    return [Box(1.6, 1.7, 2.2, 2.4, 0.45, "sofa end"), Box(2.5, 1.0, 3.0, 1.3, 0.4, "toy box")]
+
+
+ROOMS = {
+    "living": lambda: Room("living", _living()),
+    "table": lambda: Room("table", [], start=(1.0, 1.2, 0.0), cat=False,
+                          surface=Box(0.6, 0.7, 2.4, 1.7, 0.72, "dining table")),
+    "stair": lambda: Room("stair", _living(), pits=[Box(1.2, 0.0, 1.8, 0.8, 0.17, "stairwell")]),
+    "threshold": lambda: Room("threshold", _living(), snags=[Box(0.95, 0.0, 1.01, ROOM_Y, 0.03, "door sill")]),
+}
+
+
 def ray_box(ox: float, oy: float, dx: float, dy: float, b: Box) -> float:
     """Distance along a 2D ray to an axis-aligned box, or inf."""
     tmin, tmax = -math.inf, math.inf
@@ -54,24 +110,36 @@ def ray_box(ox: float, oy: float, dx: float, dy: float, b: Box) -> float:
     return tmin if tmax >= max(tmin, 0.0) and tmin > 0 else math.inf
 
 
+def _ray_exit(ox: float, oy: float, dx: float, dy: float, b: Box) -> float:
+    """Distance along a 2D ray to where it leaves an axis-aligned box, or inf."""
+    tmax = math.inf
+    for o, d, lo, hi in ((ox, dx, b.x0, b.x1), (oy, dy, b.y0, b.y1)):
+        if abs(d) > 1e-9:
+            tmax = min(tmax, max((lo - o) / d, (hi - o) / d))
+    return tmax
+
+
 class PracticeDuck:
     """Implements the runner's `Lane`: call, notify, latest."""
 
     def __init__(self, seed: int = 1, budget: int | None = BUDGET, clock=time.monotonic,
-                 auto: bool = True):
+                 auto: bool = True, room: str = "living"):
         self.rng = random.Random(seed)
         self.clock = clock
         self.budget = budget
-        self.x, self.y, self.yaw = 0.6, 1.2, 0.0
+        self.room = ROOMS[room]()
+        self.x, self.y, self.yaw = self.room.start
         self.head = [0.0, 0.0, 0.0, 0.0]
         self.twist = (0.0, 0.0, 0.0)
         self.twist_at = -math.inf
         self.v = self.w = 0.0
         self.fallen = False
-        self.cat = [2.6, 0.4, 0.0]           # x, y, heading
+        self.cat = [2.6, 0.4, 0.0] if self.room.cat else [-9.0, -9.0, 0.0]   # x, y, heading
         self.cat_mode = "away"
         self.cat_until = 0.0
-        self.boxes = [Box(1.6, 1.7, 2.2, 2.4, 0.45, "sofa end"), Box(2.5, 1.0, 3.0, 1.3, 0.4, "toy box")]
+        self.boxes = self.room.boxes
+        self.edge_crossings = 0
+        self.closest_edge = self.room.edge_margin(self.x, self.y)
         self.subscribed = self.streaming = False
         self.notes: list[str] = []
         self._latest: dict[str, tuple[Any, float]] = {}
@@ -150,13 +218,22 @@ class PracticeDuck:
         self.yaw += self.w * dt
         nx = self.x + self.v * math.cos(self.yaw) * dt
         ny = self.y + self.v * math.sin(self.yaw) * dt
-        if self._free(nx, ny):
+        if self._snagged(nx, ny):
+            pass                                          # the sill holds its feet: no fall, no progress
+        elif self._free(nx, ny):
             self.x, self.y = nx, ny
+            self.closest_edge = min(self.closest_edge, self.room.edge_margin(nx, ny))
+            if not self.fallen and self.room.drop_at(nx, ny) > 0:
+                self.edge_crossings += 1
+                self.fallen = True                        # over the edge: down it goes
+                self.notes.append("went over an edge and fell")
+                self.v = 0.0
         elif self.v > 0.05:
             self.fallen = True                            # walked into something: down it goes
             self.notes.append("bumped and fell")
             self.v = 0.0
-        self._cat(now, dt)
+        if self.room.cat:
+            self._cat(now, dt)
         self.path.append((round(now, 2), round(self.x, 3), round(self.y, 3)))
         del self.path[:-3000]
         if self.subscribed and now >= self._next_state:
@@ -176,6 +253,15 @@ class PracticeDuck:
             self._spent += 1
         with self._lock:
             self._latest[method] = (params, now)
+
+    def _snagged(self, x: float, y: float, r: float = 0.09) -> bool:
+        """Walking onto a sill is blocked; walking off one, or away from it, is not."""
+        for b in self.room.snags:
+            def gap(px: float, py: float) -> float:
+                return math.hypot(max(b.x0 - px, 0.0, px - b.x1), max(b.y0 - py, 0.0, py - b.y1))
+            if gap(x, y) < r and gap(x, y) < gap(self.x, self.y):
+                return True
+        return False
 
     def _free(self, x: float, y: float, r: float = 0.09) -> bool:
         if not (r <= x <= ROOM_X - r and r <= y <= ROOM_Y - r):
@@ -207,12 +293,32 @@ class PracticeDuck:
                 cx, cy = nx, ny
         self.cat = [cx, cy, ch]
 
+    def _floor_along(self, dx: float, dy: float, elev: float, level: float) -> float:
+        """Horizontal distance at which a downward ray meets the floor, drops included."""
+        if level == math.inf:
+            return level
+        drop = self.room.drop_at(self.x + level * dx, self.y + level * dy)
+        if drop <= 0:
+            return level
+        lower = (HEAD_Z + drop) / math.tan(-elev)
+        for p in self.room.pits:                   # the far side of a pit is a step back up
+            exit_t = _ray_exit(self.x, self.y, dx, dy, p)
+            if exit_t < lower and p.x0 <= self.x + level * dx <= p.x1 and p.y0 <= self.y + level * dy <= p.y1:
+                lower = exit_t
+        return lower
+
     def state(self) -> dict:
         return {"t": self.clock(), "movement": {"requested": list(self.twist), "applied": [self.v, 0, self.w],
                                                 "limited_by": []},
                 "head": list(self.head), "policy": "walk",
                 "safety": {"fallen": self.fallen, "limp": False, "picked_up": False, "gravity": [0, 0, -1]},
-                "odom": {"position": [self.x, self.y, 0.0], "yaw": self.yaw}}
+                "odom": {"position": [self.x, self.y, TRUNK_Z], "yaw": self.yaw},
+                # Where the sensor is, the way robotd reports it: in the trunk, from the head's
+                # pitch (this duck's head pitch tips the sensor, nose down positive), and the
+                # trunk level in the world.
+                "imu": {"gyro": [0.0, 0.0, self.w], "quat": [1.0, 0.0, 0.0, 0.0]},
+                "frames": {"tof": {"pos": [0.08, 0.0, HEAD_Z - TRUNK_Z],
+                                   "quat": [math.cos(self.head[1] / 2), 0.0, math.sin(self.head[1] / 2), 0.0]}}}
 
     def tof(self) -> dict:
         """One 8x8 frame from the head: walls, furniture and the cat in 2D, the floor by elevation."""
@@ -221,14 +327,15 @@ class PracticeDuck:
         distance, status = [], []
         heading = self.yaw + self.head[2]
         pitch = self.head[1]
-        objects = self.boxes + [Box(self.cat[0] - 0.12, self.cat[1] - 0.12,
-                                    self.cat[0] + 0.12, self.cat[1] + 0.12, 0.25, "cat")]
+        objects = self.boxes + self.room.snags + [Box(self.cat[0] - 0.12, self.cat[1] - 0.12,
+                                                      self.cat[0] + 0.12, self.cat[1] + 0.12, 0.25, "cat")]
         for row in range(ROWS):
             elev = half - (row + 0.5) * width - pitch
-            floor = HEAD_Z / math.tan(-elev) if elev < -1e-3 else math.inf
+            level = HEAD_Z / math.tan(-elev) if elev < -1e-3 else math.inf
             for col in range(COLS):
                 az = heading + half - (col + 0.5) * width
                 dx, dy = math.cos(az), math.sin(az)
+                floor = self._floor_along(dx, dy, elev, level)
                 walls = []
                 for edge, o, d in ((0.0, self.x, dx), (ROOM_X, self.x, dx), (0.0, self.y, dy), (ROOM_Y, self.y, dy)):
                     if abs(d) > 1e-9 and (edge - o) / d > 0:

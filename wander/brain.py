@@ -9,6 +9,12 @@ States follow the names in Pollen's docs/ideas/autonomous_behavior.md (Chill, Lo
 TurnInPlace, Dance, Nap) plus Greet, the behavior that file calls the right first one: a duck
 greets a duck it has not met, more warmly one it has, and dances when it has company.
 
+Two rules from the wander plan's W0 sit above the rest. **Edge:** walking, with a drop in its path
+nearer than EDGE_M, the duck stops, backs off and turns away from the side the drop is on, and
+does not set off towards one. **Stuck:** a twist was sent and odometry has not moved for STUCK_S,
+so it backs off and turns the other way. Both go through BackOff. A brain given no edge reading, no
+pose and no sent twist (the Arena) never meets either rule and behaves exactly as before.
+
 `Command.emote` names one of the robot's own emotions (`robot.do curious`, `yes`, `excited`): a
 live duck plays those itself, so a greeting costs one call over the lane rather than a head path
 streamed through it. The head path stays for the Arena, which has no emotions to call.
@@ -25,6 +31,19 @@ CLEAR_M = 0.5           # less room than this ahead, and it turns away
 STOP_M = 0.25           # less than this, and it stops: a turning walker still creeps forward
 QUACK_GAP_S = 1.5       # never two quacks to the same duck inside this (Kith's rule)
 
+# Edges (wander plan, W0 item 1). `Senses.edge_ahead_m` is how far ahead, inside the duck's path,
+# the floor stops where it should be (senses.py reads it off the depth sensor's bottom rows).
+EDGE_M = 0.6            # an edge this close ahead while walking: stop, back off, turn away
+EDGE_CLEAR_M = 0.8      # and walk on only once nothing in the path is nearer than this
+# Stuck (W0 item 2): a twist was sent, and odometry has not moved for STUCK_S.
+STUCK_S = 1.5
+STUCK_MOVE_M = 0.03     # less travel than this counts as not moving
+STUCK_TURN_RAD = 0.15   # and less turn than this
+# Backing off, for either reason: stand still a moment, then walk backwards, then turn.
+HALT_S = 0.5
+BACKOFF_S = 1.0
+BACKOFF_VX = -0.3       # in the brain's units: a third of the way to full speed, backwards
+
 
 @dataclass
 class Senses:
@@ -35,6 +54,10 @@ class Senses:
     near_bearing: float = 0.0        # radians, + to the duck's left
     company: int = 0                 # ducks within greeting range
     fallen: bool = False
+    edge_ahead_m: float = math.inf   # the nearest drop in the duck's path (a table edge, a stair)
+    edge_bearing: float = 0.0        # which side the drops are on, radians, + left
+    pose: tuple[float, float, float] | None = None   # odometry x, y (m) and yaw (rad), if known
+    sent: tuple[float, float, float] = (0.0, 0.0, 0.0)   # the twist the duck was last sent, m/s and rad/s
 
 
 @dataclass
@@ -62,6 +85,8 @@ class Brain:
     expr: list = field(default_factory=list)       # an emotion being played: [(t_abs, head)]
     turn_dir: float = 1.0
     target: str | None = None
+    reason: str | None = None                      # why it is backing off: "edge" or "stuck"
+    anchor: tuple | None = None                    # (t, x, y, yaw) where the stuck clock started
 
     def __post_init__(self) -> None:
         self.rng = random.Random(self.seed)
@@ -73,7 +98,9 @@ class Brain:
             return Command(state="Fallen")
         self.energy += dt * (-0.02 if self.state == "Wander" else 0.01)
         self.energy = min(1.0, max(0.0, self.energy))
-        self._transition(s)
+        stuck = self._stuck(s)
+        if not self._back_off(s, stuck):
+            self._transition(s)
         cmd = getattr(self, "_" + self.state.lower())(s)
         cmd.state = self.state
         if self.expr:                                   # an emotion overrides the head while it plays
@@ -88,6 +115,44 @@ class Brain:
     def _go(self, state: str, t: float) -> None:
         if state != self.state:
             self.state, self.since = state, t
+            self.anchor = None
+
+    def _stuck(self, s: Senses) -> bool:
+        """A twist was sent and odometry has not moved for STUCK_S. Without a pose, never."""
+        vx, _, wz = s.sent
+        if s.pose is None or (abs(vx) < 0.01 and abs(wz) < 0.05):
+            self.anchor = None
+            return False
+        x, y, yaw = s.pose
+        if self.anchor is None:
+            self.anchor = (s.t, x, y, yaw)
+            return False
+        t0, x0, y0, yaw0 = self.anchor
+        turned = abs(math.atan2(math.sin(yaw - yaw0), math.cos(yaw - yaw0)))
+        if math.hypot(x - x0, y - y0) > STUCK_MOVE_M or turned > STUCK_TURN_RAD:
+            self.anchor = (s.t, x, y, yaw)
+            return False
+        return s.t - t0 >= STUCK_S
+
+    def _away(self, s: Senses) -> float:
+        """Turn away from the side the drops are on; straight ahead turns left."""
+        return -1.0 if s.edge_bearing > 0 else 1.0
+
+    def _back_off(self, s: Senses, stuck: bool) -> bool:
+        """The edge and stuck rules. True when they decided this tick's state."""
+        if self.state == "BackOff":
+            if s.t - self.since >= HALT_S + BACKOFF_S:
+                self._go("TurnInPlace", s.t)
+            return True
+        if self.state == "Wander" and s.edge_ahead_m < EDGE_M:
+            self.reason, self.turn_dir = "edge", self._away(s)
+            self._go("BackOff", s.t)
+            return True
+        if self.state in ("Wander", "TurnInPlace") and stuck:
+            self.reason, self.turn_dir = "stuck", -self.turn_dir
+            self._go("BackOff", s.t)
+            return True
+        return False
 
     def _transition(self, s: Senses) -> None:
         held = s.t - self.since
@@ -120,7 +185,8 @@ class Brain:
         if self.state == "Wander" and s.clear_ahead_m < CLEAR_M:
             self.turn_dir = 1.0 if self.rng.random() < 0.5 else -1.0
             self._go("TurnInPlace", s.t)
-        elif self.state == "TurnInPlace" and s.clear_ahead_m > CLEAR_M + 0.25 and held > 0.8:
+        elif self.state == "TurnInPlace" and s.clear_ahead_m > CLEAR_M + 0.25 and held > 0.8 \
+                and s.edge_ahead_m >= EDGE_CLEAR_M:
             self._go("Wander", s.t)
         elif self.state == "Wander" and (held > 4.0 + 3.0 * self.rng.random() or self.energy < 0.3):
             self._go("LookAround", s.t)
@@ -131,6 +197,9 @@ class Brain:
 
     def _moving(self, s: Senses) -> str:
         """Set off: straight on if there is room, otherwise turn away first."""
+        if s.edge_ahead_m < EDGE_CLEAR_M:
+            self.turn_dir = self._away(s)
+            return "TurnInPlace" if s.clear_ahead_m >= STOP_M else "LookAround"
         if s.clear_ahead_m >= CLEAR_M:
             return "Wander"
         self.turn_dir = 1.0 if self.rng.random() < 0.5 else -1.0
@@ -154,6 +223,12 @@ class Brain:
     def _wander(self, s: Senses) -> Command:
         drift = 0.6 * math.sin((s.t - self.since) * 0.7 + self.seed)   # a lazy weave, not a line
         return Command(twist=(0.45, 0.0, round(drift, 1)))
+
+    def _backoff(self, s: Senses) -> Command:
+        """Stand still for HALT_S, then walk backwards for BACKOFF_S. The turn comes after."""
+        if s.t - self.since < HALT_S:
+            return Command(sit=False)
+        return Command(twist=(BACKOFF_VX, 0.0, 0.0), sit=False)
 
     def _turninplace(self, s: Senses) -> Command:
         return Command(twist=(0.4, 0.0, self.turn_dir))
